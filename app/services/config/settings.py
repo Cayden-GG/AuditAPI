@@ -34,6 +34,7 @@ def build_config() -> AppConfig:
     args = parser.parse_args()
 
     raw_ids = getattr(args, "audit_ids", None)
+    domain_url = args.domain_url
 
     return AppConfig(
         client_name=args.client_name,

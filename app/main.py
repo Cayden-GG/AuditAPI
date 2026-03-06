@@ -1,4 +1,6 @@
 from datetime import datetime
+import subprocess
+import sys
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
@@ -12,7 +14,6 @@ from .database import (
     update_audit_status,
 )
 from .models import AuditCreate, AuditRecord, AuditResponse, AuditStatus
-
 app = FastAPI(title="Valvanta Site Audit")
 
 @app.on_event("startup")
@@ -32,8 +33,29 @@ def run_audit_task(audit_id: str):
     db = SessionLocal()
     update_audit_status(db, audit_id, AuditStatus.PROCESSING)
     try:
-        # 1. Run Lighthouse Subprocess
-        # 2. Upload 3 PDFs to GCS
+        audit = get_audit(db, audit_id)
+        if not audit:
+            raise ValueError(f"Audit {audit_id} not found")
+
+        client_name = audit.client_name or "client"
+        only_categories = "performance,seo,accessibility"
+
+        # Run Lighthouse Subprocess
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "app.services.cli",
+                "--client-name",
+                client_name,
+                "--domain-url",
+                audit.target_url,
+                "--only-categories",
+                only_categories,
+            ],
+            check=True,
+        )
+        # Upload 3 PDFs to GCS
 
         update_audit_status(db, audit_id, AuditStatus.COMPLETED, completed_at=datetime.utcnow())
     except Exception as e:
@@ -46,7 +68,7 @@ def run_audit_task(audit_id: str):
 async def start_website_audit(
     payload: AuditCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
 ):
-    # 1. Create a unique record for this job
+    # Create a unique record for this job
     new_audit = create_audit(
         db,
         target_url=str(payload.url),
@@ -54,10 +76,10 @@ async def start_website_audit(
         client_name=payload.client_name,
     )
     
-    # 3. Hand off to worker (Non-blocking)
+    # Hand off to worker (Non-blocking)
     background_tasks.add_task(run_audit_task, new_audit.id)
     
-    # 4. Return immediate ticket to React
+    # Return immediate ticket to React
     return AuditResponse(
         job_id=new_audit.id,
         status="Accepted",

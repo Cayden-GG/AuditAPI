@@ -1,27 +1,4 @@
-"""
-Full Website Performance Audit
 
-This program runs performance, seo, and accessability audits on the inputted website
-
-Args: 
-    --domain-url (str, required): the website's root domain used to discover sitemaps.
-    --client-name (str, required): the name of the client.
-    --only-categories (str, required): the audits to run with lighthouse ["seo", "seo,performance", "seo,performance,accessability"]
-
-Returns:
-    None
-
-Outputs: 
-    Website Audit PDF: pdf file
-    Ai audit summary: json file
-
-    Performance audit: json file
-    SEO audit: json file
-    Accessability audit: json file
-
-Version: 1.0
-Since: 30-01-2026
-"""
 
 from __future__ import annotations
 
@@ -39,6 +16,30 @@ from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 def main():
+    """
+    Full Website Performance Audit
+
+    This program runs performance, seo, and accessability audits on the inputted website
+
+    Args: 
+        --domain-url (str, required): the website's root domain used to discover sitemaps.
+        --client-name (str, required): the name of the client.
+        --only-categories (str, required): the audits to run with lighthouse ["seo", "seo,performance", "seo,performance,accessability"]
+
+    Returns:
+        None
+
+    Outputs: 
+        Website Audit PDF: pdf file
+        Ai audit summary: json file
+
+        Performance audit: json file
+        SEO audit: json file
+        Accessability audit: json file
+
+    Version: 1.0
+    Since: 30-01-2026
+    """
     config = build_config()
 
     print("Discovering sitemaps/urls.")
