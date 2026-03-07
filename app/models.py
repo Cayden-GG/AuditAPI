@@ -27,6 +27,12 @@ class AuditTable(Base):
     seo_report_url = Column(String, nullable=True)
     perf_report_url = Column(String, nullable=True)
     action_list_url = Column(String, nullable=True)
+    seo_report_object = Column(String, nullable=True)
+    perf_report_object = Column(String, nullable=True)
+    key_findings_object = Column(String, nullable=True)
+    audit_json_object = Column(String, nullable=True)
+    ai_json_object = Column(String, nullable=True)
+    audit_log_object = Column(String, nullable=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
@@ -53,6 +59,12 @@ class AuditRecord(BaseModel):
     seo_report_url: Optional[str] = None
     perf_report_url: Optional[str] = None
     action_list_url: Optional[str] = None
+    seo_report_object: Optional[str] = None
+    perf_report_object: Optional[str] = None
+    key_findings_object: Optional[str] = None
+    audit_json_object: Optional[str] = None
+    ai_json_object: Optional[str] = None
+    audit_log_object: Optional[str] = None
     created_at: datetime
     completed_at: Optional[datetime] = None
 

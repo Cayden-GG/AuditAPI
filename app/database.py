@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Generator, Optional
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 # This creates a file named 'valvanta_audits.db' in your project folder
@@ -25,6 +25,28 @@ def get_db() -> Generator:
 
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
+    _ensure_audit_columns()
+
+
+def _ensure_audit_columns() -> None:
+    columns = {
+        "seo_report_object": "TEXT",
+        "perf_report_object": "TEXT",
+        "key_findings_object": "TEXT",
+        "audit_json_object": "TEXT",
+        "ai_json_object": "TEXT",
+        "audit_log_object": "TEXT",
+    }
+    with engine.connect() as conn:
+        existing = {
+            row[1]
+            for row in conn.execute(text("PRAGMA table_info(audits)")).fetchall()
+        }
+        for name, col_type in columns.items():
+            if name in existing:
+                continue
+            conn.execute(text(f"ALTER TABLE audits ADD COLUMN {name} {col_type}"))
+        conn.commit()
 
 
 def create_audit(db, target_url: str, client_email: str, client_name: Optional[str] = None):
@@ -55,6 +77,18 @@ def update_audit_status(db, audit_id: str, status, completed_at: Optional[dateti
     audit.status = status
     if completed_at:
         audit.completed_at = completed_at
+    db.commit()
+    db.refresh(audit)
+    return audit
+
+
+def update_audit_report_objects(db, audit_id: str, **fields):
+    audit = get_audit(db, audit_id)
+    if not audit:
+        return None
+    for key, value in fields.items():
+        if hasattr(audit, key):
+            setattr(audit, key, value)
     db.commit()
     db.refresh(audit)
     return audit

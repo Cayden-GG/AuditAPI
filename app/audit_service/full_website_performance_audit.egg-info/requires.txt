@@ -3,3 +3,4 @@ numpy
 reportlab
 openai
 dotenv
+google-cloud-storage

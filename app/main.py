@@ -15,6 +15,7 @@ from .database import (
     get_db,
     init_db,
     update_audit_status,
+    update_audit_report_objects,
 )
 from .models import AuditCreate, AuditRecord, AuditResponse, AuditStatus
 from .emails.brevo_email import (
@@ -23,6 +24,7 @@ from .emails.brevo_email import (
     send_audit_email,
 )
 from .logging_utils import build_audit_logger
+from .gcs.uploader import upload_files
 app = FastAPI(title="Valvanta Site Audit")
 
 @app.on_event("startup")
@@ -108,6 +110,48 @@ def run_audit_task(audit_id: str):
             logger.info("Report paths resolved.", report_paths=[str(path) for path in report_paths])
         else:
             logger.warning("No report paths resolved; emails will send without attachments.")
+
+        gcs_bucket = os.getenv("GCS_BUCKET_NAME")
+        gcs_creds = os.getenv("GCS_SERVICE_ACCOUNT_JSON", "")
+        gcs_objects = {}
+        if gcs_creds:
+            output_dir_path = Path(output_dir)
+            file_paths = list(output_dir_path.glob("*.pdf")) + list(output_dir_path.glob("*.json"))
+            log_file = Path(log_path)
+            if log_file.exists():
+                file_paths.append(log_file)
+            gcs_objects = upload_files(
+                file_paths=file_paths,
+                bucket_name=gcs_bucket,
+                prefix=f"audits/{audit_id}",
+                credentials_path=gcs_creds,
+                logger=logger,
+            )
+        else:
+            logger.warning("GCS credentials not configured; skipping upload.")
+
+        if gcs_objects:
+            db_fields = {}
+            for local_path, object_name in gcs_objects.items():
+                name = Path(local_path).name
+                if name.startswith("Performance_PDF"):
+                    db_fields["perf_report_object"] = object_name
+                elif name.startswith("SEO_PDF"):
+                    db_fields["seo_report_object"] = object_name
+                elif name.startswith("Key_Findings"):
+                    db_fields["key_findings_object"] = object_name
+                elif name.startswith("ai_audit_summary") and name.endswith(".json"):
+                    db_fields["ai_json_object"] = object_name
+                elif name.startswith("audit_") and name.endswith(".json"):
+                    db_fields["audit_json_object"] = object_name
+                elif name == "audit_log.jsonl":
+                    db_fields["audit_log_object"] = object_name
+            if db_fields:
+                try:
+                    update_audit_report_objects(db, audit_id, **db_fields)
+                    logger.info("GCS object names stored in database.", fields=db_fields)
+                except Exception as exc:
+                    logger.exception("Failed to store GCS object names.", exc)
 
         # Send user and company emails
         try:
