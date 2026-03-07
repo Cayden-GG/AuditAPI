@@ -7,6 +7,10 @@ node_modules/
 # environment variable
 .venv
 .env
+env/
+ENV/
+env.bak
+venv.bak
 
 # AI files
 AGENTS.md
@@ -21,3 +25,11 @@ audit_results/
 storage/
 *.db
 *.sqllite3
+
+# prod 
+build/
+dist/
+eggs/
+*.egg
+*.egg-info
+
