@@ -1,6 +1,10 @@
+# packages
 venv/
+node_modules/
 
+# environment variable
 .venv
 .env
 
+# AI files
 AGENTS.md

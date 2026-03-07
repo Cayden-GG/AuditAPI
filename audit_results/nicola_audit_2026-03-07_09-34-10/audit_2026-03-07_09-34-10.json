@@ -1,0 +1,3443 @@
+{
+  "sitemap": {
+    "start": "https://nicolaphiriphotography.com/",
+    "indexes": [],
+    "sitemaps": [
+      "https://nicolaphiriphotography.com/sitemap.xml"
+    ],
+    "url_count": 5,
+    "per_sitemap": [
+      {
+        "sitemap": "https://nicolaphiriphotography.com/sitemap.xml",
+        "count": 5,
+        "urls": [
+          "https://nicolaphiriphotography.com/",
+          "https://nicolaphiriphotography.com/portfolio",
+          "https://nicolaphiriphotography.com/about",
+          "https://nicolaphiriphotography.com/services",
+          "https://nicolaphiriphotography.com/contact"
+        ]
+      }
+    ],
+    "errors": [],
+    "logs": [
+      "Fetched robots.txt: https://nicolaphiriphotography.com/robots.txt",
+      "Discovered 1 sitemap(s) from robots.txt",
+      "Fetched sitemap: https://nicolaphiriphotography.com/sitemap.xml",
+      "Detected sitemap type 'urlset' for https://nicolaphiriphotography.com/sitemap.xml",
+      "Fetched URL sitemap: https://nicolaphiriphotography.com/sitemap.xml"
+    ]
+  },
+  "lighthouse": {
+    "tested_url_count": 5,
+    "tested_urls": [
+      "https://nicolaphiriphotography.com/",
+      "https://nicolaphiriphotography.com/portfolio",
+      "https://nicolaphiriphotography.com/about",
+      "https://nicolaphiriphotography.com/services",
+      "https://nicolaphiriphotography.com/contact"
+    ],
+    "run_at": "2026-03-07T09:29:51.231793+00:00",
+    "lighthouse_version": "13.0.1",
+    "categories": "performance, seo",
+    "mode": "navigation",
+    "devices": [
+      "mobile",
+      "desktop"
+    ],
+    "config": {
+      "only_categories": "performance, seo",
+      "mobile": {
+        "form_factor": "mobile",
+        "throttling_method": "simulate",
+        "timeout_s": 240,
+        "chrome_path": "/usr/bin/chromium",
+        "chrome_flags": "--headless --no-sandbox --disable-gpu --disable-dev-shm-usage",
+        "max_wait_for_load_ms": 45000,
+        "only_categories": "performance,seo",
+        "audit_ids": null
+      },
+      "desktop": {
+        "preset": "desktop",
+        "timeout_s": 240,
+        "chrome_path": "/usr/bin/chromium",
+        "chrome_flags": "--headless --no-sandbox --disable-gpu --disable-dev-shm-usage",
+        "max_wait_for_load_ms": 45000,
+        "only_categories": "performance,seo",
+        "audit_ids": null
+      }
+    },
+    "website_performance_data": {
+      "performance": {
+        "mobile": {
+          "first_contentful_paint": {
+            "average_value": 4379.5507
+          },
+          "largest_contentful_paint": {
+            "average_value": 7407.1507
+          },
+          "speed_index": {
+            "average_value": 7996.733118657164
+          },
+          "total_blocking_time": {
+            "average_value": 315.3
+          },
+          "mainthread_work_breakdown": {
+            "average_value": 2821.107999999933,
+            "mode_mainthread_work_items": [
+              {
+                "group": "other",
+                "average_mainthread_item_duration": 1698.7487999999314
+              },
+              {
+                "group": "styleLayout",
+                "average_mainthread_item_duration": 573.2776
+              },
+              {
+                "group": "scriptEvaluation",
+                "average_mainthread_item_duration": 387.0040000000012
+              }
+            ]
+          },
+          "diagnostics": {
+            "average_requests_count": 30.0,
+            "average_tasks_count": 4885.4,
+            "average_total_byte_weight": 5157001.8
+          },
+          "network_requests": {
+            "average_code_200_request_count": 30.0,
+            "average_non_code_200_request_count": 0.0
+          },
+          "resource_summary_bytes": {
+            "average_total_transfer_size": 5141549.6,
+            "average_image_transfer_size": 4376749.0,
+            "average_script_transfer_size": 425825.6,
+            "average_stylesheet_transfer_size": 110968.6,
+            "average_document_transfer_size": 5296.4,
+            "average_third_party_transfer_size": 220521.0
+          },
+          "network_server_latency": {
+            "average_server_latency": 329.55070000000006,
+            "mode_server_latency_times": [
+              {
+                "origin": "https://nicolaphiriphotography.com",
+                "average_server_response_time": 329.55070000000006
+              },
+              {
+                "origin": "https://fonts.googleapis.com",
+                "average_server_response_time": 185.17819999999998
+              },
+              {
+                "origin": "https://cdnjs.cloudflare.com",
+                "average_server_response_time": 19.482199999999985
+              },
+              {
+                "origin": "https://fonts.gstatic.com",
+                "average_server_response_time": 14.5478
+              }
+            ]
+          }
+        },
+        "desktop": {
+          "first_contentful_paint": {
+            "average_value": 1315.5731
+          },
+          "largest_contentful_paint": {
+            "average_value": 4577.7731
+          },
+          "speed_index": {
+            "average_value": 3964.711388608664
+          },
+          "total_blocking_time": {
+            "average_value": 65.4
+          },
+          "mainthread_work_breakdown": {
+            "average_value": 866.6487999999788,
+            "mode_mainthread_work_items": [
+              {
+                "group": "other",
+                "average_mainthread_item_duration": 605.8963999999785
+              },
+              {
+                "group": "styleLayout",
+                "average_mainthread_item_duration": 136.79739999999998
+              },
+              {
+                "group": "scriptEvaluation",
+                "average_mainthread_item_duration": 92.58980000000031
+              }
+            ]
+          },
+          "diagnostics": {
+            "average_requests_count": 29.2,
+            "average_tasks_count": 3218.0,
+            "average_total_byte_weight": 5034540.6
+          },
+          "network_requests": {
+            "average_code_200_request_count": 29.2,
+            "average_non_code_200_request_count": 0.0
+          },
+          "resource_summary_bytes": {
+            "average_total_transfer_size": 5019093.8,
+            "average_image_transfer_size": 4375060.2,
+            "average_script_transfer_size": 425904.8,
+            "average_stylesheet_transfer_size": 110797.8,
+            "average_document_transfer_size": 5297.4,
+            "average_third_party_transfer_size": 99849.0
+          },
+          "network_server_latency": {
+            "average_server_latency": 371.57309999999995,
+            "mode_server_latency_times": [
+              {
+                "origin": "https://nicolaphiriphotography.com",
+                "average_server_response_time": 371.57309999999995
+              },
+              {
+                "origin": "https://fonts.googleapis.com",
+                "average_server_response_time": 180.4764
+              },
+              {
+                "origin": "https://cdnjs.cloudflare.com",
+                "average_server_response_time": 27.4082
+              },
+              {
+                "origin": "https://fonts.gstatic.com",
+                "average_server_response_time": 18.715940000000273
+              }
+            ]
+          }
+        }
+      },
+      "seo": {
+        "mobile": {
+          "average_score": 0.9199999999999999,
+          "total_urls": 5,
+          "total_passed": 46,
+          "total_failed": 4,
+          "total_not_applicable": 30,
+          "top_failed_audits": [
+            {
+              "audit_id": "canonical",
+              "fail_count": 4,
+              "fail_rate": 0.8
+            }
+          ],
+          "audit_summaries": {
+            "meta-description": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "document-title": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "link-text": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "image-alt": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "robots-txt": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "indexing": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            },
+            "hreflang": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "canonical": {
+              "average_score": 0.2,
+              "average_numeric_value": null,
+              "pass_count": 1,
+              "fail_count": 4,
+              "not_applicable_count": 0,
+              "fail_rate": 0.8
+            },
+            "structured-data": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            },
+            "crawlable-anchors": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "http-status-code": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "is-crawlable": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "tap-targets": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            },
+            "viewport": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            },
+            "plugins": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            },
+            "charset": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            }
+          }
+        },
+        "desktop": {
+          "average_score": 0.9199999999999999,
+          "total_urls": 5,
+          "total_passed": 46,
+          "total_failed": 4,
+          "total_not_applicable": 30,
+          "top_failed_audits": [
+            {
+              "audit_id": "canonical",
+              "fail_count": 4,
+              "fail_rate": 0.8
+            }
+          ],
+          "audit_summaries": {
+            "meta-description": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "document-title": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "link-text": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "image-alt": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "robots-txt": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "indexing": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            },
+            "hreflang": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "canonical": {
+              "average_score": 0.2,
+              "average_numeric_value": null,
+              "pass_count": 1,
+              "fail_count": 4,
+              "not_applicable_count": 0,
+              "fail_rate": 0.8
+            },
+            "structured-data": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            },
+            "crawlable-anchors": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "http-status-code": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "is-crawlable": {
+              "average_score": 1.0,
+              "average_numeric_value": null,
+              "pass_count": 5,
+              "fail_count": 0,
+              "not_applicable_count": 0,
+              "fail_rate": 0.0
+            },
+            "tap-targets": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            },
+            "viewport": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            },
+            "plugins": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            },
+            "charset": {
+              "average_score": null,
+              "average_numeric_value": null,
+              "pass_count": 0,
+              "fail_count": 0,
+              "not_applicable_count": 5,
+              "fail_rate": 0.0
+            }
+          }
+        }
+      }
+    },
+    "per_url_performance_data": {
+      "https://nicolaphiriphotography.com/": {
+        "performance": {
+          "mobile": {
+            "first_contentful_paint": {
+              "value": 4460.0005
+            },
+            "largest_contentful_paint": {
+              "value": 9710.0005
+            },
+            "speed_index": {
+              "value": 6618.427795528964
+            },
+            "total_blocking_time": {
+              "value": 541.0
+            },
+            "main_thread_work_breakdown": {
+              "value": 4322.679999999707,
+              "mainthread_work_items": [
+                {
+                  "group": "other",
+                  "groupLabel": "Other",
+                  "duration": 3413.755999999707
+                },
+                {
+                  "group": "styleLayout",
+                  "groupLabel": "Style & Layout",
+                  "duration": 392.8840000000002
+                },
+                {
+                  "group": "scriptEvaluation",
+                  "groupLabel": "Script Evaluation",
+                  "duration": 313.80000000000047
+                }
+              ]
+            },
+            "diagnostics": {
+              "request_count": 76,
+              "task_count": 13548,
+              "total_byte_weight": 18417394
+            },
+            "network_requests": {
+              "code_200_requests_count": 76,
+              "code_non_200_requests_count": 0,
+              "top_by_transfer_size": [
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Lifestyle-Photograhpy/Nicola-Phiri-Little-Moments-Lifestyle-Photography-5.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 2364.2230000048876,
+                  "networkRequestTime": 3356.2380000054836,
+                  "networkEndTime": 5429.240999996662,
+                  "finished": true,
+                  "transferSize": 958413,
+                  "resourceSize": 957272,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "Low",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Lifestyle-Photograhpy/Nicola-Phiri-Little-Moments-Lifestyle-Photography-4.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 2335.0740000009537,
+                  "networkRequestTime": 2335.859000004828,
+                  "networkEndTime": 4403.312000006437,
+                  "finished": true,
+                  "transferSize": 809263,
+                  "resourceSize": 808118,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Lifestyle-Photograhpy/Nicola-Phiri-Little-Moments-Lifestyle-Photography-3.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 2363.9490000009537,
+                  "networkRequestTime": 3356.036000005901,
+                  "networkEndTime": 4451.053000003099,
+                  "finished": true,
+                  "transferSize": 543727,
+                  "resourceSize": 543260,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "Low",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                }
+              ]
+            },
+            "resource_summary": {
+              "total_transfer_size": 18401946.0,
+              "image_transfer_size": 17632936.0,
+              "script_transfer_size": 426335.0,
+              "stylesheet_transfer_size": 111020.0,
+              "document_transfer_size": 5306.0,
+              "third_party_transfer_size": 220519.0
+            },
+            "network_server_latency": {
+              "server_latency": 410.0005,
+              "server_latency_types": [
+                {
+                  "origin": "https://nicolaphiriphotography.com",
+                  "serverResponseTime": 410.0005
+                },
+                {
+                  "origin": "https://fonts.googleapis.com",
+                  "serverResponseTime": 191.34799999999998
+                },
+                {
+                  "origin": "https://fonts.gstatic.com",
+                  "serverResponseTime": 25.731
+                },
+                {
+                  "origin": "https://cdnjs.cloudflare.com",
+                  "serverResponseTime": 17.8395
+                }
+              ]
+            }
+          },
+          "desktop": {
+            "first_contentful_paint": {
+              "value": 1545.3365
+            },
+            "largest_contentful_paint": {
+              "value": 15625.3365
+            },
+            "speed_index": {
+              "value": 3870.111366887114
+            },
+            "total_blocking_time": {
+              "value": 137.0
+            },
+            "main_thread_work_breakdown": {
+              "value": 1708.6839999999154,
+              "mainthread_work_items": [
+                {
+                  "group": "other",
+                  "groupLabel": "Other",
+                  "duration": 1480.2279999999148
+                },
+                {
+                  "group": "styleLayout",
+                  "groupLabel": "Style & Layout",
+                  "duration": 109.137
+                },
+                {
+                  "group": "scriptEvaluation",
+                  "groupLabel": "Script Evaluation",
+                  "duration": 89.75400000000047
+                }
+              ]
+            },
+            "diagnostics": {
+              "request_count": 76,
+              "task_count": 6532,
+              "total_byte_weight": 18408792
+            },
+            "network_requests": {
+              "code_200_requests_count": 76,
+              "code_non_200_requests_count": 0,
+              "top_by_transfer_size": [
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Lifestyle-Photograhpy/Nicola-Phiri-Little-Moments-Lifestyle-Photography-5.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 2938.679999999702,
+                  "networkRequestTime": 2947.777999997139,
+                  "networkEndTime": 5011.3189999982715,
+                  "finished": true,
+                  "transferSize": 957591,
+                  "resourceSize": 957272,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Lifestyle-Photograhpy/Nicola-Phiri-Little-Moments-Lifestyle-Photography-4.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 2891.7299999967217,
+                  "networkRequestTime": 2892.6749999970198,
+                  "networkEndTime": 5002.822000004351,
+                  "finished": true,
+                  "transferSize": 808461,
+                  "resourceSize": 808118,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Lifestyle-Photograhpy/Nicola-Phiri-Little-Moments-Lifestyle-Photography-3.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 2938.4680000022054,
+                  "networkRequestTime": 2946.5239999964833,
+                  "networkEndTime": 4992.47199999541,
+                  "finished": true,
+                  "transferSize": 543478,
+                  "resourceSize": 543260,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                }
+              ]
+            },
+            "resource_summary": {
+              "total_transfer_size": 18393353.0,
+              "image_transfer_size": 17624700.0,
+              "script_transfer_size": 426479.0,
+              "stylesheet_transfer_size": 110539.0,
+              "document_transfer_size": 5285.0,
+              "third_party_transfer_size": 220509.0
+            },
+            "network_server_latency": {
+              "server_latency": 625.3365,
+              "server_latency_types": [
+                {
+                  "origin": "https://nicolaphiriphotography.com",
+                  "serverResponseTime": 625.3365
+                },
+                {
+                  "origin": "https://fonts.googleapis.com",
+                  "serverResponseTime": 176.29299999999998
+                },
+                {
+                  "origin": "https://fonts.gstatic.com",
+                  "serverResponseTime": 29.852800000000002
+                },
+                {
+                  "origin": "https://cdnjs.cloudflare.com",
+                  "serverResponseTime": 29.208000000000002
+                }
+              ]
+            }
+          }
+        },
+        "seo": {
+          "mobile": {
+            "summary": {
+              "average_score": 1.0,
+              "passed": 10,
+              "failed": 0,
+              "not_applicable": 6,
+              "total_audits": 16
+            },
+            "audits": {
+              "meta-description": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "document-title": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "link-text": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "image-alt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "robots-txt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "indexing": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "hreflang": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "canonical": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "structured-data": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "crawlable-anchors": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "http-status-code": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "is-crawlable": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "tap-targets": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "viewport": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "plugins": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "charset": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              }
+            }
+          },
+          "desktop": {
+            "summary": {
+              "average_score": 1.0,
+              "passed": 10,
+              "failed": 0,
+              "not_applicable": 6,
+              "total_audits": 16
+            },
+            "audits": {
+              "meta-description": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "document-title": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "link-text": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "image-alt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "robots-txt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "indexing": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "hreflang": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "canonical": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "structured-data": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "crawlable-anchors": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "http-status-code": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "is-crawlable": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "tap-targets": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "viewport": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "plugins": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "charset": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              }
+            }
+          }
+        }
+      },
+      "https://nicolaphiriphotography.com/portfolio": {
+        "performance": {
+          "mobile": {
+            "first_contentful_paint": {
+              "value": 4354.062
+            },
+            "largest_contentful_paint": {
+              "value": 8254.062
+            },
+            "speed_index": {
+              "value": 6237.932914774682
+            },
+            "total_blocking_time": {
+              "value": 451.0
+            },
+            "main_thread_work_breakdown": {
+              "value": 2514.807999999976,
+              "mainthread_work_items": [
+                {
+                  "group": "other",
+                  "groupLabel": "Other",
+                  "duration": 1662.2319999999756
+                },
+                {
+                  "group": "styleLayout",
+                  "groupLabel": "Style & Layout",
+                  "duration": 456.85600000000017
+                },
+                {
+                  "group": "scriptEvaluation",
+                  "groupLabel": "Script Evaluation",
+                  "duration": 311.76800000000003
+                }
+              ]
+            },
+            "diagnostics": {
+              "request_count": 21,
+              "task_count": 3952,
+              "total_byte_weight": 2783996
+            },
+            "network_requests": {
+              "code_200_requests_count": 21,
+              "code_non_200_requests_count": 0,
+              "top_by_transfer_size": [
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Family-Photography/Nicola-Phiri-Family-Photography-1.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 2286.142999999225,
+                  "networkRequestTime": 2286.7319999933243,
+                  "networkEndTime": 3387.9249999970198,
+                  "finished": true,
+                  "transferSize": 504142,
+                  "resourceSize": 503440,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "Low",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Portraits-Headshots-Photograhpy/Nicola-Phiri-Portraits-Headshots-Photography-4.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 2245.3839999958873,
+                  "networkRequestTime": 2245.7619999945164,
+                  "networkEndTime": 3423.56099999696,
+                  "finished": true,
+                  "transferSize": 450655,
+                  "resourceSize": 449782,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-BWbsnzTw.js",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 642.4759999960661,
+                  "networkRequestTime": 644.0779999941587,
+                  "networkEndTime": 1739.2459999993443,
+                  "finished": true,
+                  "transferSize": 425507,
+                  "resourceSize": 423664,
+                  "statusCode": 200,
+                  "mimeType": "application/javascript",
+                  "resourceType": "Script",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                }
+              ]
+            },
+            "resource_summary": {
+              "total_transfer_size": 2768542.0,
+              "image_transfer_size": 1997355.0,
+              "script_transfer_size": 425507.0,
+              "stylesheet_transfer_size": 111017.0,
+              "document_transfer_size": 5297.0,
+              "third_party_transfer_size": 220522.0
+            },
+            "network_server_latency": {
+              "server_latency": 304.062,
+              "server_latency_types": [
+                {
+                  "origin": "https://nicolaphiriphotography.com",
+                  "serverResponseTime": 304.062
+                },
+                {
+                  "origin": "https://fonts.googleapis.com",
+                  "serverResponseTime": 189.83599999999998
+                },
+                {
+                  "origin": "https://fonts.gstatic.com",
+                  "serverResponseTime": 23.8385
+                },
+                {
+                  "origin": "https://cdnjs.cloudflare.com",
+                  "serverResponseTime": 20.441999999999997
+                }
+              ]
+            }
+          },
+          "desktop": {
+            "first_contentful_paint": {
+              "value": 1269.082
+            },
+            "largest_contentful_paint": {
+              "value": 3009.0820000000003
+            },
+            "speed_index": {
+              "value": 5612.204225493578
+            },
+            "total_blocking_time": {
+              "value": 190.0
+            },
+            "main_thread_work_breakdown": {
+              "value": 1017.5839999999822,
+              "mainthread_work_items": [
+                {
+                  "group": "other",
+                  "groupLabel": "Other",
+                  "duration": 836.581999999982
+                },
+                {
+                  "group": "styleLayout",
+                  "groupLabel": "Style & Layout",
+                  "duration": 81.51300000000005
+                },
+                {
+                  "group": "scriptEvaluation",
+                  "groupLabel": "Script Evaluation",
+                  "duration": 75.29300000000008
+                }
+              ]
+            },
+            "diagnostics": {
+              "request_count": 20,
+              "task_count": 3495,
+              "total_byte_weight": 2633899
+            },
+            "network_requests": {
+              "code_200_requests_count": 20,
+              "code_non_200_requests_count": 0,
+              "top_by_transfer_size": [
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Family-Photography/Nicola-Phiri-Family-Photography-1.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 7385.655999995768,
+                  "networkRequestTime": 7386.630000002682,
+                  "networkEndTime": 8672.49700000137,
+                  "finished": true,
+                  "transferSize": 504475,
+                  "resourceSize": 503440,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Portraits-Headshots-Photograhpy/Nicola-Phiri-Portraits-Headshots-Photography-4.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 7358.688000001013,
+                  "networkRequestTime": 7359.424000002444,
+                  "networkEndTime": 8615.368000000715,
+                  "finished": true,
+                  "transferSize": 450751,
+                  "resourceSize": 449782,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-BWbsnzTw.js",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 5554.76099999994,
+                  "networkRequestTime": 5556.663000002503,
+                  "networkEndTime": 6817.349000006914,
+                  "finished": true,
+                  "transferSize": 426020,
+                  "resourceSize": 423664,
+                  "statusCode": 200,
+                  "mimeType": "application/javascript",
+                  "resourceType": "Script",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                }
+              ]
+            },
+            "resource_summary": {
+              "total_transfer_size": 2618451.0,
+              "image_transfer_size": 1997577.0,
+              "script_transfer_size": 426020.0,
+              "stylesheet_transfer_size": 111032.0,
+              "document_transfer_size": 5306.0,
+              "third_party_transfer_size": 69683.0
+            },
+            "network_server_latency": {
+              "server_latency": 309.08200000000005,
+              "server_latency_types": [
+                {
+                  "origin": "https://nicolaphiriphotography.com",
+                  "serverResponseTime": 309.08200000000005
+                },
+                {
+                  "origin": "https://fonts.googleapis.com",
+                  "serverResponseTime": 185.975
+                },
+                {
+                  "origin": "https://cdnjs.cloudflare.com",
+                  "serverResponseTime": 40.173
+                },
+                {
+                  "origin": "https://fonts.gstatic.com",
+                  "serverResponseTime": 25.459699999999998
+                }
+              ]
+            }
+          }
+        },
+        "seo": {
+          "mobile": {
+            "summary": {
+              "average_score": 0.9,
+              "passed": 9,
+              "failed": 1,
+              "not_applicable": 6,
+              "total_audits": 16
+            },
+            "audits": {
+              "meta-description": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "document-title": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "link-text": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "image-alt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "robots-txt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "indexing": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "hreflang": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "canonical": {
+                "score": 0,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "fail"
+              },
+              "structured-data": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "crawlable-anchors": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "http-status-code": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "is-crawlable": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "tap-targets": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "viewport": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "plugins": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "charset": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              }
+            }
+          },
+          "desktop": {
+            "summary": {
+              "average_score": 0.9,
+              "passed": 9,
+              "failed": 1,
+              "not_applicable": 6,
+              "total_audits": 16
+            },
+            "audits": {
+              "meta-description": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "document-title": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "link-text": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "image-alt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "robots-txt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "indexing": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "hreflang": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "canonical": {
+                "score": 0,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "fail"
+              },
+              "structured-data": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "crawlable-anchors": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "http-status-code": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "is-crawlable": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "tap-targets": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "viewport": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "plugins": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "charset": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              }
+            }
+          }
+        }
+      },
+      "https://nicolaphiriphotography.com/about": {
+        "performance": {
+          "mobile": {
+            "first_contentful_paint": {
+              "value": 4356.287
+            },
+            "largest_contentful_paint": {
+              "value": 6456.286999999999
+            },
+            "speed_index": {
+              "value": 14803.440094991112
+            },
+            "total_blocking_time": {
+              "value": 131.0
+            },
+            "main_thread_work_breakdown": {
+              "value": 2413.283999999977,
+              "mainthread_work_items": [
+                {
+                  "group": "other",
+                  "groupLabel": "Other",
+                  "duration": 1263.7999999999743
+                },
+                {
+                  "group": "styleLayout",
+                  "groupLabel": "Style & Layout",
+                  "duration": 568.5560000000002
+                },
+                {
+                  "group": "scriptEvaluation",
+                  "groupLabel": "Script Evaluation",
+                  "duration": 447.91200000000237
+                }
+              ]
+            },
+            "diagnostics": {
+              "request_count": 23,
+              "task_count": 4523,
+              "total_byte_weight": 2854366
+            },
+            "network_requests": {
+              "code_200_requests_count": 23,
+              "code_non_200_requests_count": 0,
+              "top_by_transfer_size": [
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Family-Photography/Nicola-Phiri-Family-Photography-1.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 8545.638999991119,
+                  "networkRequestTime": 8546.10300000012,
+                  "networkEndTime": 9853.976999998093,
+                  "finished": true,
+                  "transferSize": 504514,
+                  "resourceSize": 503440,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "Low",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Portraits-Headshots-Photograhpy/Nicola-Phiri-Portraits-Headshots-Photography-4.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 8545.740000002086,
+                  "networkRequestTime": 8546.188000001013,
+                  "networkEndTime": 9819.854000002146,
+                  "finished": true,
+                  "transferSize": 450814,
+                  "resourceSize": 449782,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "Low",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-BWbsnzTw.js",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 6733.248999997973,
+                  "networkRequestTime": 6733.968999996781,
+                  "networkEndTime": 7986.438999995589,
+                  "finished": true,
+                  "transferSize": 425849,
+                  "resourceSize": 423664,
+                  "statusCode": 200,
+                  "mimeType": "application/javascript",
+                  "resourceType": "Script",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                }
+              ]
+            },
+            "resource_summary": {
+              "total_transfer_size": 2838906.0,
+              "image_transfer_size": 2069819.0,
+              "script_transfer_size": 425849.0,
+              "stylesheet_transfer_size": 111033.0,
+              "document_transfer_size": 5297.0,
+              "third_party_transfer_size": 220531.0
+            },
+            "network_server_latency": {
+              "server_latency": 306.287,
+              "server_latency_types": [
+                {
+                  "origin": "https://nicolaphiriphotography.com",
+                  "serverResponseTime": 306.287
+                },
+                {
+                  "origin": "https://fonts.googleapis.com",
+                  "serverResponseTime": 167.22000000000003
+                },
+                {
+                  "origin": "https://cdnjs.cloudflare.com",
+                  "serverResponseTime": 17.662499999999923
+                },
+                {
+                  "origin": "https://fonts.gstatic.com",
+                  "serverResponseTime": 0
+                }
+              ]
+            }
+          },
+          "desktop": {
+            "first_contentful_paint": {
+              "value": 1270.081
+            },
+            "largest_contentful_paint": {
+              "value": 1370.081
+            },
+            "speed_index": {
+              "value": 5542.172235729018
+            },
+            "total_blocking_time": {
+              "value": 0.0
+            },
+            "main_thread_work_breakdown": {
+              "value": 603.1969999999959,
+              "mainthread_work_items": [
+                {
+                  "group": "other",
+                  "groupLabel": "Other",
+                  "duration": 311.64999999999577
+                },
+                {
+                  "group": "styleLayout",
+                  "groupLabel": "Style & Layout",
+                  "duration": 154.2090000000001
+                },
+                {
+                  "group": "scriptEvaluation",
+                  "groupLabel": "Script Evaluation",
+                  "duration": 103.99800000000009
+                }
+              ]
+            },
+            "diagnostics": {
+              "request_count": 22,
+              "task_count": 3969,
+              "total_byte_weight": 2702035
+            },
+            "network_requests": {
+              "code_200_requests_count": 22,
+              "code_non_200_requests_count": 0,
+              "top_by_transfer_size": [
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Family-Photography/Nicola-Phiri-Family-Photography-1.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 7534.168000005186,
+                  "networkRequestTime": 7536.447000004351,
+                  "networkEndTime": 8836.506999999285,
+                  "finished": true,
+                  "transferSize": 504442,
+                  "resourceSize": 503440,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "Low",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Portraits-Headshots-Photograhpy/Nicola-Phiri-Portraits-Headshots-Photography-4.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 7534.348999999464,
+                  "networkRequestTime": 7536.781999997795,
+                  "networkEndTime": 8805.208000004292,
+                  "finished": true,
+                  "transferSize": 450715,
+                  "resourceSize": 449782,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "Low",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-BWbsnzTw.js",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 6597.796999998391,
+                  "networkRequestTime": 6599.575999997556,
+                  "networkEndTime": 7015.5560000017285,
+                  "finished": true,
+                  "transferSize": 424976,
+                  "resourceSize": 423664,
+                  "statusCode": 200,
+                  "mimeType": "application/javascript",
+                  "resourceType": "Script",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                }
+              ]
+            },
+            "resource_summary": {
+              "total_transfer_size": 2686581.0,
+              "image_transfer_size": 2069573.0,
+              "script_transfer_size": 424976.0,
+              "stylesheet_transfer_size": 110679.0,
+              "document_transfer_size": 5297.0,
+              "third_party_transfer_size": 69683.0
+            },
+            "network_server_latency": {
+              "server_latency": 310.08099999999996,
+              "server_latency_types": [
+                {
+                  "origin": "https://nicolaphiriphotography.com",
+                  "serverResponseTime": 310.08099999999996
+                },
+                {
+                  "origin": "https://fonts.googleapis.com",
+                  "serverResponseTime": 180.68200000000002
+                },
+                {
+                  "origin": "https://cdnjs.cloudflare.com",
+                  "serverResponseTime": 28.22800000000001
+                },
+                {
+                  "origin": "https://fonts.gstatic.com",
+                  "serverResponseTime": 7.965000000001055
+                }
+              ]
+            }
+          }
+        },
+        "seo": {
+          "mobile": {
+            "summary": {
+              "average_score": 0.9,
+              "passed": 9,
+              "failed": 1,
+              "not_applicable": 6,
+              "total_audits": 16
+            },
+            "audits": {
+              "meta-description": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "document-title": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "link-text": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "image-alt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "robots-txt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "indexing": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "hreflang": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "canonical": {
+                "score": 0,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "fail"
+              },
+              "structured-data": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "crawlable-anchors": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "http-status-code": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "is-crawlable": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "tap-targets": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "viewport": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "plugins": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "charset": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              }
+            }
+          },
+          "desktop": {
+            "summary": {
+              "average_score": 0.9,
+              "passed": 9,
+              "failed": 1,
+              "not_applicable": 6,
+              "total_audits": 16
+            },
+            "audits": {
+              "meta-description": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "document-title": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "link-text": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "image-alt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "robots-txt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "indexing": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "hreflang": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "canonical": {
+                "score": 0,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "fail"
+              },
+              "structured-data": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "crawlable-anchors": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "http-status-code": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "is-crawlable": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "tap-targets": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "viewport": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "plugins": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "charset": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              }
+            }
+          }
+        }
+      },
+      "https://nicolaphiriphotography.com/services": {
+        "performance": {
+          "mobile": {
+            "first_contentful_paint": {
+              "value": 4353.341
+            },
+            "largest_contentful_paint": {
+              "value": 6141.341
+            },
+            "speed_index": {
+              "value": 5685.817377860452
+            },
+            "total_blocking_time": {
+              "value": 392.5
+            },
+            "main_thread_work_breakdown": {
+              "value": 3173.692000000002,
+              "mainthread_work_items": [
+                {
+                  "group": "other",
+                  "groupLabel": "Other",
+                  "duration": 1436.215999999999
+                },
+                {
+                  "group": "styleLayout",
+                  "groupLabel": "Style & Layout",
+                  "duration": 1005.7719999999999
+                },
+                {
+                  "group": "scriptEvaluation",
+                  "groupLabel": "Script Evaluation",
+                  "duration": 529.7960000000027
+                }
+              ]
+            },
+            "diagnostics": {
+              "request_count": 15,
+              "task_count": 908,
+              "total_byte_weight": 810885
+            },
+            "network_requests": {
+              "code_200_requests_count": 15,
+              "code_non_200_requests_count": 0,
+              "top_by_transfer_size": [
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-BWbsnzTw.js",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 631.8380000069737,
+                  "networkRequestTime": 634.0720000043511,
+                  "networkEndTime": 1284.6040000021458,
+                  "finished": true,
+                  "transferSize": 425039,
+                  "resourceSize": 423664,
+                  "statusCode": 200,
+                  "mimeType": "application/javascript",
+                  "resourceType": "Script",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 1817.8080000057817,
+                  "networkRequestTime": 1882.3730000033975,
+                  "networkEndTime": 1962.6060000061989,
+                  "finished": true,
+                  "transferSize": 150840,
+                  "resourceSize": 150124,
+                  "statusCode": 200,
+                  "mimeType": "application/octet-stream",
+                  "resourceType": "Font",
+                  "priority": "VeryHigh",
+                  "experimentalFromMainFrame": true,
+                  "entity": "Cloudflare CDN"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-COPjwk_l.css",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 631.9230000004172,
+                  "networkRequestTime": 636.262000001967,
+                  "networkEndTime": 1334.7410000041127,
+                  "finished": true,
+                  "transferSize": 90068,
+                  "resourceSize": 89573,
+                  "statusCode": 200,
+                  "mimeType": "text/css",
+                  "resourceType": "Stylesheet",
+                  "priority": "VeryHigh",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                }
+              ]
+            },
+            "resource_summary": {
+              "total_transfer_size": 795443.0,
+              "image_transfer_size": 36798.0,
+              "script_transfer_size": 425039.0,
+              "stylesheet_transfer_size": 110767.0,
+              "document_transfer_size": 5294.0,
+              "third_party_transfer_size": 220520.0
+            },
+            "network_server_latency": {
+              "server_latency": 303.341,
+              "server_latency_types": [
+                {
+                  "origin": "https://nicolaphiriphotography.com",
+                  "serverResponseTime": 303.341
+                },
+                {
+                  "origin": "https://fonts.googleapis.com",
+                  "serverResponseTime": 199.6579999999999
+                },
+                {
+                  "origin": "https://cdnjs.cloudflare.com",
+                  "serverResponseTime": 23.616500000000002
+                },
+                {
+                  "origin": "https://fonts.gstatic.com",
+                  "serverResponseTime": 0
+                }
+              ]
+            }
+          },
+          "desktop": {
+            "first_contentful_paint": {
+              "value": 1223.489
+            },
+            "largest_contentful_paint": {
+              "value": 1314.489
+            },
+            "speed_index": {
+              "value": 2410.4527552111917
+            },
+            "total_blocking_time": {
+              "value": 0.0
+            },
+            "main_thread_work_breakdown": {
+              "value": 622.3839999999999,
+              "mainthread_work_items": [
+                {
+                  "group": "other",
+                  "groupLabel": "Other",
+                  "duration": 245.0469999999993
+                },
+                {
+                  "group": "styleLayout",
+                  "groupLabel": "Style & Layout",
+                  "duration": 219.62199999999993
+                },
+                {
+                  "group": "scriptEvaluation",
+                  "groupLabel": "Script Evaluation",
+                  "duration": 114.25800000000073
+                }
+              ]
+            },
+            "diagnostics": {
+              "request_count": 14,
+              "task_count": 925,
+              "total_byte_weight": 661038
+            },
+            "network_requests": {
+              "code_200_requests_count": 14,
+              "code_non_200_requests_count": 0,
+              "top_by_transfer_size": [
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-BWbsnzTw.js",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 889.8939999938011,
+                  "networkRequestTime": 890.6119999960065,
+                  "networkEndTime": 1963.805999994278,
+                  "finished": true,
+                  "transferSize": 426056,
+                  "resourceSize": 423664,
+                  "statusCode": 200,
+                  "mimeType": "application/javascript",
+                  "resourceType": "Script",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-COPjwk_l.css",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 890.0629999935627,
+                  "networkRequestTime": 891.4219999983907,
+                  "networkEndTime": 1252.9369999915361,
+                  "finished": true,
+                  "transferSize": 90013,
+                  "resourceSize": 89573,
+                  "statusCode": 200,
+                  "mimeType": "text/css",
+                  "resourceType": "Stylesheet",
+                  "priority": "VeryHigh",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 2046.8859999924898,
+                  "networkRequestTime": 2116.984999999404,
+                  "networkEndTime": 6587.247999995947,
+                  "finished": true,
+                  "transferSize": 48983,
+                  "resourceSize": 48432,
+                  "statusCode": 200,
+                  "mimeType": "font/woff2",
+                  "resourceType": "Font",
+                  "priority": "VeryHigh",
+                  "experimentalFromMainFrame": true,
+                  "entity": "Google Fonts"
+                }
+              ]
+            },
+            "resource_summary": {
+              "total_transfer_size": 645587.0,
+              "image_transfer_size": 36796.0,
+              "script_transfer_size": 426056.0,
+              "stylesheet_transfer_size": 110720.0,
+              "document_transfer_size": 5305.0,
+              "third_party_transfer_size": 69690.0
+            },
+            "network_server_latency": {
+              "server_latency": 303.489,
+              "server_latency_types": [
+                {
+                  "origin": "https://nicolaphiriphotography.com",
+                  "serverResponseTime": 303.489
+                },
+                {
+                  "origin": "https://fonts.googleapis.com",
+                  "serverResponseTime": 180.477
+                },
+                {
+                  "origin": "https://cdnjs.cloudflare.com",
+                  "serverResponseTime": 17.948
+                },
+                {
+                  "origin": "https://fonts.gstatic.com",
+                  "serverResponseTime": 4.064000000000306
+                }
+              ]
+            }
+          }
+        },
+        "seo": {
+          "mobile": {
+            "summary": {
+              "average_score": 0.9,
+              "passed": 9,
+              "failed": 1,
+              "not_applicable": 6,
+              "total_audits": 16
+            },
+            "audits": {
+              "meta-description": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "document-title": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "link-text": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "image-alt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "robots-txt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "indexing": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "hreflang": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "canonical": {
+                "score": 0,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "fail"
+              },
+              "structured-data": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "crawlable-anchors": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "http-status-code": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "is-crawlable": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "tap-targets": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "viewport": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "plugins": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "charset": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              }
+            }
+          },
+          "desktop": {
+            "summary": {
+              "average_score": 0.9,
+              "passed": 9,
+              "failed": 1,
+              "not_applicable": 6,
+              "total_audits": 16
+            },
+            "audits": {
+              "meta-description": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "document-title": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "link-text": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "image-alt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "robots-txt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "indexing": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "hreflang": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "canonical": {
+                "score": 0,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "fail"
+              },
+              "structured-data": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "crawlable-anchors": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "http-status-code": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "is-crawlable": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "tap-targets": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "viewport": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "plugins": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "charset": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              }
+            }
+          }
+        }
+      },
+      "https://nicolaphiriphotography.com/contact": {
+        "performance": {
+          "mobile": {
+            "first_contentful_paint": {
+              "value": 4374.063
+            },
+            "largest_contentful_paint": {
+              "value": 6474.063
+            },
+            "speed_index": {
+              "value": 6638.047410130608
+            },
+            "total_blocking_time": {
+              "value": 61.0
+            },
+            "main_thread_work_breakdown": {
+              "value": 1681.0760000000023,
+              "mainthread_work_items": [
+                {
+                  "group": "other",
+                  "groupLabel": "Other",
+                  "duration": 717.7400000000014
+                },
+                {
+                  "group": "styleLayout",
+                  "groupLabel": "Style & Layout",
+                  "duration": 442.32000000000005
+                },
+                {
+                  "group": "scriptEvaluation",
+                  "groupLabel": "Script Evaluation",
+                  "duration": 331.74400000000065
+                }
+              ]
+            },
+            "diagnostics": {
+              "request_count": 15,
+              "task_count": 1496,
+              "total_byte_weight": 918368
+            },
+            "network_requests": {
+              "code_200_requests_count": 15,
+              "code_non_200_requests_count": 0,
+              "top_by_transfer_size": [
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-BWbsnzTw.js",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 696.4280000030994,
+                  "networkRequestTime": 701.1159999966621,
+                  "networkEndTime": 1943.7430000007153,
+                  "finished": true,
+                  "transferSize": 426398,
+                  "resourceSize": 423664,
+                  "statusCode": 200,
+                  "mimeType": "application/javascript",
+                  "resourceType": "Script",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 1984.6080000028014,
+                  "networkRequestTime": 2013.3330000042915,
+                  "networkEndTime": 2077.947999998927,
+                  "finished": true,
+                  "transferSize": 150835,
+                  "resourceSize": 150124,
+                  "statusCode": 200,
+                  "mimeType": "application/octet-stream",
+                  "resourceType": "Font",
+                  "priority": "VeryHigh",
+                  "experimentalFromMainFrame": true,
+                  "entity": "Cloudflare CDN"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Nicola-Phiri-Contact-Image.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 2434.7750000059605,
+                  "networkRequestTime": 2435.219999998808,
+                  "networkEndTime": 3185.240000002086,
+                  "finished": true,
+                  "transferSize": 110039,
+                  "resourceSize": 109778,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                }
+              ]
+            },
+            "resource_summary": {
+              "total_transfer_size": 902911.0,
+              "image_transfer_size": 146837.0,
+              "script_transfer_size": 426398.0,
+              "stylesheet_transfer_size": 111006.0,
+              "document_transfer_size": 5288.0,
+              "third_party_transfer_size": 220513.0
+            },
+            "network_server_latency": {
+              "server_latency": 324.06300000000005,
+              "server_latency_types": [
+                {
+                  "origin": "https://nicolaphiriphotography.com",
+                  "serverResponseTime": 324.06300000000005
+                },
+                {
+                  "origin": "https://fonts.googleapis.com",
+                  "serverResponseTime": 177.829
+                },
+                {
+                  "origin": "https://fonts.gstatic.com",
+                  "serverResponseTime": 23.1695
+                },
+                {
+                  "origin": "https://cdnjs.cloudflare.com",
+                  "serverResponseTime": 17.850500000000004
+                }
+              ]
+            }
+          },
+          "desktop": {
+            "first_contentful_paint": {
+              "value": 1269.877
+            },
+            "largest_contentful_paint": {
+              "value": 1569.877
+            },
+            "speed_index": {
+              "value": 2388.6163597224177
+            },
+            "total_blocking_time": {
+              "value": 0.0
+            },
+            "main_thread_work_breakdown": {
+              "value": 381.3950000000002,
+              "mainthread_work_items": [
+                {
+                  "group": "other",
+                  "groupLabel": "Other",
+                  "duration": 155.97500000000002
+                },
+                {
+                  "group": "styleLayout",
+                  "groupLabel": "Style & Layout",
+                  "duration": 119.50599999999997
+                },
+                {
+                  "group": "scriptEvaluation",
+                  "groupLabel": "Script Evaluation",
+                  "duration": 79.64600000000021
+                }
+              ]
+            },
+            "diagnostics": {
+              "request_count": 14,
+              "task_count": 1169,
+              "total_byte_weight": 766939
+            },
+            "network_requests": {
+              "code_200_requests_count": 14,
+              "code_non_200_requests_count": 0,
+              "top_by_transfer_size": [
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-BWbsnzTw.js",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 682.2729999944568,
+                  "networkRequestTime": 685.987999998033,
+                  "networkEndTime": 1946.0169999971986,
+                  "finished": true,
+                  "transferSize": 425993,
+                  "resourceSize": 423664,
+                  "statusCode": 200,
+                  "mimeType": "application/javascript",
+                  "resourceType": "Script",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/photos/Nicola-Phiri-Contact-Image.webp",
+                  "sessionTargetType": "page",
+                  "protocol": "h3",
+                  "rendererStartTime": 2503.2690000012517,
+                  "networkRequestTime": 2503.8689999952912,
+                  "networkEndTime": 2853.2540000006557,
+                  "finished": true,
+                  "transferSize": 109874,
+                  "resourceSize": 109778,
+                  "statusCode": 200,
+                  "mimeType": "image/webp",
+                  "resourceType": "Image",
+                  "priority": "High",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                },
+                {
+                  "url": "https://nicolaphiriphotography.com/assets/index-COPjwk_l.css",
+                  "sessionTargetType": "page",
+                  "protocol": "h2",
+                  "rendererStartTime": 682.3650000020862,
+                  "networkRequestTime": 688.6599999964237,
+                  "networkEndTime": 1373.5219999998808,
+                  "finished": true,
+                  "transferSize": 90320,
+                  "resourceSize": 89573,
+                  "statusCode": 200,
+                  "mimeType": "text/css",
+                  "resourceType": "Stylesheet",
+                  "priority": "VeryHigh",
+                  "experimentalFromMainFrame": true,
+                  "entity": "nicolaphiriphotography.com"
+                }
+              ]
+            },
+            "resource_summary": {
+              "total_transfer_size": 751497.0,
+              "image_transfer_size": 146655.0,
+              "script_transfer_size": 425993.0,
+              "stylesheet_transfer_size": 111019.0,
+              "document_transfer_size": 5294.0,
+              "third_party_transfer_size": 69680.0
+            },
+            "network_server_latency": {
+              "server_latency": 309.877,
+              "server_latency_types": [
+                {
+                  "origin": "https://nicolaphiriphotography.com",
+                  "serverResponseTime": 309.877
+                },
+                {
+                  "origin": "https://fonts.googleapis.com",
+                  "serverResponseTime": 178.955
+                },
+                {
+                  "origin": "https://fonts.gstatic.com",
+                  "serverResponseTime": 26.238200000000003
+                },
+                {
+                  "origin": "https://cdnjs.cloudflare.com",
+                  "serverResponseTime": 21.483999999999995
+                }
+              ]
+            }
+          }
+        },
+        "seo": {
+          "mobile": {
+            "summary": {
+              "average_score": 0.9,
+              "passed": 9,
+              "failed": 1,
+              "not_applicable": 6,
+              "total_audits": 16
+            },
+            "audits": {
+              "meta-description": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "document-title": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "link-text": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "image-alt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "robots-txt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "indexing": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "hreflang": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "canonical": {
+                "score": 0,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "fail"
+              },
+              "structured-data": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "crawlable-anchors": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "http-status-code": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "is-crawlable": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "tap-targets": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "viewport": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "plugins": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "charset": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              }
+            }
+          },
+          "desktop": {
+            "summary": {
+              "average_score": 0.9,
+              "passed": 9,
+              "failed": 1,
+              "not_applicable": 6,
+              "total_audits": 16
+            },
+            "audits": {
+              "meta-description": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "document-title": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "link-text": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "image-alt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "robots-txt": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "indexing": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "hreflang": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "canonical": {
+                "score": 0,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "fail"
+              },
+              "structured-data": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "crawlable-anchors": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "http-status-code": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "is-crawlable": {
+                "score": 1,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "pass"
+              },
+              "tap-targets": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "viewport": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "plugins": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              },
+              "charset": {
+                "score": null,
+                "display_value": null,
+                "numeric_value": null,
+                "status": "not_applicable"
+              }
+            }
+          }
+        }
+      }
+    },
+    "normalized_findings": {
+      "performance": {
+        "mobile": [
+          {
+            "category": "performance",
+            "title": "LCP is Poor",
+            "description": "LCP measured 9710.00 which is poor for Core Web Vitals.",
+            "severity": "critical",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "LCP",
+              "level": null
+            },
+            "recommendation": "Reduce main-thread work, optimize assets, and improve server response to bring LCP into the Good range."
+          },
+          {
+            "category": "performance",
+            "title": "Overall performance score is below target",
+            "description": "Lighthouse performance score is 0.46.",
+            "severity": "high",
+            "score": 0.46,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "Performance Score",
+              "level": null
+            },
+            "recommendation": "Prioritize performance wins that improve Core Web Vitals and reduce blocking time."
+          },
+          {
+            "category": "performance",
+            "title": "LCP is Poor",
+            "description": "LCP measured 8254.06 which is poor for Core Web Vitals.",
+            "severity": "critical",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/portfolio"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "LCP",
+              "level": null
+            },
+            "recommendation": "Reduce main-thread work, optimize assets, and improve server response to bring LCP into the Good range."
+          },
+          {
+            "category": "performance",
+            "title": "Overall performance score is below target",
+            "description": "Lighthouse performance score is 0.50.",
+            "severity": "moderate",
+            "score": 0.5,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/portfolio"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "Performance Score",
+              "level": null
+            },
+            "recommendation": "Prioritize performance wins that improve Core Web Vitals and reduce blocking time."
+          },
+          {
+            "category": "performance",
+            "title": "LCP is Poor",
+            "description": "LCP measured 6456.29 which is poor for Core Web Vitals.",
+            "severity": "critical",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/about"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "LCP",
+              "level": null
+            },
+            "recommendation": "Reduce main-thread work, optimize assets, and improve server response to bring LCP into the Good range."
+          },
+          {
+            "category": "performance",
+            "title": "Overall performance score is below target",
+            "description": "Lighthouse performance score is 0.58.",
+            "severity": "moderate",
+            "score": 0.58,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/about"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "Performance Score",
+              "level": null
+            },
+            "recommendation": "Prioritize performance wins that improve Core Web Vitals and reduce blocking time."
+          },
+          {
+            "category": "performance",
+            "title": "LCP is Poor",
+            "description": "LCP measured 6141.34 which is poor for Core Web Vitals.",
+            "severity": "critical",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/services"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "LCP",
+              "level": null
+            },
+            "recommendation": "Reduce main-thread work, optimize assets, and improve server response to bring LCP into the Good range."
+          },
+          {
+            "category": "performance",
+            "title": "Overall performance score is below target",
+            "description": "Lighthouse performance score is 0.55.",
+            "severity": "moderate",
+            "score": 0.55,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/services"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "Performance Score",
+              "level": null
+            },
+            "recommendation": "Prioritize performance wins that improve Core Web Vitals and reduce blocking time."
+          },
+          {
+            "category": "performance",
+            "title": "LCP is Poor",
+            "description": "LCP measured 6474.06 which is poor for Core Web Vitals.",
+            "severity": "critical",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/contact"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "LCP",
+              "level": null
+            },
+            "recommendation": "Reduce main-thread work, optimize assets, and improve server response to bring LCP into the Good range."
+          },
+          {
+            "category": "performance",
+            "title": "Overall performance score is below target",
+            "description": "Lighthouse performance score is 0.63.",
+            "severity": "moderate",
+            "score": 0.63,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/contact"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "Performance Score",
+              "level": null
+            },
+            "recommendation": "Prioritize performance wins that improve Core Web Vitals and reduce blocking time."
+          }
+        ],
+        "desktop": [
+          {
+            "category": "performance",
+            "title": "LCP is Poor",
+            "description": "LCP measured 15625.34 which is poor for Core Web Vitals.",
+            "severity": "critical",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "LCP",
+              "level": null
+            },
+            "recommendation": "Reduce main-thread work, optimize assets, and improve server response to bring LCP into the Good range."
+          },
+          {
+            "category": "performance",
+            "title": "CLS is Poor",
+            "description": "CLS measured 0.40 which is poor for Core Web Vitals.",
+            "severity": "critical",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "CLS",
+              "level": null
+            },
+            "recommendation": "Reduce main-thread work, optimize assets, and improve server response to bring CLS into the Good range."
+          },
+          {
+            "category": "performance",
+            "title": "Overall performance score is below target",
+            "description": "Lighthouse performance score is 0.40.",
+            "severity": "high",
+            "score": 0.4,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "Performance Score",
+              "level": null
+            },
+            "recommendation": "Prioritize performance wins that improve Core Web Vitals and reduce blocking time."
+          },
+          {
+            "category": "performance",
+            "title": "LCP is Needs Improvement",
+            "description": "LCP measured 3009.08 which is needs improvement for Core Web Vitals.",
+            "severity": "moderate",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/portfolio"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "LCP",
+              "level": null
+            },
+            "recommendation": "Reduce main-thread work, optimize assets, and improve server response to bring LCP into the Good range."
+          },
+          {
+            "category": "performance",
+            "title": "Overall performance score is below target",
+            "description": "Lighthouse performance score is 0.65.",
+            "severity": "moderate",
+            "score": 0.65,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/portfolio"
+            ],
+            "standard_reference": {
+              "framework": "Core Web Vitals",
+              "code": "Performance Score",
+              "level": null
+            },
+            "recommendation": "Prioritize performance wins that improve Core Web Vitals and reduce blocking time."
+          }
+        ]
+      },
+      "seo": {
+        "mobile": [
+          {
+            "category": "seo",
+            "title": "Structured data is valid",
+            "description": "Run the [Structured Data Testing Tool](https://developers.google.com/search/docs/appearance/structured-data/) to validate structured data. [Learn more about Structured Data](https://developer.chrome.com/docs/lighthouse/seo/structured-data/). Manual review required.",
+            "severity": "advisory",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Structured Data",
+              "level": null
+            },
+            "recommendation": "Manual review required."
+          },
+          {
+            "category": "seo",
+            "title": "Document does not have a valid `rel=canonical`",
+            "description": "Canonical links suggest which URL to show in search results. [Learn more about canonical links](https://developer.chrome.com/docs/lighthouse/seo/canonical/). Automated check failed.",
+            "severity": "high",
+            "score": 0,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/portfolio"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Technical SEO",
+              "level": null
+            },
+            "recommendation": "Resolve the failing SEO check and verify with a follow-up crawl."
+          },
+          {
+            "category": "seo",
+            "title": "Structured data is valid",
+            "description": "Run the [Structured Data Testing Tool](https://developers.google.com/search/docs/appearance/structured-data/) to validate structured data. [Learn more about Structured Data](https://developer.chrome.com/docs/lighthouse/seo/structured-data/). Manual review required.",
+            "severity": "advisory",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/portfolio"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Structured Data",
+              "level": null
+            },
+            "recommendation": "Manual review required."
+          },
+          {
+            "category": "seo",
+            "title": "Document does not have a valid `rel=canonical`",
+            "description": "Canonical links suggest which URL to show in search results. [Learn more about canonical links](https://developer.chrome.com/docs/lighthouse/seo/canonical/). Automated check failed.",
+            "severity": "high",
+            "score": 0,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/about"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Technical SEO",
+              "level": null
+            },
+            "recommendation": "Resolve the failing SEO check and verify with a follow-up crawl."
+          },
+          {
+            "category": "seo",
+            "title": "Structured data is valid",
+            "description": "Run the [Structured Data Testing Tool](https://developers.google.com/search/docs/appearance/structured-data/) to validate structured data. [Learn more about Structured Data](https://developer.chrome.com/docs/lighthouse/seo/structured-data/). Manual review required.",
+            "severity": "advisory",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/about"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Structured Data",
+              "level": null
+            },
+            "recommendation": "Manual review required."
+          },
+          {
+            "category": "seo",
+            "title": "Document does not have a valid `rel=canonical`",
+            "description": "Canonical links suggest which URL to show in search results. [Learn more about canonical links](https://developer.chrome.com/docs/lighthouse/seo/canonical/). Automated check failed.",
+            "severity": "high",
+            "score": 0,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/services"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Technical SEO",
+              "level": null
+            },
+            "recommendation": "Resolve the failing SEO check and verify with a follow-up crawl."
+          },
+          {
+            "category": "seo",
+            "title": "Structured data is valid",
+            "description": "Run the [Structured Data Testing Tool](https://developers.google.com/search/docs/appearance/structured-data/) to validate structured data. [Learn more about Structured Data](https://developer.chrome.com/docs/lighthouse/seo/structured-data/). Manual review required.",
+            "severity": "advisory",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/services"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Structured Data",
+              "level": null
+            },
+            "recommendation": "Manual review required."
+          },
+          {
+            "category": "seo",
+            "title": "Document does not have a valid `rel=canonical`",
+            "description": "Canonical links suggest which URL to show in search results. [Learn more about canonical links](https://developer.chrome.com/docs/lighthouse/seo/canonical/). Automated check failed.",
+            "severity": "high",
+            "score": 0,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/contact"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Technical SEO",
+              "level": null
+            },
+            "recommendation": "Resolve the failing SEO check and verify with a follow-up crawl."
+          },
+          {
+            "category": "seo",
+            "title": "Structured data is valid",
+            "description": "Run the [Structured Data Testing Tool](https://developers.google.com/search/docs/appearance/structured-data/) to validate structured data. [Learn more about Structured Data](https://developer.chrome.com/docs/lighthouse/seo/structured-data/). Manual review required.",
+            "severity": "advisory",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/contact"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Structured Data",
+              "level": null
+            },
+            "recommendation": "Manual review required."
+          }
+        ],
+        "desktop": [
+          {
+            "category": "seo",
+            "title": "Structured data is valid",
+            "description": "Run the [Structured Data Testing Tool](https://developers.google.com/search/docs/appearance/structured-data/) to validate structured data. [Learn more about Structured Data](https://developer.chrome.com/docs/lighthouse/seo/structured-data/). Manual review required.",
+            "severity": "advisory",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Structured Data",
+              "level": null
+            },
+            "recommendation": "Manual review required."
+          },
+          {
+            "category": "seo",
+            "title": "Document does not have a valid `rel=canonical`",
+            "description": "Canonical links suggest which URL to show in search results. [Learn more about canonical links](https://developer.chrome.com/docs/lighthouse/seo/canonical/). Automated check failed.",
+            "severity": "high",
+            "score": 0,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/portfolio"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Technical SEO",
+              "level": null
+            },
+            "recommendation": "Resolve the failing SEO check and verify with a follow-up crawl."
+          },
+          {
+            "category": "seo",
+            "title": "Structured data is valid",
+            "description": "Run the [Structured Data Testing Tool](https://developers.google.com/search/docs/appearance/structured-data/) to validate structured data. [Learn more about Structured Data](https://developer.chrome.com/docs/lighthouse/seo/structured-data/). Manual review required.",
+            "severity": "advisory",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/portfolio"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Structured Data",
+              "level": null
+            },
+            "recommendation": "Manual review required."
+          },
+          {
+            "category": "seo",
+            "title": "Document does not have a valid `rel=canonical`",
+            "description": "Canonical links suggest which URL to show in search results. [Learn more about canonical links](https://developer.chrome.com/docs/lighthouse/seo/canonical/). Automated check failed.",
+            "severity": "high",
+            "score": 0,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/about"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Technical SEO",
+              "level": null
+            },
+            "recommendation": "Resolve the failing SEO check and verify with a follow-up crawl."
+          },
+          {
+            "category": "seo",
+            "title": "Structured data is valid",
+            "description": "Run the [Structured Data Testing Tool](https://developers.google.com/search/docs/appearance/structured-data/) to validate structured data. [Learn more about Structured Data](https://developer.chrome.com/docs/lighthouse/seo/structured-data/). Manual review required.",
+            "severity": "advisory",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/about"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Structured Data",
+              "level": null
+            },
+            "recommendation": "Manual review required."
+          },
+          {
+            "category": "seo",
+            "title": "Document does not have a valid `rel=canonical`",
+            "description": "Canonical links suggest which URL to show in search results. [Learn more about canonical links](https://developer.chrome.com/docs/lighthouse/seo/canonical/). Automated check failed.",
+            "severity": "high",
+            "score": 0,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/services"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Technical SEO",
+              "level": null
+            },
+            "recommendation": "Resolve the failing SEO check and verify with a follow-up crawl."
+          },
+          {
+            "category": "seo",
+            "title": "Structured data is valid",
+            "description": "Run the [Structured Data Testing Tool](https://developers.google.com/search/docs/appearance/structured-data/) to validate structured data. [Learn more about Structured Data](https://developer.chrome.com/docs/lighthouse/seo/structured-data/). Manual review required.",
+            "severity": "advisory",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/services"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Structured Data",
+              "level": null
+            },
+            "recommendation": "Manual review required."
+          },
+          {
+            "category": "seo",
+            "title": "Document does not have a valid `rel=canonical`",
+            "description": "Canonical links suggest which URL to show in search results. [Learn more about canonical links](https://developer.chrome.com/docs/lighthouse/seo/canonical/). Automated check failed.",
+            "severity": "high",
+            "score": 0,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/contact"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Technical SEO",
+              "level": null
+            },
+            "recommendation": "Resolve the failing SEO check and verify with a follow-up crawl."
+          },
+          {
+            "category": "seo",
+            "title": "Structured data is valid",
+            "description": "Run the [Structured Data Testing Tool](https://developers.google.com/search/docs/appearance/structured-data/) to validate structured data. [Learn more about Structured Data](https://developer.chrome.com/docs/lighthouse/seo/structured-data/). Manual review required.",
+            "severity": "advisory",
+            "score": null,
+            "affected_elements": [
+              "https://nicolaphiriphotography.com/contact"
+            ],
+            "standard_reference": {
+              "framework": "Search Essentials",
+              "code": "Structured Data",
+              "level": null
+            },
+            "recommendation": "Manual review required."
+          }
+        ]
+      }
+    },
+    "summary": {
+      "performance": {
+        "mobile": {
+          "overall_score": 0.544,
+          "findings_by_severity": {
+            "critical": 5,
+            "high": 1,
+            "moderate": 4,
+            "advisory": 0
+          },
+          "risk_summary": "High risk: critical issues detected that require immediate remediation."
+        },
+        "desktop": {
+          "overall_score": 0.724,
+          "findings_by_severity": {
+            "critical": 2,
+            "high": 1,
+            "moderate": 2,
+            "advisory": 0
+          },
+          "risk_summary": "High risk: critical issues detected that require immediate remediation."
+        }
+      },
+      "seo": {
+        "mobile": {
+          "overall_score": 0.9359999999999999,
+          "findings_by_severity": {
+            "critical": 0,
+            "high": 4,
+            "moderate": 0,
+            "advisory": 5
+          },
+          "risk_summary": "Elevated risk: high-priority issues need near-term remediation."
+        },
+        "desktop": {
+          "overall_score": 0.9359999999999999,
+          "findings_by_severity": {
+            "critical": 0,
+            "high": 4,
+            "moderate": 0,
+            "advisory": 5
+          },
+          "risk_summary": "Elevated risk: high-priority issues need near-term remediation."
+        }
+      }
+    }
+  }
+}
