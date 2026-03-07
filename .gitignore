@@ -22,7 +22,6 @@ audit_results/
 *.jsonl
 
 # database
-storage/
 *.db
 *.sqllite3
 
