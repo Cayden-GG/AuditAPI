@@ -6,6 +6,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from .schema import AuditInsights
+from app.logging_utils import AuditLogger, NullAuditLogger
 
 # -------- constants ------ 
 load_dotenv()
@@ -196,7 +197,7 @@ def load_input_file(input_file):
 
 # ----- main AI request -------
 
-def call_openai(audit: Dict[str, Any]): 
+def call_openai(audit: Dict[str, Any], logger: AuditLogger | NullAuditLogger | None = None):
     """
     Creates a requests to openai using the gpt-5.2 model. 
     inputs context from the lighthouse audit and a json schema for the output.
@@ -209,8 +210,10 @@ def call_openai(audit: Dict[str, Any]):
     Returns: 
         AI summary data
     """
+    active_logger = logger or NullAuditLogger()
+
     if not audit:
-        print("No audit provided for the ai summary.")
+        active_logger.warning("AI summary skipped: no audit provided.")
 
     prompt = build_single_prompt(audit)
 
@@ -238,12 +241,15 @@ def call_openai(audit: Dict[str, Any]):
         return data_for_pdf 
 
     except json.JSONDecodeError as e:
-        print("AI did not return valid JSON.")
-        print("Raw output:", response.output_text[:1000] if "response" in locals() else "")
+        active_logger.error("AI did not return valid JSON.")
+        active_logger.error(
+            "AI raw output preview",
+            preview=response.output_text[:1000] if "response" in locals() else "",
+        )
         return None
 
     except Exception as e:
-        print(f"Error: {e}")
+        active_logger.exception("AI summary request failed.", e)
         return None
 
 

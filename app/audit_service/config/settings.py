@@ -6,6 +6,9 @@ class AppConfig:
     client_name: str
     domain_url: str
     max_urls: int
+    audit_id: str | None = None
+    output_dir: str | None = None
+    log_path: str | None = None
 
 def build_config() -> AppConfig:
     """
@@ -23,11 +26,39 @@ def build_config() -> AppConfig:
         required=True,
         help="Root domain URL used to discover sitemaps (e.g. https://example.com)",
     )
+    parser.add_argument(
+        "--max-urls",
+        required=False,
+        type=int,
+        default=5,
+        help="Maximum number of URLs to audit",
+    )
+    parser.add_argument(
+        "--audit-id",
+        required=False,
+        default=None,
+        help="Audit ID for correlating logs",
+    )
+    parser.add_argument(
+        "--output-dir",
+        required=False,
+        default=None,
+        help="Override output directory for audit artifacts",
+    )
+    parser.add_argument(
+        "--log-path",
+        required=False,
+        default=None,
+        help="Write structured audit logs to this path",
+    )
 
     args = parser.parse_args()
 
     return AppConfig(
         client_name=args.client_name,
         domain_url=args.domain_url,
-        max_urls=5,
+        max_urls=args.max_urls,
+        audit_id=args.audit_id,
+        output_dir=args.output_dir,
+        log_path=args.log_path,
     )
