@@ -50,7 +50,7 @@ def run_audit_task(audit_id: str):
 
     db = SessionLocal()
     timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
-    log_path = f"audit_results/audit_{audit_id}_{timestamp}/audit_log.jsonl"
+    log_path = f"logs/audit_{audit_id}_{timestamp}/audit_log.jsonl"
     logger = build_audit_logger(audit_id, log_path)
 
     _safe_update_status(db, audit_id, AuditStatus.PROCESSING, logger)
