@@ -8,3 +8,9 @@ node_modules/
 
 # AI files
 AGENTS.md
+
+# audits
+audit_results/
+
+# database
+storage/

@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 # This creates a file named 'valvanta_audits.db' in your project folder
-SQLALCHEMY_DATABASE_URL = "sqlite:///./valvanta_audits.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./storage/valvanta_audits.db"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
