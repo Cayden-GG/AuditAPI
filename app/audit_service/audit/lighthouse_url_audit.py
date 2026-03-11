@@ -68,6 +68,10 @@ def run_lighthouse_json(url: str, platform: str, ) -> Dict[str, Any]:
             "--output=json",
             "--output-path=stdout",
             "--quiet",
+            "--headless",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--disable-dev-shm-usage"
             f"--chrome-path={opts.chrome_path}",
             f"--chrome-flags={opts.chrome_flags}",
             f"--max-wait-for-load={opts.max_wait_for_load_ms}",
@@ -78,6 +82,10 @@ def run_lighthouse_json(url: str, platform: str, ) -> Dict[str, Any]:
         cmd = [
             "lighthouse",
             url,
+            "--headless",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--disable-dev-shm-usage",
             f"--only-categories={opts.only_categories}",
             f"--throttling-method={opts.throttling_method}",
             f"--form-factor={opts.form_factor}",

@@ -4,7 +4,6 @@ from typing import Generator, Optional
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# This creates a file named 'valvanta_audits.db' in your project folder
 SQLALCHEMY_DATABASE_URL = "sqlite:///./storage/valvanta_audits.db"
 
 engine = create_engine(
