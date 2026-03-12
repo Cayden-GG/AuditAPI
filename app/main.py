@@ -25,6 +25,8 @@ from .emails.brevo_email import (
 )
 from .logging_utils import build_audit_logger
 from .gcs.uploader import upload_files
+from .cleanup import run_full_cleanup
+
 app = FastAPI(title="Valvanta Site Audit")
 
 @app.on_event("startup")
@@ -111,22 +113,26 @@ def run_audit_task(audit_id: str):
         else:
             logger.warning("No report paths resolved; emails will send without attachments.")
 
-        gcs_bucket = os.getenv("GCS_BUCKET_NAME")
+        # Upload reports to GCS
+        gcs_bucket = os.getenv("GCS_BUCKET_NAME", "")
         gcs_creds = os.getenv("GCS_SERVICE_ACCOUNT_JSON", "")
         gcs_objects = {}
         if gcs_creds:
-            output_dir_path = Path(output_dir)
-            file_paths = list(output_dir_path.glob("*.pdf")) + list(output_dir_path.glob("*.json"))
-            log_file = Path(log_path)
-            if log_file.exists():
-                file_paths.append(log_file)
-            gcs_objects = upload_files(
-                file_paths=file_paths,
-                bucket_name=gcs_bucket,
-                prefix=f"audits/{audit_id}",
-                credentials_path=gcs_creds,
-                logger=logger,
-            )
+            try: 
+                output_dir_path = Path(output_dir)
+                file_paths = list(output_dir_path.glob("*.pdf")) + list(output_dir_path.glob("*.json"))
+                log_file = Path(log_path)
+                if log_file.exists():
+                    file_paths.append(log_file)
+                gcs_objects = upload_files(
+                    file_paths=file_paths,
+                    bucket_name=gcs_bucket,
+                    prefix=f"audits/{audit_id}",
+                    credentials_path=gcs_creds,
+                    logger=logger,
+                )
+            except Exception as exc:
+                logger.exception("Failed to upload reports to CGS.", exc)
         else:
             logger.warning("GCS credentials not configured; skipping upload.")
 
@@ -186,14 +192,11 @@ def run_audit_task(audit_id: str):
             except Exception as exc:
                 logger.exception("Company email failed.", exc, to_email=company_email)
 
-        # Upload 3 PDFs to GCS
-        try:
-            logger.warning("GCS upload not implemented; skipping.")
-        except Exception as exc:
-            logger.exception("GCS upload placeholder failed.", exc)
-
         # Delete local reports 
-        logger.warning("Report cleanup not implemented; leaving local artifacts.")
+        try: 
+            run_full_cleanup()
+        except Exception as exc:
+            logger.exception("Service files clean up failed.", exc)
 
         _safe_update_status(db, audit_id, AuditStatus.COMPLETED, logger, completed_at=datetime.utcnow())
     except Exception as e:
@@ -219,10 +222,29 @@ def _extract_report_paths(stdout: str):
             return ordered
     return []
 
+
+def validateDomain(db, domain):
+    from .database import validate_domain_audit
+
+    # is audited
+    if (validate_domain_audit(db, domain=domain)): 
+        return True
+    else:
+        # else if not audited 
+        return False
+
+
 @app.post("/api/v1/audit", response_model=AuditResponse, status_code=202)
 async def start_website_audit(
     payload: AuditCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
 ):
+    # if validateDomain(db, payload.url):
+    #     return AuditResponse(
+    #         job_id=None,
+    #         status="Denied",
+    #         message="This domain has already been audited."
+    #     )
+
     # Create a unique record for this job
     new_audit = create_audit(
         db,
@@ -248,3 +270,4 @@ async def get_audit_status(job_id: str, db: Session = Depends(get_db)):
     if not record:
         raise HTTPException(status_code=404, detail="Audit job not found")
     return record
+

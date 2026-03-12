@@ -45,7 +45,7 @@ class AuditCreate(BaseModel):
 
 
 class AuditResponse(BaseModel):
-    job_id: str
+    job_id: Optional[str] = None 
     status: str
     message: str
 
