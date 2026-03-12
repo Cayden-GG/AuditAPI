@@ -13,11 +13,19 @@ from .database import (
     create_audit,
     get_audit,
     get_db,
+    get_latest_audit_by_target_url,
     init_db,
     update_audit_status,
     update_audit_report_objects,
 )
-from .models import AuditCreate, AuditRecord, AuditResponse, AuditStatus
+from .models import (
+    AuditCreate,
+    AuditRecord,
+    AuditResendRequest,
+    AuditResendResponse,
+    AuditResponse,
+    AuditStatus,
+)
 from .emails.brevo_email import (
     collect_report_paths,
     find_latest_report_dir,
@@ -28,7 +36,7 @@ from .emails.brevo_email import (
     build_company_audit_failed_email,
 )
 from .logging_utils import build_audit_logger
-from .gcs.uploader import upload_files
+from .gcs.uploader import download_objects, upload_files
 from .cleanup import run_full_cleanup
 
 app = FastAPI(title="Valvanta Site Audit")
@@ -338,3 +346,108 @@ async def get_audit_status(job_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Audit job not found")
     return record
 
+
+@app.post("/api/v1/audit/resend", response_model=AuditResendResponse)
+async def resend_audit_email(
+    payload: AuditResendRequest, db: Session = Depends(get_db)
+):
+    if not payload.job_id and not payload.target_url:
+        raise HTTPException(status_code=400, detail="Provide job_id or target_url.")
+
+    audit = None
+    if payload.job_id:
+        audit = get_audit(db, payload.job_id)
+    if not audit and payload.target_url:
+        audit = get_latest_audit_by_target_url(db, str(payload.target_url))
+
+    if not audit:
+        raise HTTPException(status_code=404, detail="Audit record not found.")
+
+    if audit.status != AuditStatus.COMPLETED:
+        raise HTTPException(status_code=409, detail="Audit is not completed.")
+
+    object_names = [
+        audit.perf_report_object,
+        audit.seo_report_object,
+        audit.key_findings_object,
+    ]
+    object_names = [name for name in object_names if name]
+    if not object_names:
+        raise HTTPException(status_code=409, detail="No report objects stored for this audit.")
+
+    gcs_bucket = os.getenv("GCS_BUCKET_NAME", "")
+    gcs_creds = os.getenv("GCS_SERVICE_ACCOUNT_JSON", "")
+    if not gcs_bucket or not gcs_creds:
+        raise HTTPException(status_code=500, detail="GCS configuration is missing.")
+
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    output_dir = Path("audit_results") / f"resend_{audit.id}_{timestamp}"
+    log_path = f"logs/resend_{audit.id}_{timestamp}/resend_log.jsonl"
+    logger = build_audit_logger(audit.id, log_path)
+    logger.info(
+        "Resend requested.",
+        audit_id=audit.id,
+        target_url=audit.target_url,
+        requested_to_email=payload.to_email,
+        object_count=len(object_names),
+    )
+    downloads = download_objects(
+        object_names=object_names,
+        bucket_name=gcs_bucket,
+        credentials_path=gcs_creds,
+        output_dir=output_dir,
+        logger=logger,
+    )
+    if not downloads:
+        logger.warning("No reports downloaded from GCS.", object_names=object_names)
+        raise HTTPException(status_code=500, detail="Failed to download reports from GCS.")
+
+    report_paths = []
+    for name in object_names:
+        local_path = downloads.get(name)
+        if local_path:
+            report_paths.append(Path(local_path))
+
+    ai_payload = None
+    if audit.ai_json_object:
+        ai_downloads = download_objects(
+            object_names=[audit.ai_json_object],
+            bucket_name=gcs_bucket,
+            credentials_path=gcs_creds,
+            output_dir=output_dir,
+            logger=logger,
+        )
+        ai_path = ai_downloads.get(audit.ai_json_object)
+        if ai_path:
+            try:
+                with open(ai_path, "r", encoding="utf-8") as handle:
+                    ai_payload = json.load(handle)
+            except Exception:
+                logger.warning("Failed to parse AI summary JSON.", path=ai_path)
+                ai_payload = None
+
+    subject, html_content = build_client_audit_results_email(
+        audit.client_name, audit.target_url, ai_payload
+    )
+    to_email = payload.to_email or audit.client_email
+    try:
+        send_audit_email(
+            to_email=to_email,
+            client_name=audit.client_name,
+            target_url=audit.target_url,
+            report_paths=report_paths,
+            subject=subject,
+            html_content=html_content,
+        )
+        logger.info("Resend email sent.", to_email=to_email, report_count=len(report_paths))
+    except Exception as exc:
+        logger.exception("Resend email failed.", exc, to_email=to_email)
+        raise HTTPException(status_code=500, detail="Failed to resend audit email.")
+
+    return AuditResendResponse(
+        status="sent",
+        message="Audit email resent.",
+        job_id=audit.id,
+        target_url=audit.target_url,
+        resent_to=to_email,
+    )

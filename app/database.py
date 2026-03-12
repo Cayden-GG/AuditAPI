@@ -69,6 +69,20 @@ def get_audit(db, audit_id: str):
     return db.query(AuditTable).filter(AuditTable.id == audit_id).first()
 
 
+def get_latest_audit_by_target_url(db, target_url: str):
+    from .models import AuditStatus, AuditTable
+
+    return (
+        db.query(AuditTable)
+        .filter(
+            AuditTable.target_url == target_url,
+            AuditTable.status == AuditStatus.COMPLETED,
+        )
+        .order_by(AuditTable.completed_at.desc(), AuditTable.created_at.desc())
+        .first()
+    )
+
+
 def update_audit_status(db, audit_id: str, status, completed_at: Optional[datetime] = None):
     audit = get_audit(db, audit_id)
     if not audit:

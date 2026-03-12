@@ -50,6 +50,20 @@ class AuditResponse(BaseModel):
     message: str
 
 
+class AuditResendRequest(BaseModel):
+    job_id: Optional[str] = None
+    target_url: Optional[HttpUrl] = None
+    to_email: Optional[EmailStr] = None
+
+
+class AuditResendResponse(BaseModel):
+    status: str
+    message: str
+    job_id: Optional[str] = None
+    target_url: Optional[str] = None
+    resent_to: Optional[EmailStr] = None
+
+
 class AuditRecord(BaseModel):
     id: str
     target_url: str

@@ -14,7 +14,6 @@ def clean_up_service_files():
         if not target_dir.exists():
             continue
             
-        # Instead of 'rm -rf *', we empty the directory contents
         for item in target_dir.iterdir():
             try:
                 if item.is_file() or item.is_symlink():
@@ -29,8 +28,7 @@ def clean_up_service_files():
 def clean_up_system_files():
     """Cleans up the massive Lighthouse/Chrome temp files and vacuums logs."""
     
-    # 1. Clear Lighthouse Temp folders (The 33GB preventer)
-    # This specifically targets the folders Chrome creates in /tmp
+    # Targets the folders Chrome creates in /tmp
     temp_path = Path("/tmp")
     for folder in temp_path.glob("lighthouse.*"):
         try:
@@ -38,13 +36,11 @@ def clean_up_system_files():
         except Exception:
             pass # Usually means the file is still in use
 
-    # 2. Vacuum System Logs (Keep only the last 2 days)
-    # This prevents your disk from slowly filling with journald logs
-    subprocess.run(["sudo", "journalctl", "--vacuum-time=2d"], capture_output=True)
+    # Delete System Logs (Keep only the last 1 days)
+    subprocess.run(["sudo", "journalctl", "--vacuum-time=1d"], capture_output=True)
 
     print("System files: /tmp/lighthouse.* cleared and logs vacuumed.")
 
-# --- Trigger both ---
 def run_full_cleanup():
     clean_up_service_files()
     clean_up_system_files()

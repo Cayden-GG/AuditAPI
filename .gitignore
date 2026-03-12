@@ -1,4 +1,5 @@
 __pycache__/
+.pytest_cache/
 
 # packages
 venv/
@@ -20,9 +21,6 @@ audit_results/
 *.pdf
 *.json
 *.jsonl
-
-# tests
-tests/
 
 # database
 *.db

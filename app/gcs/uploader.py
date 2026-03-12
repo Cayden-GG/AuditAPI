@@ -57,3 +57,55 @@ def upload_files(
             active_logger.exception("GCS upload failed.", exc, file=str(path), object_name=object_name)
 
     return uploaded
+
+
+def download_objects(
+    *,
+    object_names: Iterable[str],
+    bucket_name: str,
+    credentials_path: str,
+    output_dir: Path,
+    logger: AuditLogger | NullAuditLogger | None = None,
+) -> Dict[str, str]:
+    active_logger = logger or NullAuditLogger()
+    try:
+        from google.cloud import storage  # type: ignore
+    except Exception as exc:
+        active_logger.exception("GCS client import failed.", exc)
+        return {}
+
+    if not credentials_path:
+        active_logger.warning("GCS credentials path not provided; skipping download.")
+        return {}
+
+    if not bucket_name:
+        active_logger.warning("GCS bucket name not provided; skipping download.")
+        return {}
+
+    cred_path = Path(credentials_path)
+    if not cred_path.exists():
+        active_logger.warning("GCS credentials file missing; skipping download.", credentials_path=str(cred_path))
+        return {}
+
+    try:
+        client = storage.Client.from_service_account_json(str(cred_path))
+        bucket = client.bucket(bucket_name)
+    except Exception as exc:
+        active_logger.exception("Failed to initialize GCS client.", exc)
+        return {}
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    downloaded: Dict[str, str] = {}
+    for object_name in object_names:
+        if not object_name:
+            continue
+        try:
+            blob = bucket.blob(object_name)
+            local_path = output_dir / Path(object_name).name
+            blob.download_to_filename(str(local_path))
+            downloaded[object_name] = str(local_path)
+            active_logger.info("GCS download complete.", object_name=object_name, file=str(local_path))
+        except Exception as exc:
+            active_logger.exception("GCS download failed.", exc, object_name=object_name)
+
+    return downloaded
