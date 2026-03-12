@@ -95,4 +95,7 @@ def update_audit_report_objects(db, audit_id: str, **fields):
 def validate_domain_audit(db, domain: str):
     from .models import AuditTable
 
-    return db.query(AuditTable).filter(AuditTable.target_url == str(domain)).first()
+    return db.query(AuditTable).filter(
+        AuditTable.target_url == str(domain),
+        AuditTable.status == "completed"
+    ).first()

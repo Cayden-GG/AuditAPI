@@ -4,8 +4,7 @@ import subprocess
 from pathlib import Path
 
 # Paths
-# BASE_DIR = Path("/var/www/valvanta-audit")
-BASE_DIR = Path("/home/caydeng/Desktop/Code/Valvanta/AuditAPI")
+BASE_DIR = Path("/var/www/valvanta-audit")
 RESULTS_DIR = BASE_DIR / "audit_results"
 LOGS_DIR = BASE_DIR / "logs"
 

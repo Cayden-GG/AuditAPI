@@ -2,11 +2,21 @@ import base64
 import json
 import os
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Tuple
 from urllib import error, request
 from dotenv import load_dotenv
 
 load_dotenv()
+
+from .templates.client_emails import (
+    client_audit_failed,
+    client_audit_results,
+    client_confirmation,
+)
+from .templates.company_emails import (
+    company_audit_completion,
+    company_audit_failed,
+)
 
 BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 REPORT_PREFIXES = ("Performance_PDF", "SEO_PDF", "Key_Findings")
@@ -125,3 +135,59 @@ def send_audit_email(
     except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"Brevo email failed: {detail}") from exc
+
+
+def build_client_confirmation_email(
+    client_name: Optional[str], target_url: str
+) -> Tuple[str, str]:
+    return client_confirmation(client_name, target_url)
+
+
+def build_client_audit_results_email(
+    client_name: Optional[str], target_url: str, audit_results: Optional[dict]
+) -> Tuple[str, str]:
+    return client_audit_results(client_name, target_url, audit_results)
+
+
+def build_client_audit_failed_email(
+    client_name: Optional[str], target_url: str, error_message: Optional[str]
+) -> Tuple[str, str]:
+    return client_audit_failed(client_name, target_url, error_message)
+
+
+def build_company_audit_completion_email(
+    *,
+    client_name: Optional[str] = None,
+    client_email: Optional[str] = None,
+    target_url: Optional[str] = None,
+    audit_id: Optional[str] = None,
+    gcs_bucket: Optional[str] = None,
+    gcs_objects: Optional[Iterable[str]] = None,
+    report_paths: Optional[Iterable[str]] = None,
+) -> Tuple[str, str]:
+    return company_audit_completion(
+        client_name=client_name,
+        client_email=client_email,
+        target_url=target_url,
+        audit_id=audit_id,
+        gcs_bucket=gcs_bucket,
+        gcs_objects=gcs_objects,
+        report_paths=report_paths,
+    )
+
+
+def build_company_audit_failed_email(
+    *,
+    client_name: Optional[str] = None,
+    client_email: Optional[str] = None,
+    target_url: Optional[str] = None,
+    audit_id: Optional[str] = None,
+    error_message: Optional[str] = None,
+) -> Tuple[str, str]:
+    return company_audit_failed(
+        client_name=client_name,
+        client_email=client_email,
+        target_url=target_url,
+        audit_id=audit_id,
+        error_message=error_message,
+    )

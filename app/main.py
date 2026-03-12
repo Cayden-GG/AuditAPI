@@ -22,6 +22,10 @@ from .emails.brevo_email import (
     collect_report_paths,
     find_latest_report_dir,
     send_audit_email,
+    build_client_audit_failed_email,
+    build_client_audit_results_email,
+    build_company_audit_completion_email,
+    build_company_audit_failed_email,
 )
 from .logging_utils import build_audit_logger
 from .gcs.uploader import upload_files
@@ -54,6 +58,54 @@ def run_audit_task(audit_id: str):
     timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
     log_path = f"logs/audit_{audit_id}_{timestamp}/audit_log.jsonl"
     logger = build_audit_logger(audit_id, log_path)
+    failure_notified = False
+
+    def _send_failure_emails(audit_record: AuditRecord, error_message: str) -> None:
+        nonlocal failure_notified
+        if failure_notified:
+            return
+        subject, html_content = build_client_audit_failed_email(
+            audit_record.client_name,
+            audit_record.target_url,
+            error_message,
+        )
+        try:
+            send_audit_email(
+                to_email=audit_record.client_email,
+                client_name=audit_record.client_name,
+                target_url=audit_record.target_url,
+                report_paths=[],
+                subject=subject,
+                html_content=html_content,
+            )
+            logger.info("Client failure email sent.", to_email=audit_record.client_email)
+        except Exception as exc:
+            logger.exception("Client failure email failed.", exc, to_email=audit_record.client_email)
+
+        company_email = os.getenv("BREVO_COMPANY_EMAIL")
+        if company_email:
+            subject, html_content = build_company_audit_failed_email(
+                client_name=audit_record.client_name,
+                client_email=audit_record.client_email,
+                target_url=audit_record.target_url,
+                audit_id=audit_record.id,
+                error_message=error_message,
+            )
+            try:
+                send_audit_email(
+                    to_email=company_email,
+                    client_name="Valvanta Digital",
+                    target_url=audit_record.target_url,
+                    report_paths=[],
+                    subject=subject,
+                    html_content=html_content,
+                )
+                logger.info("Company failure email sent.", to_email=company_email)
+            except Exception as exc:
+                logger.exception("Company failure email failed.", exc, to_email=company_email)
+        else:
+            logger.warning("BREVO_COMPANY_EMAIL is not set; skipping company failure email.")
+        failure_notified = True
 
     _safe_update_status(db, audit_id, AuditStatus.PROCESSING, logger)
     try:
@@ -95,6 +147,7 @@ def run_audit_task(audit_id: str):
                 stderr=exc.stderr[-4000:] if exc.stderr else "",
             )
             _safe_update_status(db, audit_id, AuditStatus.FAILED, logger)
+            _send_failure_emails(audit, exc.stderr or exc.stdout or "Audit subprocess failed.")
             return
 
         logger.info("Audit complete, starting emails")
@@ -161,11 +214,18 @@ def run_audit_task(audit_id: str):
 
         # Send user and company emails
         try:
+            subject, html_content = build_client_audit_results_email(
+                audit.client_name,
+                audit.target_url,
+                None,
+            )
             send_audit_email(
                 to_email=audit.client_email,
                 client_name=audit.client_name,
                 target_url=audit.target_url,
                 report_paths=report_paths,
+                subject=subject,
+                html_content=html_content,
             )
             logger.info("Client email sent.", to_email=audit.client_email)
         except Exception as exc:
@@ -176,17 +236,22 @@ def run_audit_task(audit_id: str):
             logger.warning("BREVO_COMPANY_EMAIL is not set; skipping company email.")
         else:
             try:
+                subject, html_content = build_company_audit_completion_email(
+                    client_name=audit.client_name,
+                    client_email=audit.client_email,
+                    target_url=audit.target_url,
+                    audit_id=audit.id,
+                    gcs_bucket=gcs_bucket or None,
+                    gcs_objects=list(gcs_objects.values()) if gcs_objects else None,
+                    report_paths=[str(path) for path in report_paths] if report_paths else None,
+                )
                 send_audit_email(
                     to_email=company_email,
                     client_name="Valvanta Digital",
                     target_url=audit.target_url,
                     report_paths=report_paths,
-                    subject=f"Audit delivered for {audit.client_name or audit.target_url}",
-                    html_content=(
-                        "<p>An audit has been completed and sent to the client.</p>"
-                        f"<p>Client: {audit.client_name or audit.client_email}</p>"
-                        f"<p>Target URL: {audit.target_url}</p>"
-                    ),
+                    subject=subject,
+                    html_content=html_content,
                 )
                 logger.info("Company email sent.", to_email=company_email)
             except Exception as exc:
@@ -201,6 +266,8 @@ def run_audit_task(audit_id: str):
         _safe_update_status(db, audit_id, AuditStatus.COMPLETED, logger, completed_at=datetime.utcnow())
     except Exception as e:
         _safe_update_status(db, audit_id, AuditStatus.FAILED, logger)
+        if "audit" in locals() and audit:
+            _send_failure_emails(audit, str(e))
         logger.exception("Audit task failed.", e)
     finally:
         db.close()

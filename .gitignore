@@ -21,6 +21,9 @@ audit_results/
 *.json
 *.jsonl
 
+# tests
+tests/
+
 # database
 *.db
 *.sqllite3
