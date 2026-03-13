@@ -79,6 +79,22 @@ def test_resend_email_by_job_id(monkeypatch, tmp_path: Path):
 
     monkeypatch.setattr("app.main.download_objects", fake_download_objects)
     monkeypatch.setattr("app.main.send_audit_email", fake_send_audit_email)
+    upload_calls = {}
+
+    def fake_upload_files(*, file_paths, bucket_name, prefix, credentials_path, logger=None):
+        upload_calls["file_paths"] = list(file_paths)
+        upload_calls["bucket_name"] = bucket_name
+        upload_calls["prefix"] = prefix
+        upload_calls["credentials_path"] = credentials_path
+        return {str(path): f"{prefix}/{path.name}".strip("/") for path in file_paths}
+
+    cleanup_calls = {"count": 0}
+
+    def fake_run_full_cleanup():
+        cleanup_calls["count"] += 1
+
+    monkeypatch.setattr("app.main.upload_files", fake_upload_files)
+    monkeypatch.setattr("app.main.run_full_cleanup", fake_run_full_cleanup)
 
     client = TestClient(app)
     response = client.post(
@@ -92,4 +108,9 @@ def test_resend_email_by_job_id(monkeypatch, tmp_path: Path):
     assert sent["to_email"] == "alt@example.com"
     assert sent["report_count"] == 3
     assert "audit" in (sent["subject"] or "").lower()
-
+    assert upload_calls["bucket_name"] == "test-bucket"
+    assert upload_calls["prefix"] == "audits/audit-123"
+    assert upload_calls["credentials_path"] == str(tmp_path / "creds.json")
+    assert len(upload_calls["file_paths"]) == 1
+    assert upload_calls["file_paths"][0].name == "resend_log.jsonl"
+    assert cleanup_calls["count"] == 1

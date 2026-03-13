@@ -313,6 +313,7 @@ def validateDomain(db, domain):
 async def start_website_audit(
     payload: AuditCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
 ):
+    # validate target url
     # if validateDomain(db, payload.url):
     #     return AuditResponse(
     #         job_id=None,
@@ -329,7 +330,6 @@ async def start_website_audit(
     )
     
     # Hand off to worker (Non-blocking)
-    
     background_tasks.add_task(run_audit_task, new_audit.id)
     
     # Return immediate ticket to React
@@ -443,6 +443,36 @@ async def resend_audit_email(
     except Exception as exc:
         logger.exception("Resend email failed.", exc, to_email=to_email)
         raise HTTPException(status_code=500, detail="Failed to resend audit email.")
+
+    gcs_prefix = ""
+    if object_names:
+        parent_dirs = {str(Path(name).parent) for name in object_names if name}
+        if len(parent_dirs) == 1:
+            gcs_prefix = parent_dirs.pop()
+        else:
+            gcs_prefix = str(Path(object_names[0]).parent)
+            logger.warning(
+                "Report objects use different prefixes; using first.",
+                prefixes=sorted(parent_dirs),
+                chosen_prefix=gcs_prefix,
+            )
+        if gcs_prefix == ".":
+            gcs_prefix = ""
+
+    uploaded_logs = upload_files(
+        file_paths=[Path(log_path)],
+        bucket_name=gcs_bucket,
+        prefix=gcs_prefix,
+        credentials_path=gcs_creds,
+        logger=logger,
+    )
+    if not uploaded_logs:
+        logger.warning("Resend log upload failed or skipped.", log_path=log_path, prefix=gcs_prefix)
+
+    try:
+        run_full_cleanup()
+    except Exception as exc:
+        logger.exception("Service files clean up failed.", exc)
 
     return AuditResendResponse(
         status="sent",
