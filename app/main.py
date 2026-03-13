@@ -251,13 +251,13 @@ def run_audit_task(audit_id: str):
                     audit_id=audit.id,
                     gcs_bucket=gcs_bucket or None,
                     gcs_objects=list(gcs_objects.values()) if gcs_objects else None,
-                    report_paths=[str(path) for path in report_paths] if report_paths else None,
+                    # report_paths=[str(path) for path in report_paths] if report_paths else None,
                 )
                 send_audit_email(
                     to_email=company_email,
                     client_name="Valvanta Digital",
                     target_url=audit.target_url,
-                    report_paths=report_paths,
+                    # report_paths=report_paths,
                     subject=subject,
                     html_content=html_content,
                 )

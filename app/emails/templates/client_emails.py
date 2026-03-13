@@ -135,6 +135,9 @@ def client_audit_results(client_name: Optional[str], target_url: str, audit_resu
     <p>{summary_line}</p>
     {findings_html}
     <p>If you would like a walkthrough or help prioritising fixes, reply to this email and we can schedule a call.</p>
+    <p style="margin: 18px 0 24px 0;">
+      <a href="https://calendly.com/valvantadigital/30min" target="_blank" rel="noopener noreferrer" style="background: #2d3748; color: #ffffff; text-decoration: none; padding: 12px 22px; border-radius: 6px; font-weight: 600; display: inline-block;">Book Now</a>
+    </p>
     <p style="margin-bottom: 0;">Thank you,<br><strong>The Valvanta Digital Team</strong></p>
     """
     html_content = _email_shell("Your audit is complete", f"Audit ready for {safe_url}.", content_html)

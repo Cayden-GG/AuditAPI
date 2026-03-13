@@ -15,8 +15,7 @@ def _email_shell(title: str, preheader: str, content_html: str) -> str:
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #2d3748; max-width: 700px; margin: 0 auto; padding: 20px; background: #f7fafc;">
   <span style="display:none; visibility:hidden; opacity:0; height:0; width:0;">{preheader}</span>
   <div style="background: linear-gradient(135deg, #1f2933 0%, #3e4c59 100%); padding: 22px; text-align: center; border-radius: 10px 10px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 20px;">Valvanta Internal</h1>
-    <p style="color: #9fb3c8; margin: 8px 0 0 0; font-size: 13px;">Audit pipeline notification</p>
+    <h1 style="color: white; margin: 0; font-size: 20px;">Valvanta Audit Notification</h1>
   </div>
   <div style="background: #ffffff; padding: 26px; border: 1px solid #e2e8f0; border-top: none;">
     <h2 style="color: #2d3748; margin-top: 0; font-size: 19px;">{title}</h2>
@@ -44,7 +43,7 @@ def company_audit_completion(
     audit_id: Optional[str] = None,
     gcs_bucket: Optional[str] = None,
     gcs_objects: Optional[Iterable[str]] = None,
-    report_paths: Optional[Iterable[str]] = None,
+    # report_paths: Optional[Iterable[str]] = None,
 ) -> Tuple[str, str]:
     subject = f"Audit delivered for {client_name or target_url or 'client'}"
     summary_bits = []
@@ -66,12 +65,12 @@ def company_audit_completion(
     if gcs_bucket:
         bucket_line = f"<p><strong>Bucket:</strong> {html.escape(gcs_bucket)}</p>"
 
-    report_list = ""
-    if report_paths:
-        report_list = f"""
-        <p><strong>Local report paths:</strong></p>
-        {_render_list(list(report_paths))}
-        """
+    # report_list = ""
+    # if report_paths:
+    #     report_list = f"""
+    #     <p><strong>Local report paths:</strong></p>
+    #     {_render_list(list(report_paths))}
+    #     """
 
     content_html = f"""
     <p>An audit has completed and the client email was sent.</p>
@@ -79,8 +78,6 @@ def company_audit_completion(
     {bucket_line}
     {gcs_intro}
     {gcs_list}
-    {report_list}
-    <p style="margin-bottom: 0;">Check GCS to confirm the PDFs and JSON are available for handoff.</p>
     """
     html_content = _email_shell("Audit completed", "Audit delivered and files uploaded.", content_html)
     return subject, html_content

@@ -85,7 +85,7 @@ def send_audit_email(
     to_email: str,
     client_name: Optional[str],
     target_url: str,
-    report_paths: Iterable[Path],
+    report_paths: Optional[Iterable[Path]] = None,
     subject: Optional[str] = None,
     html_content: Optional[str] = None,
 ) -> None:
@@ -116,8 +116,9 @@ def send_audit_email(
         "to": [{"email": to_email, "name": recipient_name}],
         "subject": subject,
         "htmlContent": html_content,
-        "attachment": _build_attachments(report_paths),
     }
+    if report_paths:
+        payload["attachment"] = _build_attachments(report_paths)
 
     req = request.Request(
         BREVO_API_URL,
@@ -163,7 +164,7 @@ def build_company_audit_completion_email(
     audit_id: Optional[str] = None,
     gcs_bucket: Optional[str] = None,
     gcs_objects: Optional[Iterable[str]] = None,
-    report_paths: Optional[Iterable[str]] = None,
+    # report_paths: Optional[Iterable[str]] = None,
 ) -> Tuple[str, str]:
     return company_audit_completion(
         client_name=client_name,
@@ -172,7 +173,7 @@ def build_company_audit_completion_email(
         audit_id=audit_id,
         gcs_bucket=gcs_bucket,
         gcs_objects=gcs_objects,
-        report_paths=report_paths,
+        # report_paths=report_paths,
     )
 
 
