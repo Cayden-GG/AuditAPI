@@ -1,9 +1,8 @@
 from typing import Dict
 
-from reportlab.platypus import Paragraph, Spacer, PageBreak, Table
-from reportlab.lib.units import mm
+from reportlab.platypus import Paragraph, Spacer, Table
 
-from ..styles import get_styles
+from ..styles import CONTENT_W, SectionRule, get_styles
 from ..helpers import benchmarks_metric, bar_chart, fmt_bytes, fmt_ms, fmt_num, ms_to_s, pie_chart, style_table
 
 def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = None): 
@@ -26,7 +25,8 @@ def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = No
     story = []
     
     label = f" ({section_label})" if section_label else ""
-    story.append(Paragraph(f"Site Averages - Detailed Breakdown{label}", styles["H1"]))
+    story.append(SectionRule(f"Site Averages - Detailed Breakdown{label}"))
+    story.append(Spacer(1, 10))
     story.append(Paragraph("Good targets: FCP <= 1.8s, LCP <= 2.5s, Speed Index <= 3.4s, TBT <= 200ms, Server latency <= 200ms.", styles["Small"]))
     story.append(Paragraph("Benchmarks: <b>Top 10% (p10)</b> is the best-performing 10% of tested pages for each metric.", styles["Small"]))
     story.append(Spacer(1, 6))
@@ -39,7 +39,7 @@ def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = No
         ["Speed Index", "How quickly the page looks complete.", "≤ 3.4 s"],
         ["TBT", "Total main-thread blocking time.", "≤ 200 ms"],
         ["Server latency", "Backend responsiveness during load.", "≤ 200 ms"],
-    ], colWidths=[28 * mm, 92 * mm, 40 * mm])))
+    ], colWidths=[CONTENT_W * 0.38, CONTENT_W * 0.42, CONTENT_W * 0.20])))
     story.append(Spacer(1, 10))
 
     story.append(Paragraph("Breakdown charts", styles["H2"]))
@@ -70,7 +70,7 @@ def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = No
         ["LCP", fmt_ms(bench["LCP"]["p10"], "s", 2), fmt_ms(wp.get("largest_contentful_paint", {}).get("average_value"), "s", 2), fmt_ms(bench["LCP"]["p90"], "s", 2)],
         ["Speed Index", fmt_ms(bench["Speed Index"]["p10"], "s", 2), fmt_ms(wp.get("speed_index", {}).get("average_value"), "s", 2), fmt_ms(bench["Speed Index"]["p90"], "s", 2)],
         ["Total Blocking Time", fmt_ms(bench["TBT"]["p10"], "ms", 0), fmt_ms(wp.get("total_blocking_time", {}).get("average_value"), "ms", 0), fmt_ms(bench["TBT"]["p90"], "ms", 0)],
-    ], colWidths=[50 * mm, 38 * mm, 38 * mm, 38 * mm])))
+    ], colWidths=[CONTENT_W * 0.38, CONTENT_W * 0.20, CONTENT_W * 0.21, CONTENT_W * 0.21])))
     story.append(Spacer(1, 8))
 
     story.append(Paragraph("Main thread work breakdown", styles["H2"]))
@@ -82,7 +82,7 @@ def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = No
     for it in mt_items[:10]:
         mt_rows.append([it.get("group", "n/a"), fmt_ms(it.get("average_mainthread_item_duration"), "ms", 0)])
    
-    story.append(style_table(Table(mt_rows, colWidths=[120 * mm, 45 * mm])))
+    story.append(style_table(Table(mt_rows, colWidths=[CONTENT_W * 0.72, CONTENT_W * 0.28])))
     story.append(Spacer(1, 8))
 
     story.append(Paragraph("Diagnostic metrics", styles["H2"]))
@@ -93,7 +93,7 @@ def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = No
         ["Requests per page", fmt_num(diag.get("average_requests_count"), 1)],
         ["Tasks per page", fmt_num(diag.get("average_tasks_count"), 1)],
         ["Total byte weight", fmt_bytes(diag.get("average_total_byte_weight"))],
-    ], colWidths=[80 * mm, 85 * mm])))
+    ], colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])))
 
     story.append(Spacer(1, 8))
 
@@ -104,7 +104,7 @@ def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = No
         ["Metric", "Average"],
         ["200 responses (count)", fmt_num(net.get("average_code_200_request_count"), 1)],
         ["Non-200 responses (count)", fmt_num(net.get("average_non_code_200_request_count"), 1)],
-    ], colWidths=[80 * mm, 85 * mm])))
+    ], colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])))
 
     story.append(Spacer(1, 8))
 
@@ -118,7 +118,7 @@ def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = No
         ["Scripts", fmt_bytes(rs.get("average_script_transfer_size"))],
         ["Stylesheets", fmt_bytes(rs.get("average_stylesheet_transfer_size"))],
         ["Documents", fmt_bytes(rs.get("average_document_transfer_size"))],
-    ], colWidths=[80 * mm, 85 * mm])))
+    ], colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])))
 
     story.append(Spacer(1, 6))
     story.append(Paragraph("Average transfer composition", styles["Small"]))
@@ -138,8 +138,6 @@ def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = No
     story.append(style_table(Table([
         ["Metric", "Top 10% (p10)", "Average", "Worst 10% (p90)"],
         ["Server latency", fmt_ms(bench["Server latency"]["p10"], "ms", 0), fmt_ms(nsl.get("average_server_latency"), "ms", 0), fmt_ms(bench["Server latency"]["p90"], "ms", 0)],
-    ], colWidths=[50 * mm, 38 * mm, 38 * mm, 38 * mm])))
-
-    story.append(PageBreak())
+    ], colWidths=[CONTENT_W * 0.38, CONTENT_W * 0.20, CONTENT_W * 0.21, CONTENT_W * 0.21])))
 
     return story

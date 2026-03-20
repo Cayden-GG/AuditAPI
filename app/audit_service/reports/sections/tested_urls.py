@@ -1,10 +1,9 @@
 from typing import Any, Dict
 
-from reportlab.lib import colors
-from reportlab.platypus import Paragraph, Spacer, PageBreak, Table, TableStyle
-from reportlab.lib.units import mm
+from reportlab.platypus import Paragraph, Spacer, PageBreak, Table
 
-from ..styles import get_styles, MAX_URLS, LIGHT_BG
+from ..helpers import style_table
+from ..styles import CONTENT_W, SectionRule, get_styles
 
 def tested_urls_section(lh: Dict[Any], tested_urls): 
     """
@@ -22,28 +21,16 @@ def tested_urls_section(lh: Dict[Any], tested_urls):
     story = []
     
     story.append(PageBreak())
-    story.append(Paragraph("Tested URLs", styles["H1"]))
+    story.append(SectionRule("Tested URLs"))
+    story.append(Spacer(1, 10))
     story.append(Paragraph("All URLs included in this audit run.", styles["Body"]))
     story.append(Spacer(1, 6))
 
     url_rows = [["#", "URL"]]
     for i, u in enumerate(tested_urls, start=1):
-        url_rows.append([str(i), Paragraph(u, styles["URLCell"])])
-    url_tbl = Table(url_rows, colWidths=[10 * mm, 155 * mm], repeatRows=1)
-    url_tbl.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), LIGHT_BG),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, 0), 9),
-                ("FONTSIZE", (0, 1), (-1, -1), 7),
-                ("BOX", (0, 0), (-1, -1), 0.5, colors.lightgrey),
-                ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.lightgrey),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ]
-        )
-    )
-    story.append(url_tbl)
+        url_rows.append([str(i), Paragraph(u, styles["TableURL"])])
+    url_tbl = Table(url_rows, colWidths=[CONTENT_W * 0.08, CONTENT_W * 0.92], repeatRows=1)
+    story.append(style_table(url_tbl))
     story.append(PageBreak())
 
     return story

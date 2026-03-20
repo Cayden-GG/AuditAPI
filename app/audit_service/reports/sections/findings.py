@@ -3,7 +3,7 @@ from typing import Dict
 from reportlab.platypus import Paragraph, Spacer, PageBreak
 
 from .key_findings_table import key_findings_table
-from ..styles import get_styles
+from ..styles import SectionRule, get_styles
 
 def key_findings_section(ai: Dict):
     """
@@ -20,8 +20,8 @@ def key_findings_section(ai: Dict):
     styles = get_styles()
     story = []
 
-    story.append(Paragraph("Key Findings & Priorities", styles["H1"]))
-    story.append(Spacer(1, 8))
+    story.append(SectionRule("Key Findings & Priorities"))
+    story.append(Spacer(1, 10))
 
     method = ai.get("prioritisation_method") or "Priority is determined by business impact versus implementation effort."
     story.append(Paragraph(f"<b>Prioritisation method:</b> {method}", styles["Body"]))

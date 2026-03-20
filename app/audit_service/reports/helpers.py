@@ -1,4 +1,25 @@
-from .styles import *
+from .styles import (
+    ADVISORY,
+    BORDER,
+    CRITICAL,
+    HIGH,
+    INK,
+    LIGHT_BG,
+    MODERATE,
+    NA,
+    PASS,
+    PURPLE,
+    PURPLE_DARK,
+    ROW_ALT,
+    SCORE_BAD,
+    SCORE_GOOD,
+    SCORE_MID,
+    WHITE,
+    FONT_BODY,
+    FONT_HEADING_BOLD,
+    _register_fonts,
+    fonts_registered,
+)
 
 import urllib.parse
 import math
@@ -199,19 +220,60 @@ def style_table(t: Table, header_bg=LIGHT_BG) -> Table:
     Returns: 
         the table with computed styles 
     """
+    _register_fonts()
+    header_font = FONT_HEADING_BOLD if fonts_registered() else "Helvetica-Bold"
+    body_font = FONT_BODY if fonts_registered() else "Helvetica"
+
     t.setStyle(
         TableStyle(
             [
                 ("BACKGROUND", (0, 0), (-1, 0), header_bg),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 8),
-                ("BOX", (0, 0), (-1, -1), 0.4, colors.lightgrey),
-                ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.lightgrey),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), header_font),
+                ("FONTSIZE", (0, 0), (-1, 0), 8),
+                ("FONTNAME", (0, 1), (-1, -1), body_font),
+                ("FONTSIZE", (0, 1), (-1, -1), 8),
+                ("TEXTCOLOR", (0, 1), (-1, -1), INK),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, 0), 7),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 7),
+                ("TOPPADDING", (0, 1), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 1), (-1, -1), 6),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, ROW_ALT]),
+                ("LINEBELOW", (0, 0), (-1, 0), 1, PURPLE_DARK),
+                ("LINEBELOW", (0, 1), (-1, -1), 0.3, BORDER),
+                ("BOX", (0, 0), (-1, -1), 0.5, BORDER),
             ]
         )
     )
     return t
+
+
+def severity_color(label: Any):
+    if not isinstance(label, str):
+        return NA
+    lowered = label.strip().lower()
+    return {
+        "critical": CRITICAL,
+        "high": HIGH,
+        "moderate": MODERATE,
+        "advisory": ADVISORY,
+        "pass": PASS,
+        "na": NA,
+        "n/a": NA,
+    }.get(lowered, NA)
+
+
+def score_color(value: Any):
+    if not isinstance(value, (int, float)):
+        return NA
+    if value >= 0.9:
+        return SCORE_GOOD
+    if value >= 0.5:
+        return SCORE_MID
+    return SCORE_BAD
 
 
 def bar_chart(labels: List[str], series: List[Tuple[str, List[Optional[float]]]], width: int = 460, height: int = 180) -> Drawing:
@@ -243,6 +305,10 @@ def bar_chart(labels: List[str], series: List[Tuple[str, List[Optional[float]]]]
     vmax = (max(flat) * 1.15) if flat else 1
     bc.valueAxis.valueMax = vmax
     bc.valueAxis.valueStep = vmax / 5 if vmax else 1
+    palette = _purple_palette(max(len(series), 1))
+    for idx in range(len(series)):
+        bc.bars[idx].fillColor = palette[idx % len(palette)]
+        bc.bars[idx].strokeColor = BORDER
     d.add(bc)
     return d
 
@@ -265,6 +331,13 @@ def pie_chart(parts: List[Tuple[str, Any]], width: int = 460, height: int = 200)
     pie.y = 15
     pie.width = 160
     pie.height = 160
+    pie.sideLabels = 1
+    pie.simpleLabels = 0
+    pie.checkLabelOverlap = 1
+    pie.pointerLabelMode = "LeftRight"
+    pie.sideLabelsOffset = 0.15
+    pie.slices.fontSize = 7
+    pie.slices.labelRadius = 1.35
 
     labels: List[str] = []
     values: List[float] = []
@@ -285,9 +358,30 @@ def pie_chart(parts: List[Tuple[str, Any]], width: int = 460, height: int = 200)
 
     pie.data = values
     pie.labels = labels
+    palette = _purple_palette(max(len(values), 1))
+    for idx in range(len(values)):
+        pie.slices[idx].fillColor = palette[idx % len(palette)]
     pie.slices.strokeWidth = 0.5
     d.add(pie)
     return d
+
+
+def _tint_color(base: colors.Color, factor: float) -> colors.Color:
+    factor = max(0.0, min(1.0, factor))
+    return colors.Color(
+        base.red + (1 - base.red) * factor,
+        base.green + (1 - base.green) * factor,
+        base.blue + (1 - base.blue) * factor,
+    )
+
+
+def _purple_palette(count: int) -> List[colors.Color]:
+    if count <= 1:
+        return [PURPLE]
+    start = 0.15
+    end = 0.75
+    steps = max(count - 1, 1)
+    return [_tint_color(PURPLE, start + (end - start) * (i / steps)) for i in range(count)]
 
 
 def render_logo(canvas, logo_path: Optional[str], x: float, y: float, w: float, h: float) -> None:

@@ -1,18 +1,17 @@
 from typing import Any, Dict, List
 
-from reportlab.lib import colors
-from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.units import mm
+from reportlab.platypus import Paragraph, Spacer, Table
 
 from ..helpers import style_table
-from ..styles import get_styles, LIGHT_BG
+from ..styles import CONTENT_W, SectionRule, get_styles
 
 
 def methodology_section(lh: Dict[str, Any], tested_urls: List[str]) -> List[Any]:
     styles = get_styles()
     story: List[Any] = []
 
-    story.append(Paragraph("Methodology", styles["H1"]))
+    story.append(SectionRule("Audit Methodology"))
+    story.append(Spacer(1, 10))
     story.append(Paragraph("This audit uses Lighthouse in navigation mode with mobile emulation.", styles["Body"]))
     story.append(Spacer(1, 6))
 
@@ -23,7 +22,7 @@ def methodology_section(lh: Dict[str, Any], tested_urls: List[str]) -> List[Any]
         ["Mode", str(lh.get("mode", "n/a"))],
         ["Device emulation", ", ".join(lh.get("devices") or []) or "n/a"],
         ["URLs tested", str(lh.get("tested_url_count", "n/a"))],
-    ], colWidths=[55 * mm, 110 * mm])))
+    ], colWidths=[CONTENT_W * 0.4, CONTENT_W * 0.6])))
     story.append(Spacer(1, 6))
 
     config = lh.get("config", {}) or {}
@@ -34,7 +33,7 @@ def methodology_section(lh: Dict[str, Any], tested_urls: List[str]) -> List[Any]
             ["only_categories", str(config.get("only_categories", "n/a"))],
             ["mobile", "mobile emulation + throttling"],
             ["desktop", "desktop preset"],
-        ], colWidths=[55 * mm, 110 * mm])))
+        ], colWidths=[CONTENT_W * 0.4, CONTENT_W * 0.6])))
         story.append(Spacer(1, 6))
 
     story.append(Paragraph("Standards Alignment Statement", styles["H2"]))
@@ -63,21 +62,8 @@ def methodology_section(lh: Dict[str, Any], tested_urls: List[str]) -> List[Any]
         story.append(Spacer(1, 4))
         url_rows = [["#", "URL"]]
         for i, u in enumerate(tested_urls, start=1):
-            url_rows.append([str(i), Paragraph(u, styles["URLCell"])])
-        url_tbl = Table(url_rows, colWidths=[10 * mm, 155 * mm], repeatRows=1)
-        url_tbl.setStyle(
-            TableStyle(
-                [
-                    ("BACKGROUND", (0, 0), (-1, 0), LIGHT_BG),
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                    ("FONTSIZE", (0, 0), (-1, 0), 9),
-                    ("FONTSIZE", (0, 1), (-1, -1), 7),
-                    ("BOX", (0, 0), (-1, -1), 0.5, colors.lightgrey),
-                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.lightgrey),
-                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ]
-            )
-        )
-        story.append(url_tbl)
+            url_rows.append([str(i), Paragraph(u, styles["TableURL"])])
+        url_tbl = Table(url_rows, colWidths=[CONTENT_W * 0.08, CONTENT_W * 0.92], repeatRows=1)
+        story.append(style_table(url_tbl))
 
     return story

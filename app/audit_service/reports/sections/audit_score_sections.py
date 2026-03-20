@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 import re
 
 from reportlab.platypus import KeepTogether, Paragraph, Spacer, Table
-from reportlab.lib.units import mm
 
 from ..helpers import bar_chart, fmt_num, style_table
 
@@ -33,7 +32,7 @@ def _strip_heading(value: str, heading: str) -> str:
         cleaned = re.sub(r"<b>\\s*" + re.escape(heading) + r"\\s*</b>", "", value, flags=re.IGNORECASE)
         return cleaned.strip()
     return value
-from ..styles import MAX_URLS, get_styles
+from ..styles import CONTENT_W, MAX_URLS, SectionRule, get_styles
 
 
 def _fmt_score(value: Any) -> str:
@@ -47,7 +46,8 @@ def audit_score_overview_section(website: Dict[str, Any], report_label: str, sec
     story: List[Any] = []
 
     label = f" ({section_label})" if section_label else ""
-    story.append(Paragraph(f"{report_label} Site Averages - Detailed Breakdown{label}", styles["H1"]))
+    story.append(SectionRule(f"{report_label} Site Averages - Detailed Breakdown{label}"))
+    story.append(Spacer(1, 10))
     story.append(Paragraph("Average scores and audit outcomes across tested URLs.", styles["Body"]))
     story.append(Paragraph("Good target: average score >= 0.90 (Lighthouse pass threshold).", styles["Small"]))
     story.append(Spacer(1, 6))
@@ -59,7 +59,7 @@ def audit_score_overview_section(website: Dict[str, Any], report_label: str, sec
         ["Passed audits", "Total audits with score >= 0.90.", "Higher is better"],
         ["Failed audits", "Total audits with score < 0.90.", "Lower is better"],
         ["Not applicable", "Audits that are manual/informative.", "Contextual"],
-    ], colWidths=[40 * mm, 85 * mm, 40 * mm])))
+    ], colWidths=[CONTENT_W * 0.38, CONTENT_W * 0.42, CONTENT_W * 0.20])))
     story.append(Spacer(1, 6))
 
     story.append(style_table(Table([
@@ -69,7 +69,7 @@ def audit_score_overview_section(website: Dict[str, Any], report_label: str, sec
         ["Passed audits (total)", str(website.get("total_passed", "n/a"))],
         ["Failed audits (total)", str(website.get("total_failed", "n/a"))],
         ["Not applicable (total)", str(website.get("total_not_applicable", "n/a"))],
-    ], colWidths=[70 * mm, 95 * mm])))
+    ], colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])))
     story.append(Spacer(1, 6))
 
     passed = website.get("total_passed")
@@ -92,7 +92,7 @@ def audit_score_overview_section(website: Dict[str, Any], report_label: str, sec
                 f"{fmt_num(item.get('fail_rate'), 2)}",
             ])
         story.append(Paragraph("Most frequently failed audits", styles["H2"]))
-        story.append(style_table(Table(rows, colWidths=[100 * mm, 30 * mm, 35 * mm])))
+        story.append(style_table(Table(rows, colWidths=[CONTENT_W * 0.56, CONTENT_W * 0.20, CONTENT_W * 0.24])))
         story.append(Spacer(1, 6))
 
     audit_summaries = website.get("audit_summaries") or {}
@@ -113,7 +113,17 @@ def audit_score_overview_section(website: Dict[str, Any], report_label: str, sec
                 f"{fmt_num(stats.get('fail_rate'), 2)}",
             ])
         story.append(Paragraph("Audit-level benchmarks (top 10 by fail rate)", styles["H2"]))
-        story.append(style_table(Table(summary_rows, colWidths=[60 * mm, 22 * mm, 18 * mm, 18 * mm, 18 * mm, 22 * mm])))
+        story.append(style_table(Table(
+            summary_rows,
+            colWidths=[
+                CONTENT_W * 0.36,
+                CONTENT_W * 0.13,
+                CONTENT_W * 0.10,
+                CONTENT_W * 0.10,
+                CONTENT_W * 0.10,
+                CONTENT_W * 0.11,
+            ],
+        )))
         story.append(Spacer(1, 6))
 
     return story
@@ -130,7 +140,8 @@ def audit_score_per_url_section(
     story: List[Any] = []
 
     label = f" ({section_label})" if section_label else ""
-    story.append(Paragraph(f"{report_label} Per URL Breakdown{label}", styles["H1"]))
+    story.append(SectionRule(f"{report_label} Per URL Breakdown{label}"))
+    story.append(Spacer(1, 10))
     story.append(Paragraph("Per-URL audit results with AI notes and pass/fail detail.", styles["Body"]))
     story.append(Spacer(1, 6))
 
@@ -181,7 +192,7 @@ def audit_score_per_url_section(
             ["Passed audits", str(summary.get("passed", "n/a"))],
             ["Failed audits", str(summary.get("failed", "n/a"))],
             ["Not applicable", str(summary.get("not_applicable", "n/a"))],
-        ], colWidths=[50 * mm, 115 * mm])))
+        ], colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])))
         blocks.append(Spacer(1, 4))
 
         blocks.append(style_table(Table([
@@ -189,7 +200,7 @@ def audit_score_per_url_section(
             ["Passed", Paragraph("<br/>".join(passed) if passed else "n/a", styles["URLCell"])],
             ["Failed", Paragraph("<br/>".join(failed) if failed else "n/a", styles["URLCell"])],
             ["N/A", Paragraph("<br/>".join(not_applicable) if not_applicable else "n/a", styles["URLCell"])],
-        ], colWidths=[30 * mm, 135 * mm])))
+        ], colWidths=[CONTENT_W * 0.18, CONTENT_W * 0.82])))
         blocks.append(Spacer(1, 8))
 
         story.append(KeepTogether(blocks))

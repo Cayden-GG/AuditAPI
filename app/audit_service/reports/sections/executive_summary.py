@@ -1,10 +1,9 @@
 from typing import Dict
 
-from reportlab.platypus import Paragraph, Spacer, PageBreak, Table
-from reportlab.lib.units import mm
+from reportlab.platypus import Paragraph, Spacer, Table
 
 from ..helpers import fmt_num, style_table
-from ..styles import get_styles
+from ..styles import CONTENT_W, SectionRule, get_styles
 
 def executive_summary_section(
     ai: Dict,
@@ -26,12 +25,13 @@ def executive_summary_section(
 
     story = []
     
-    story.append(Paragraph("Executive Summary", styles["H1"]))
+    story.append(SectionRule("Executive Summary"))
+    story.append(Spacer(1, 10))
 
     exec_map = ai.get("executive_summaries") or {}
     exec_data = exec_map.get(report_type)
     if not exec_data:
-        exec_text = "AI summary missing: run the AI module to generate this summary."
+        exec_text = None
     elif isinstance(exec_data, dict):
         exec_text = (
             # "<b>What the data shows</b><br/>"
@@ -45,8 +45,11 @@ def executive_summary_section(
         )
     else:
         exec_text = exec_data
-    safe_text = exec_text.replace("<br>", "<br/>").replace("\n", "<br/>")
-    story.append(Paragraph(safe_text, styles["Body"]))
+    if exec_text:
+        safe_text = exec_text.replace("<br>", "<br/>").replace("\n", "<br/>")
+        story.append(Paragraph(safe_text, styles["Body"]))
+    else:
+        story.append(Paragraph("AI summary not available for this section.", styles["Small"]))
     story.append(Spacer(1, 10))
 
     mobile_by_sev = (summary_by_platform.get("mobile", {}) or {}).get("findings_by_severity", {}) or {}
@@ -67,7 +70,6 @@ def executive_summary_section(
         ],
     ]
 
-    story.append(style_table(Table(rows, colWidths=[50 * mm, 57 * mm, 58 * mm])))
-    story.append(PageBreak())
+    story.append(style_table(Table(rows, colWidths=[CONTENT_W * 0.38, CONTENT_W * 0.31, CONTENT_W * 0.31])))
 
     return story

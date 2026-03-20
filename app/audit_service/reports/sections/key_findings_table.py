@@ -1,10 +1,8 @@
 from typing import Dict, List, Any
 
 from reportlab.platypus import Paragraph, Table
-from reportlab.lib.units import mm
-
 from ..helpers import style_table
-from ..styles import get_styles
+from ..styles import CONTENT_W, get_styles
 
 
 def key_findings_table(ai: Dict[str, Any]) -> Table:
@@ -30,4 +28,11 @@ def key_findings_table(ai: Dict[str, Any]) -> Table:
             Paragraph(str(f.get("explanation", "")), styles["URLCell"]),
         ])
 
-    return style_table(Table(pr_rows, colWidths=[58 * mm, 18 * mm, 28 * mm, 18 * mm, 43 * mm], repeatRows=1))
+    col_widths = [
+        CONTENT_W * 0.28,
+        CONTENT_W * 0.10,
+        CONTENT_W * 0.18,
+        CONTENT_W * 0.10,
+        CONTENT_W * 0.34,
+    ]
+    return style_table(Table(pr_rows, colWidths=col_widths, repeatRows=1))

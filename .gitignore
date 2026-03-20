@@ -33,3 +33,5 @@ eggs/
 *.egg
 *.egg-info
 
+# spec docs
+VALVANTA_REPORT_DESIGN_SPEC.md

@@ -1,9 +1,8 @@
 from typing import Dict, List, Any
 
-from reportlab.platypus import Paragraph, Spacer, PageBreak, Table, KeepTogether
-from reportlab.lib.units import mm
+from reportlab.platypus import KeepTogether, PageBreak, Paragraph, Spacer, Table
 
-from ..styles import get_styles, MAX_URLS
+from ..styles import CONTENT_W, SectionRule, get_styles, MAX_URLS
 import re
 
 from ..helpers import fmt_ms, fmt_bytes, style_table
@@ -50,7 +49,8 @@ def per_url_section(ai: Dict, per_url: Dict, section_label: str | None = None, r
     story = []
 
     label = f" ({section_label})" if section_label else ""
-    story.append(Paragraph(f"Per URL Breakdown{label}", styles["H1"]))
+    story.append(SectionRule(f"Per URL Breakdown{label}"))
+    story.append(Spacer(1, 10))
     story.append(Paragraph("Each URL is reported using the same breakdown sections as Site Averages.", styles["Body"]))
     story.append(Paragraph("Targets: FCP <= 1.8s, LCP <= 1.5s, Speed Index <= 3.4s, TBT <= 200ms, Server latency <= 200ms.", styles["Small"]))
     story.append(Spacer(1, 8))
@@ -99,14 +99,14 @@ def url_block(ai: Dict[str, Any], url: str, d: Dict[str, Any], report_type: str)
         ["LCP", fmt_ms(d.get("largest_contentful_paint", {}).get("value"), "s", 2)],
         ["Speed Index", fmt_ms(d.get("speed_index", {}).get("value"), "s", 2)],
         ["TBT", fmt_ms(d.get("total_blocking_time", {}).get("value"), "ms", 0)],
-    ], colWidths=[60 * mm, 105 * mm])
+    ], colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])
 
     mtp = d.get("main_thread_work_breakdown", {}) or {}
     mt_items = mtp.get("mainthread_work_items", []) or []
     mt_rows = [["Main thread work breakdown", "Value"], ["Total (numericValue)", fmt_ms(mtp.get("value"), "ms", 0)]]
     for it in mt_items[:3]:
         mt_rows.append([it.get("group", "n/a"), fmt_ms(it.get("duration"), "ms", 0)])
-    mt_tbl = Table(mt_rows, colWidths=[60 * mm, 105 * mm])
+    mt_tbl = Table(mt_rows, colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])
 
     diagp = d.get("diagnostics", {}) or {}
     diag_tbl = Table([
@@ -114,14 +114,14 @@ def url_block(ai: Dict[str, Any], url: str, d: Dict[str, Any], report_type: str)
         ["Requests", str(diagp.get("request_count", "n/a"))],
         ["Tasks", str(diagp.get("task_count", "n/a"))],
         ["Total byte weight", fmt_bytes(diagp.get("total_byte_weight"))],
-    ], colWidths=[60 * mm, 105 * mm])
+    ], colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])
 
     netp = d.get("network_requests", {}) or {}
     net_tbl = Table([
         ["Network metrics", "Value"],
         ["200 responses", str(netp.get("code_200_requests_count", "n/a"))],
         ["Non-200 responses", str(netp.get("code_non_200_requests_count", "n/a"))],
-    ], colWidths=[60 * mm, 105 * mm])
+    ], colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])
 
     rsp = d.get("resource_summary", {}) or {}
     rs_tbl = Table([
@@ -132,13 +132,13 @@ def url_block(ai: Dict[str, Any], url: str, d: Dict[str, Any], report_type: str)
         ["Stylesheets", fmt_bytes(rsp.get("stylesheet_transfer_size"))],
         ["Documents", fmt_bytes(rsp.get("document_transfer_size"))],
         ["Third-party", fmt_bytes(rsp.get("third_party_transfer_size"))],
-    ], colWidths=[60 * mm, 105 * mm])
+    ], colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])
 
     nslp = d.get("network_server_latency", {}) or {}
     lat_tbl = Table([
         ["Network server latency", "Value"],
         ["Server latency", fmt_ms(nslp.get("server_latency"), "ms", 0)],
-    ], colWidths=[60 * mm, 105 * mm])
+    ], colWidths=[CONTENT_W * 0.55, CONTENT_W * 0.45])
 
     blocks.extend([
         style_table(basic),

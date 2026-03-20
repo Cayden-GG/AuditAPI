@@ -11,10 +11,19 @@ from reportlab.platypus import (
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
-from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 
-from .styles import get_styles, MAX_URLS
+from .styles import (
+    FOOTER_H,
+    HEADER_H,
+    MARGIN_B,
+    MARGIN_L,
+    MARGIN_R,
+    MARGIN_T,
+    _register_fonts,
+    get_styles,
+    MAX_URLS,
+)
 from .helpers import domain_from_url
 from .layout import header_footer
 from .sections.cover_page import cover_page
@@ -80,6 +89,7 @@ def build_pdf(
     logo_path = "app/assets/valvanta-digital-logo.png"
     cover_image_path = "app/assets/pdf-cover-image.png"
     audit = data.get("audit", {}) or {}
+    _register_fonts()
 
     sitemap = audit.get("sitemap", {}) or {}
     lh = audit.get("lighthouse", {}) or {}
@@ -95,10 +105,10 @@ def build_pdf(
     doc = SimpleDocTemplate(
         output_pdf,
         pagesize=A4,
-        leftMargin=18 * mm,
-        rightMargin=18 * mm,
-        topMargin=18 * mm,
-        bottomMargin=18 * mm,
+        leftMargin=MARGIN_L,
+        rightMargin=MARGIN_R,
+        topMargin=MARGIN_T + HEADER_H,
+        bottomMargin=MARGIN_B + FOOTER_H,
         title=f"Website Performance Audit - {client_domain}",
         author="Valvanta Digital",
     )
