@@ -159,12 +159,9 @@ def client_audit_failed(client_name: Optional[str], target_url: str, error_messa
             "Our team is already investigating and will rerun the audit once the issue is resolved."
         )
     detail_line = ""
-    if error_message:
-        detail_line = f"<p><strong>Details:</strong> {html.escape(error_message)}</p>"
     content_html = f"""
     <p>Hi {name},</p>
     <p>We ran into a problem while auditing <strong>{safe_url}</strong>.</p>
-    {detail_line}
     <p>{follow_up}</p>
     <p>If you need help, reply to this email and we will assist.</p>
     <p style="margin-bottom: 0;">Regards,<br><strong>The Valvanta Digital Team</strong></p>
