@@ -4,13 +4,13 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import math
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
 from .database import (
     SessionLocal,
-    create_audit,
     get_audit,
     get_db,
     get_latest_audit_by_target_url,
@@ -38,12 +38,18 @@ from .emails.brevo_email import (
 from .logging_utils import build_audit_logger
 from .gcs.uploader import download_objects, upload_files
 from .cleanup import run_full_cleanup
+from .audit_queue.models import QueueStatusResponse
+from .audit_queue.service import enqueue_job, queue_status, start_dispatcher, launch_job_in_thread
+from .audit_queue.worker import queue_worker
 
 app = FastAPI(title="Valvanta Site Audit")
 
 @app.on_event("startup")
 def startup():
     init_db()
+    if os.getenv("AUDIT_QUEUE_WORKER", "1") == "1":
+        # Run queue scheduler/watchdog in-process by default.
+        queue_worker.start()
 
 def _safe_update_status(db: Session, audit_id: str, status: AuditStatus, logger, completed_at=None) -> None:
     try:
@@ -58,6 +64,7 @@ def run_audit_task(
     max_urls: int = 5,
     only_categories: str = "performance,seo",
     tier: str = "free",
+    timeout_s: int | None = None,
 ):
     """
     Main audit task
@@ -123,6 +130,7 @@ def run_audit_task(
             logger.warning("BREVO_COMPANY_EMAIL is not set; skipping company failure email.")
         failure_notified = True
 
+    report_paths = []
     _safe_update_status(db, audit_id, AuditStatus.PROCESSING, logger)
     try:
         audit = get_audit(db, audit_id)
@@ -159,7 +167,13 @@ def run_audit_task(
                 check=True,
                 capture_output=True,
                 text=True,
+                timeout=timeout_s,
             )
+        except subprocess.TimeoutExpired:
+            logger.error("Audit timed out.")
+            _safe_update_status(db, audit_id, AuditStatus.FAILED, logger)
+            _send_failure_emails(audit, "Audit timed out.")
+            return {"status": "timeout", "report_paths": []}
         except subprocess.CalledProcessError as exc:
             logger.error(
                 "Audit service failed.",
@@ -169,7 +183,7 @@ def run_audit_task(
             )
             _safe_update_status(db, audit_id, AuditStatus.FAILED, logger)
             _send_failure_emails(audit, exc.stderr or exc.stdout or "Audit subprocess failed.")
-            return
+            return {"status": "failed", "report_paths": []}
 
         logger.info("Audit complete, starting emails")
         report_paths = _extract_report_paths(result.stdout)
@@ -290,11 +304,13 @@ def run_audit_task(
             logger.exception("Service files clean up failed.", exc)
 
         _safe_update_status(db, audit_id, AuditStatus.COMPLETED, logger, completed_at=datetime.utcnow())
+        return {"status": "completed", "report_paths": report_paths}
     except Exception as e:
         _safe_update_status(db, audit_id, AuditStatus.FAILED, logger)
         if "audit" in locals() and audit:
             _send_failure_emails(audit, str(e))
         logger.exception("Audit task failed.", e)
+        return {"status": "failed", "report_paths": report_paths}
     finally:
         db.close()
 
@@ -328,9 +344,7 @@ def validateDomain(db, domain):
 
 
 @app.post("/api/v1/audit", response_model=AuditResponse, status_code=202)
-async def start_website_audit(
-    payload: AuditCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
-):
+async def start_website_audit(payload: AuditCreate):
     # validate target url
     # if validateDomain(db, payload.url):
     #     return AuditResponse(
@@ -338,54 +352,84 @@ async def start_website_audit(
     #         status="Denied",
     #         message="This domain has already been audited."
     #     )
+    try:
+        job_token, audit_id = enqueue_job(
+            url=str(payload.url),
+            email=payload.email,
+            client_name=payload.client_name,
+            customer_id=None,
+            tier="free",
+            urls=None,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if not audit_id:
+        raise HTTPException(status_code=500, detail="Failed to queue audit.")
 
-    # Create a unique record for this job
-    new_audit = create_audit(
-        db,
-        target_url=str(payload.url),
-        client_email=payload.email,
-        client_name=payload.client_name,
-    )
-    
-    # Hand off to worker (Non-blocking)
-    background_tasks.add_task(run_audit_task, new_audit.id, tier="free")
-    
-    # Return immediate ticket to React
+    start_dispatcher(launch_job_in_thread)
     return AuditResponse(
-        job_id=new_audit.id,
+        job_id=audit_id,
+        job_token=job_token,
         status="Accepted",
         message=f"Audit for {payload.url} is now in the queue."
     )
 
 @app.post("/api/v1/paidAudit", response_model=AuditResponse, status_code=202)
-async def start_paid_website_audit(
-    payload: AuditCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
-):
-    new_audit = create_audit(
-        db,
-        target_url=str(payload.url),
-        client_email=payload.email,
-        client_name=payload.client_name,
-        tier="paid",
-    )
+async def start_paid_website_audit(payload: AuditCreate):
+    try:
+        job_token, audit_id = enqueue_job(
+            url=str(payload.url),
+            email=payload.email,
+            client_name=payload.client_name,
+            customer_id=None,
+            tier="paid",
+            urls=None,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if not audit_id:
+        raise HTTPException(status_code=500, detail="Failed to queue audit.")
 
-    background_tasks.add_task(
-        run_audit_task,
-        new_audit.id,
-        max_urls=100,
-        only_categories="performance,seo,accessibility",
-        tier="paid",
-    )
-
+    start_dispatcher(launch_job_in_thread)
     return AuditResponse(
-        job_id=new_audit.id,
+        job_id=audit_id,
+        job_token=job_token,
         status="Accepted",
         message=f"Paid audit for {payload.url} is now in the queue."
     )
 
-@app.get("/api/v1/status/{job_id}", response_model=AuditRecord)
-async def get_audit_status(job_id: str, db: Session = Depends(get_db)):
-    record = get_audit(db, job_id)
+
+@app.get("/api/v1/status/{identifier}")
+async def get_audit_status(identifier: str, db: Session = Depends(get_db)):
+    job = queue_status(identifier)
+    if job:
+        status = job.get("status")
+        message = "Status unavailable."
+        estimated_wait = None
+        result_path = job.get("result_path")
+
+        if status == "queued":
+            pos_in_q = job.get("queue_position") or 0
+            estimated_wait = math.floor((pos_in_q * 10) / 1.5)
+            message = f"Estimated wait: {estimated_wait} minutes"
+        elif status == "running":
+            message = "Auditing your site now"
+        elif status == "completed":
+            message = "Audit completed"
+        elif status == "failed":
+            message = "Audit failed"
+        elif status == "timeout":
+            message = "Audit timed out"
+
+        return QueueStatusResponse(
+            job_token=identifier,
+            status=status,
+            message=message,
+            estimated_wait_minutes=estimated_wait,
+            result_path=result_path,
+        )
+
+    record = get_audit(db, identifier)
     if not record:
         raise HTTPException(status_code=404, detail="Audit job not found")
     return record

@@ -48,6 +48,7 @@ class AuditCreate(BaseModel):
 
 class AuditResponse(BaseModel):
     job_id: Optional[str] = None 
+    job_token: str
     status: str
     message: str
 

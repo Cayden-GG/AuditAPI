@@ -25,6 +25,7 @@ def get_db() -> Generator:
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     _ensure_audit_columns()
+    _ensure_queue_tables()
 
 
 def _ensure_audit_columns() -> None:
@@ -47,6 +48,56 @@ def _ensure_audit_columns() -> None:
             if name in existing:
                 continue
             conn.execute(text(f"ALTER TABLE audits ADD COLUMN {name} {col_type}"))
+        conn.commit()
+
+
+def _ensure_queue_tables() -> None:
+    # Create queue tables and seed two runner slots.
+    table_sql = [
+        """
+        CREATE TABLE IF NOT EXISTS customers (
+            id TEXT PRIMARY KEY,
+            tier TEXT NOT NULL,
+            created_at INTEGER
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS audit_jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            job_token TEXT NOT NULL UNIQUE,
+            customer_id TEXT NOT NULL,
+            domain TEXT NOT NULL,
+            tier TEXT NOT NULL,
+            urls TEXT NOT NULL,
+            status TEXT NOT NULL,
+            skip_count INTEGER DEFAULT 0,
+            queued_at INTEGER NOT NULL,
+            started_at INTEGER,
+            completed_at INTEGER,
+            timeout_at INTEGER,
+            result_path TEXT,
+            audit_id TEXT,
+            FOREIGN KEY(customer_id) REFERENCES customers(id)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS runner_slots (
+            slot_id INTEGER PRIMARY KEY,
+            job_id INTEGER,
+            FOREIGN KEY(job_id) REFERENCES audit_jobs(id)
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_jobs_status_tier ON audit_jobs (status, tier, queued_at)",
+        "CREATE INDEX IF NOT EXISTS idx_jobs_customer ON audit_jobs (customer_id, status)",
+        "CREATE INDEX IF NOT EXISTS idx_jobs_domain_tier ON audit_jobs (domain, tier, status)",
+        "CREATE INDEX IF NOT EXISTS idx_jobs_timeout ON audit_jobs (status, timeout_at)",
+    ]
+
+    with engine.connect() as conn:
+        for statement in table_sql:
+            conn.execute(text(statement))
+        conn.execute(text("INSERT OR IGNORE INTO runner_slots (slot_id, job_id) VALUES (1, NULL)"))
+        conn.execute(text("INSERT OR IGNORE INTO runner_slots (slot_id, job_id) VALUES (2, NULL)"))
         conn.commit()
 
 
