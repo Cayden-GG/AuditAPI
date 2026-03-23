@@ -51,7 +51,11 @@ def _classify_error(exc: Exception) -> Tuple[str, str]:
 
 # ---------- Lighthouse runner ----------
 
-def run_lighthouse_json(url: str, platform: str, ) -> Dict[str, Any]:
+def run_lighthouse_json(
+    url: str,
+    platform: str,
+    only_categories: Optional[str] = None,
+) -> Dict[str, Any]:
     """
     Runs Lighthouse CLI and returns the parsed JSON report.
     """
@@ -59,6 +63,8 @@ def run_lighthouse_json(url: str, platform: str, ) -> Dict[str, Any]:
 
     if platform == "desktop": 
         opts = LighthouseDesktopRunOptions()
+        if only_categories:
+            opts.only_categories = only_categories
         cmd = [
             "lighthouse",
             url,
@@ -79,6 +85,8 @@ def run_lighthouse_json(url: str, platform: str, ) -> Dict[str, Any]:
 
     else: 
         opts = LighthouseMobileRunOptions()
+        if only_categories:
+            opts.only_categories = only_categories
         cmd = [
             "lighthouse",
             url,
@@ -135,6 +143,8 @@ def run_lighthouse_json(url: str, platform: str, ) -> Dict[str, Any]:
 
 def audit_urls_with_lighthouse(
     urls: List[str],
+    *,
+    only_categories: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Runs Lighthouse for each URL and returns:
@@ -159,6 +169,11 @@ def audit_urls_with_lighthouse(
 
     lighthouse_version = _get_lighthouse_version()
     run_at = _utc_now_iso()
+    desktop_opts = LighthouseDesktopRunOptions()
+    mobile_opts = LighthouseMobileRunOptions()
+    if only_categories:
+        desktop_opts.only_categories = only_categories
+        mobile_opts.only_categories = only_categories
 
     results: Dict[str, Any] = {}
     logs: List[str] = []
@@ -168,8 +183,8 @@ def audit_urls_with_lighthouse(
         logs.append(f"Starting Lighthouse for {url}")
 
         try:
-            desktop_report, duration, cmd = run_lighthouse_json(url, "desktop")
-            mobile_report, duration, cmd = run_lighthouse_json(url, "mobile")
+            desktop_report, duration, cmd = run_lighthouse_json(url, "desktop", only_categories=only_categories)
+            mobile_report, duration, cmd = run_lighthouse_json(url, "mobile", only_categories=only_categories)
 
             desktop_categories = desktop_report.get("categories", {}) or {}
             mobile_categories = mobile_report.get("categories", {}) or {}
@@ -214,18 +229,19 @@ def audit_urls_with_lighthouse(
 
             logs.append(f"Failed Lighthouse for {url}: {error_type} - {message}")
     # return report
+    normalized_categories = (only_categories or "performance,seo").replace(" ", "")
     return {
         "meta": {
             "tool": "lighthouse-automation",
             "run_at": run_at,
             "lighthouse_version": lighthouse_version,
             "mode": "navigation",
-            "categories": "performance, seo",
+            "categories": normalized_categories,
             "devices": ["mobile", "desktop"],
             "config": {
-                "only_categories": "performance, seo",
-                "mobile": asdict(LighthouseMobileRunOptions()),
-                "desktop": asdict(LighthouseDesktopRunOptions()),
+                "only_categories": normalized_categories,
+                "mobile": asdict(mobile_opts),
+                "desktop": asdict(desktop_opts),
             },
             "tested_urls": urls,
         },

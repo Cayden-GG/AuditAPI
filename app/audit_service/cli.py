@@ -16,7 +16,12 @@ import json
 from typing import Dict
 from app.logging_utils import build_audit_logger
 
-REPORT_KEYS = ("performance", "seo", "key_findings")
+REPORT_KEYS = ("performance", "seo", "accessibility", "key_findings")
+
+
+def _normalize_categories(value: str) -> str:
+    categories = [c.strip() for c in (value or "").split(",") if c.strip()]
+    return ",".join(categories) or "performance,seo"
 
 
 def run_audit(config: AppConfig) -> Dict[str, str]:
@@ -58,8 +63,9 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
     if not urls_to_test:
         logger.warning("No URLs discovered for testing.", domain_url=config.domain_url)
 
+    only_categories = _normalize_categories(config.only_categories)
     try:
-        lighthouse_data = audit_urls_with_lighthouse(urls_to_test)
+        lighthouse_data = audit_urls_with_lighthouse(urls_to_test, only_categories=only_categories)
     except Exception as exc:
         logger.exception("Lighthouse run failed.", exc)
         lighthouse_data = {
@@ -68,7 +74,7 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
                 "run_at": None,
                 "lighthouse_version": None,
                 "mode": "navigation",
-                "categories": [c for c in config.only_categories.split(",") if c],
+                "categories": [c for c in only_categories.split(",") if c],
                 "devices": ["mobile", "desktop"],
                 "config": {},
                 "tested_urls": urls_to_test,
@@ -136,10 +142,12 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
     # generate pdfs
     reports: Dict[str, str] = {}
     try:
+        include_accessibility = "accessibility" in only_categories.split(",")
         reports = build_reports(
             pdf_data,
             output_dir=output_dir,
             client_name=config.client_name,
+            include_accessibility=include_accessibility,
         )
     except Exception as exc:
         logger.exception("PDF report generation failed.", exc)

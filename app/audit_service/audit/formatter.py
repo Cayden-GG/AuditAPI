@@ -12,10 +12,29 @@ from .formatters.performance_formatter import (
     reduce_url_performance,
 )
 from .formatters.seo_formatter import aggregate_website_seo, reduce_url_seo
+from .formatters.accessibility_formatter import (
+    aggregate_website_accessibility,
+    reduce_url_accessibility,
+)
 
 def _platform_audits(url_obj: Dict[str, Any], platform: str) -> Dict[str, Any]:
     platform_obj = url_obj.get(platform, {}) or {}
     return platform_obj.get("audits") or platform_obj.get("audit") or {}
+
+def _platform_categories(url_obj: Dict[str, Any], platform: str) -> Dict[str, Any]:
+    platform_obj = url_obj.get(platform, {}) or {}
+    return platform_obj.get("categories") or {}
+
+def _category_audit_ids(categories: Dict[str, Any], category_key: str) -> List[str]:
+    category = categories.get(category_key, {}) if isinstance(categories, dict) else {}
+    refs = category.get("auditRefs") or []
+    audit_ids = []
+    for ref in refs:
+        if isinstance(ref, dict):
+            audit_id = ref.get("id")
+            if audit_id:
+                audit_ids.append(audit_id)
+    return audit_ids
 
 
 def format_lighthouse_output(lighthouse_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -44,6 +63,8 @@ def format_lighthouse_output(lighthouse_data: Dict[str, Any]) -> Dict[str, Any]:
     perf_desktop: Dict[str, Dict[str, Any]] = {}
     seo_mobile: Dict[str, Dict[str, Any]] = {}
     seo_desktop: Dict[str, Dict[str, Any]] = {}
+    accessibility_mobile: Dict[str, Dict[str, Any]] = {}
+    accessibility_desktop: Dict[str, Dict[str, Any]] = {}
 
     for url, url_obj in results.items():
         if not isinstance(url_obj, dict):
@@ -63,6 +84,8 @@ def format_lighthouse_output(lighthouse_data: Dict[str, Any]) -> Dict[str, Any]:
 
         mobile_audits = _platform_audits(url_obj, "mobile")
         desktop_audits = _platform_audits(url_obj, "desktop")
+        mobile_categories = _platform_categories(url_obj, "mobile")
+        desktop_categories = _platform_categories(url_obj, "desktop")
 
         url_entry: Dict[str, Any] = {}
 
@@ -88,6 +111,29 @@ def format_lighthouse_output(lighthouse_data: Dict[str, Any]) -> Dict[str, Any]:
             url_entry["seo"]["desktop"] = desktop_seo
             seo_desktop[url] = desktop_seo
 
+        mobile_accessibility = reduce_url_accessibility(
+            url,
+            mobile_audits,
+            _category_audit_ids(mobile_categories, "accessibility"),
+            logs=logs,
+            errors=errors,
+        )
+        desktop_accessibility = reduce_url_accessibility(
+            url,
+            desktop_audits,
+            _category_audit_ids(desktop_categories, "accessibility"),
+            logs=logs,
+            errors=errors,
+        )
+        if mobile_accessibility or desktop_accessibility:
+            url_entry.setdefault("accessibility", {})
+        if mobile_accessibility is not None:
+            url_entry["accessibility"]["mobile"] = mobile_accessibility
+            accessibility_mobile[url] = mobile_accessibility
+        if desktop_accessibility is not None:
+            url_entry["accessibility"]["desktop"] = desktop_accessibility
+            accessibility_desktop[url] = desktop_accessibility
+
         if url_entry:
             per_url[url] = url_entry
 
@@ -99,6 +145,10 @@ def format_lighthouse_output(lighthouse_data: Dict[str, Any]) -> Dict[str, Any]:
         "seo": {
             "mobile": aggregate_website_seo(seo_mobile, logs=logs) if seo_mobile else {},
             "desktop": aggregate_website_seo(seo_desktop, logs=logs) if seo_desktop else {},
+        },
+        "accessibility": {
+            "mobile": aggregate_website_accessibility(accessibility_mobile, logs=logs) if accessibility_mobile else {},
+            "desktop": aggregate_website_accessibility(accessibility_desktop, logs=logs) if accessibility_desktop else {},
         },
     }
 

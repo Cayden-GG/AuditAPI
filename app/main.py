@@ -52,12 +52,20 @@ def _safe_update_status(db: Session, audit_id: str, status: AuditStatus, logger,
         logger.exception("Failed to update audit status.", exc, status=status)
 
 
-def run_audit_task(audit_id: str):
+def run_audit_task(
+    audit_id: str,
+    *,
+    max_urls: int = 5,
+    only_categories: str = "performance,seo",
+    tier: str = "free",
+):
     """
     Main audit task
 
     Args: 
         audit_id (str, required): created audit record id
+        max_urls (int, required): maximum number of URLs to audit
+        only_categories (str, required): Lighthouse categories to include
     Outputs: 
         performance and seo audit reports
     """
@@ -127,22 +135,27 @@ def run_audit_task(audit_id: str):
 
         # Run Lighthouse Subprocess
         try:
+            cmd = [
+                sys.executable,
+                "-m",
+                "app.audit_service.cli",
+                "--client-name",
+                client_name,
+                "--domain-url",
+                audit.target_url,
+                "--audit-id",
+                audit_id,
+                "--output-dir",
+                output_dir,
+                "--log-path",
+                log_path,
+                "--max-urls",
+                str(max_urls),
+                "--only-categories",
+                only_categories,
+            ]
             result = subprocess.run(
-                [
-                    sys.executable,
-                    "-m",
-                    "app.audit_service.cli",
-                    "--client-name",
-                    client_name,
-                    "--domain-url",
-                    audit.target_url,
-                    "--audit-id",
-                    audit_id,
-                    "--output-dir",
-                    output_dir,
-                    "--log-path",
-                    log_path,
-                ],
+                cmd,
                 check=True,
                 capture_output=True,
                 text=True,
@@ -188,7 +201,7 @@ def run_audit_task(audit_id: str):
                 gcs_objects = upload_files(
                     file_paths=file_paths,
                     bucket_name=gcs_bucket,
-                    prefix=f"audits/{audit_id}",
+                    prefix=f"audits/{tier}/{audit_id}",
                     credentials_path=gcs_creds,
                     logger=logger,
                 )
@@ -207,6 +220,8 @@ def run_audit_task(audit_id: str):
                     db_fields["seo_report_object"] = object_name
                 elif name.startswith("Key_Findings"):
                     db_fields["key_findings_object"] = object_name
+                elif name.startswith("Accessibility_PDF"):
+                    db_fields["accessibility_report_object"] = object_name
                 elif name.startswith("ai_audit_summary") and name.endswith(".json"):
                     db_fields["ai_json_object"] = object_name
                 elif name.startswith("audit_") and name.endswith(".json"):
@@ -221,23 +236,26 @@ def run_audit_task(audit_id: str):
                     logger.exception("Failed to store GCS object names.", exc)
 
         # Send user and company emails
-        try:
-            subject, html_content = build_client_audit_results_email(
-                audit.client_name,
-                audit.target_url,
-                None,
-            )
-            send_audit_email(
-                to_email=audit.client_email,
-                client_name=audit.client_name,
-                target_url=audit.target_url,
-                report_paths=report_paths,
-                subject=subject,
-                html_content=html_content,
-            )
-            logger.info("Client email sent.", to_email=audit.client_email)
-        except Exception as exc:
-            logger.exception("Client email failed.", exc, to_email=audit.client_email)
+        if tier != "paid":
+            try:
+                subject, html_content = build_client_audit_results_email(
+                    audit.client_name,
+                    audit.target_url,
+                    None,
+                )
+                send_audit_email(
+                    to_email=audit.client_email,
+                    client_name=audit.client_name,
+                    target_url=audit.target_url,
+                    report_paths=report_paths,
+                    subject=subject,
+                    html_content=html_content,
+                )
+                logger.info("Client email sent.", to_email=audit.client_email)
+            except Exception as exc:
+                logger.exception("Client email failed.", exc, to_email=audit.client_email)
+        else:
+            logger.info("Paid audit: skipping client results email.", to_email=audit.client_email)
 
         company_email = os.getenv("BREVO_COMPANY_EMAIL")
         if not company_email:
@@ -288,7 +306,7 @@ def _extract_report_paths(stdout: str):
             payload = line[len(prefix):].strip()
             data = json.loads(payload)
             ordered = []
-            for key in ("performance", "seo", "key_findings"):
+            for key in ("performance", "seo", "accessibility", "key_findings"):
                 if key in data:
                     ordered.append(Path(data[key]))
             for path in data.values():
@@ -330,13 +348,39 @@ async def start_website_audit(
     )
     
     # Hand off to worker (Non-blocking)
-    background_tasks.add_task(run_audit_task, new_audit.id)
+    background_tasks.add_task(run_audit_task, new_audit.id, tier="free")
     
     # Return immediate ticket to React
     return AuditResponse(
         job_id=new_audit.id,
         status="Accepted",
         message=f"Audit for {payload.url} is now in the queue."
+    )
+
+@app.post("/api/v1/paidAudit", response_model=AuditResponse, status_code=202)
+async def start_paid_website_audit(
+    payload: AuditCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
+):
+    new_audit = create_audit(
+        db,
+        target_url=str(payload.url),
+        client_email=payload.email,
+        client_name=payload.client_name,
+        tier="paid",
+    )
+
+    background_tasks.add_task(
+        run_audit_task,
+        new_audit.id,
+        max_urls=100,
+        only_categories="performance,seo,accessibility",
+        tier="paid",
+    )
+
+    return AuditResponse(
+        job_id=new_audit.id,
+        status="Accepted",
+        message=f"Paid audit for {payload.url} is now in the queue."
     )
 
 @app.get("/api/v1/status/{job_id}", response_model=AuditRecord)
@@ -369,6 +413,7 @@ async def resend_audit_email(
     object_names = [
         audit.perf_report_object,
         audit.seo_report_object,
+        audit.accessibility_report_object,
         audit.key_findings_object,
     ]
     object_names = [name for name in object_names if name]

@@ -82,6 +82,26 @@ def _severity_for_performance(score: Optional[float], cw_status: Optional[str]) 
         return "moderate"
     return "advisory"
 
+def _severity_for_accessibility(score: Optional[float], manual: bool) -> str:
+    if manual:
+        return "advisory"
+    if score == 0:
+        return "high"
+    if score is not None and score < 0.9:
+        return "moderate"
+    return "advisory"
+
+def _category_audit_ids(categories: Dict[str, Any], category_key: str) -> List[str]:
+    category = categories.get(category_key, {}) if isinstance(categories, dict) else {}
+    refs = category.get("auditRefs") or []
+    audit_ids = []
+    for ref in refs:
+        if isinstance(ref, dict):
+            audit_id = ref.get("id")
+            if audit_id:
+                audit_ids.append(audit_id)
+    return audit_ids
+
 
 def _risk_summary(findings_by_severity: Dict[str, int]) -> str:
     if findings_by_severity.get("critical", 0) > 0:
@@ -206,6 +226,40 @@ def _seo_findings(url: str, audits: Dict[str, Any]) -> List[Dict[str, Any]]:
             ))
     return findings
 
+def _accessibility_findings(
+    url: str,
+    audits: Dict[str, Any],
+    categories: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    findings: List[Dict[str, Any]] = []
+    audit_ids = _category_audit_ids(categories, "accessibility")
+    for audit_id in audit_ids:
+        audit = audits.get(audit_id, {})
+        if not isinstance(audit, dict):
+            continue
+        if audit.get("error") == "missing_audit":
+            continue
+        score = audit.get("score")
+        manual = audit.get("scoreDisplayMode") == "manual"
+        if score == 0 or manual:
+            severity = _severity_for_accessibility(score if isinstance(score, (int, float)) else None, manual)
+            status_note = "Manual review required." if manual else "Automated check failed."
+            findings.append(_build_finding(
+                category="accessibility",
+                title=audit.get("title") or "Accessibility issue",
+                description=f"{audit.get('description') or ''} {status_note}".strip(),
+                severity=severity,
+                score=score if isinstance(score, (int, float)) else None,
+                affected_elements=[url],
+                standard_reference={
+                    "framework": "WCAG",
+                    "code": audit_id,
+                    "level": None,
+                },
+                recommendation="Complete the manual review or remediate the accessibility issue and verify in Lighthouse.",
+            ))
+    return findings
+
 
 def normalize_lighthouse_results(lighthouse_data: Dict[str, Any]) -> Dict[str, Any]:
     results = lighthouse_data.get("lighthouse_data", {}) or {}
@@ -213,10 +267,12 @@ def normalize_lighthouse_results(lighthouse_data: Dict[str, Any]) -> Dict[str, A
     findings: Dict[str, Dict[str, List[Dict[str, Any]]]] = {
         "performance": {"mobile": [], "desktop": []},
         "seo": {"mobile": [], "desktop": []},
+        "accessibility": {"mobile": [], "desktop": []},
     }
     scores: Dict[str, Dict[str, List[float]]] = {
         "performance": {"mobile": [], "desktop": []},
         "seo": {"mobile": [], "desktop": []},
+        "accessibility": {"mobile": [], "desktop": []},
     }
 
     for url, data in results.items():
@@ -239,8 +295,14 @@ def normalize_lighthouse_results(lighthouse_data: Dict[str, Any]) -> Dict[str, A
             if isinstance(score, (int, float)):
                 scores["seo"][platform].append(float(score))
 
+            findings["accessibility"][platform].extend(_accessibility_findings(url, audits, categories))
+            access_cat = categories.get("accessibility", {})
+            access_score = access_cat.get("score") if isinstance(access_cat, dict) else None
+            if isinstance(access_score, (int, float)):
+                scores["accessibility"][platform].append(float(access_score))
+
     summary: Dict[str, Dict[str, Dict[str, Any]]] = {}
-    for category in ("performance", "seo"):
+    for category in ("performance", "seo", "accessibility"):
         summary[category] = {}
         for platform in ("mobile", "desktop"):
             per_findings = findings[category][platform]

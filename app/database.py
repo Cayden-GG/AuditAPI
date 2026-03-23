@@ -32,9 +32,11 @@ def _ensure_audit_columns() -> None:
         "seo_report_object": "TEXT",
         "perf_report_object": "TEXT",
         "key_findings_object": "TEXT",
+        "accessibility_report_object": "TEXT",
         "audit_json_object": "TEXT",
         "ai_json_object": "TEXT",
         "audit_log_object": "TEXT",
+        "tier": "TEXT",
     }
     with engine.connect() as conn:
         existing = {
@@ -48,13 +50,20 @@ def _ensure_audit_columns() -> None:
         conn.commit()
 
 
-def create_audit(db, target_url: str, client_email: str, client_name: Optional[str] = None):
+def create_audit(
+    db,
+    target_url: str,
+    client_email: str,
+    client_name: Optional[str] = None,
+    tier: str = "free",
+):
     from .models import AuditTable, AuditStatus
 
     audit = AuditTable(
         target_url=target_url,
         client_email=client_email,
         client_name=client_name or "",
+        tier=tier,
         status=AuditStatus.PENDING,
     )
     db.add(audit)

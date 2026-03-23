@@ -119,7 +119,7 @@ def build_pdf(
     normalized_findings = lh.get("normalized_findings", {}) or {}
     summary = lh.get("summary", {}) or {}
 
-    if report_type in ("performance", "seo"):
+    if report_type == "performance":
         story += methodology_section(lh, tested_urls)
         story.append(PageBreak())
         story += executive_summary_section(ai, summary.get(report_type, {}) or {}, report_type=report_type)
@@ -141,31 +141,53 @@ def build_pdf(
             per_url_data = _select_per_url_data(lh, report_type, platform_label)
             section_label = platform_label.title()
 
-            if report_type == "performance":
-                story += site_average_section(website_data, per_url_data, section_label=section_label)
-                story.append(PageBreak())
-            else:
-                report_label = "SEO"
-                story += audit_score_overview_section(website_data, report_label, section_label=section_label)
-                story.append(PageBreak())
+            story += site_average_section(website_data, per_url_data, section_label=section_label)
+            story.append(PageBreak())
 
         for platform_label in ("mobile", "desktop"):
             per_url_data = _select_per_url_data(lh, report_type, platform_label)
             section_label = platform_label.title()
 
-            if report_type == "performance":
-                story += per_url_section(ai, per_url_data, section_label=section_label, report_type=report_type)
-                story.append(PageBreak())
-            else:
-                report_label = "SEO"
-                story += audit_score_per_url_section(
-                    per_url_data,
-                    report_label,
-                    section_label=section_label,
-                    ai=ai,
-                    report_type=report_type,
-                )
-                story.append(PageBreak())
+            story += per_url_section(ai, per_url_data, section_label=section_label, report_type=report_type)
+            story.append(PageBreak())
+
+    elif report_type in ("seo", "accessibility"):
+        story += methodology_section(lh, tested_urls)
+        story.append(PageBreak())
+        story += executive_summary_section(ai, summary.get(report_type, {}) or {}, report_type=report_type)
+
+        story += findings_section(
+            normalized_findings.get(report_type, {}).get("mobile", []),
+            f"{report_type.title()} (Mobile)",
+        )
+        story.append(PageBreak())
+        story += findings_section(
+            normalized_findings.get(report_type, {}).get("desktop", []),
+            f"{report_type.title()} (Desktop)",
+        )
+
+        story.append(PageBreak())
+
+        report_label = "SEO" if report_type == "seo" else "Accessibility"
+        for platform_label in ("mobile", "desktop"):
+            website_data = _select_website_data(lh, report_type, platform_label)
+            section_label = platform_label.title()
+
+            story += audit_score_overview_section(website_data, report_label, section_label=section_label)
+            story.append(PageBreak())
+
+        for platform_label in ("mobile", "desktop"):
+            per_url_data = _select_per_url_data(lh, report_type, platform_label)
+            section_label = platform_label.title()
+
+            story += audit_score_per_url_section(
+                per_url_data,
+                report_label,
+                section_label=section_label,
+                ai=ai,
+                report_type=report_type,
+            )
+            story.append(PageBreak())
 
     elif report_type == "key_findings":
         story += methodology_section(lh, tested_urls)
@@ -178,6 +200,7 @@ def build_pdf(
         title_map = {
             "performance": "Technical & Performance Report",
             "seo": "Technical & SEO Report",
+            "accessibility": "Accessibility Report",
             "key_findings": "Key Findings & Priorities",
         }
         cover_page(
@@ -203,6 +226,7 @@ def build_reports(
     data: Dict[str, Any],
     output_dir: str,
     client_name: str,
+    include_accessibility: bool = False,
 ) -> Dict[str, str]:
     ts = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
     reports = {
@@ -210,6 +234,8 @@ def build_reports(
         "seo": os.path.join(output_dir, f"SEO_PDF_{ts}.pdf"),
         "key_findings": os.path.join(output_dir, f"Key_Findings_{ts}.pdf"),
     }
+    if include_accessibility:
+        reports["accessibility"] = os.path.join(output_dir, f"Accessibility_PDF_{ts}.pdf")
     for report_type, path in reports.items():
         build_pdf(
             data,

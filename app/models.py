@@ -21,6 +21,7 @@ class AuditTable(Base):
     target_url = Column(String)
     client_email = Column(String, index=True)
     client_name = Column(String)
+    tier = Column(String, default="free")
     status = Column(SQLEnum(AuditStatus), default=AuditStatus.PENDING)
     
     # Store links to your GCS Reports
@@ -30,6 +31,7 @@ class AuditTable(Base):
     seo_report_object = Column(String, nullable=True)
     perf_report_object = Column(String, nullable=True)
     key_findings_object = Column(String, nullable=True)
+    accessibility_report_object = Column(String, nullable=True)
     audit_json_object = Column(String, nullable=True)
     ai_json_object = Column(String, nullable=True)
     audit_log_object = Column(String, nullable=True)
@@ -69,6 +71,7 @@ class AuditRecord(BaseModel):
     target_url: str
     client_email: str
     client_name: Optional[str] = None
+    tier: Optional[str] = None
     status: AuditStatus
     seo_report_url: Optional[str] = None
     perf_report_url: Optional[str] = None
@@ -76,6 +79,7 @@ class AuditRecord(BaseModel):
     seo_report_object: Optional[str] = None
     perf_report_object: Optional[str] = None
     key_findings_object: Optional[str] = None
+    accessibility_report_object: Optional[str] = None
     audit_json_object: Optional[str] = None
     ai_json_object: Optional[str] = None
     audit_log_object: Optional[str] = None

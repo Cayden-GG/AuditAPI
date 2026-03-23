@@ -6,6 +6,7 @@ class AppConfig:
     client_name: str
     domain_url: str
     max_urls: int
+    only_categories: str
     audit_id: str | None = None
     output_dir: str | None = None
     log_path: str | None = None
@@ -34,6 +35,12 @@ def build_config() -> AppConfig:
         help="Maximum number of URLs to audit",
     )
     parser.add_argument(
+        "--only-categories",
+        required=False,
+        default="performance,seo",
+        help="Comma-separated Lighthouse categories (e.g. performance,seo,accessibility)",
+    )
+    parser.add_argument(
         "--audit-id",
         required=False,
         default=None,
@@ -58,6 +65,7 @@ def build_config() -> AppConfig:
         client_name=args.client_name,
         domain_url=args.domain_url,
         max_urls=args.max_urls,
+        only_categories=args.only_categories,
         audit_id=args.audit_id,
         output_dir=args.output_dir,
         log_path=args.log_path,
