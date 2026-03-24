@@ -48,6 +48,8 @@ def cover_page(canvas, doc, sitemap, lighthouse, client_name, client_domain, log
     desktop_perf = _extract_score(summary, "performance", "desktop")
     mobile_seo = _extract_score(summary, "seo", "mobile")
     desktop_seo = _extract_score(summary, "seo", "desktop")
+    mobile_accessibility = _extract_score(summary, "accessibility", "mobile")
+    desktop_accessibility = _extract_score(summary, "accessibility", "desktop")
 
     tested_urls = lighthouse.get("tested_url_count")
     if tested_urls is None:
@@ -102,33 +104,45 @@ def cover_page(canvas, doc, sitemap, lighthouse, client_name, client_domain, log
         ("Desktop Performance", _format_score(desktop_perf), score_color(desktop_perf)),
         ("Mobile SEO", _format_score(mobile_seo), score_color(mobile_seo)),
         ("Desktop SEO", _format_score(desktop_seo), score_color(desktop_seo)),
+        ("Mobile Accessibility", _format_score(mobile_accessibility), score_color(mobile_accessibility)),
+        ("Desktop Accessibility", _format_score(desktop_accessibility), score_color(desktop_accessibility)),
         ("Pages Audited", str(tested_urls or "n/a"), PURPLE),
     ]
 
     card_gap = 8
-    card_w = (CONTENT_W - card_gap * (len(kpis) - 1)) / len(kpis)
     card_h = 60
     card_y = headline_y - 106
-    card_x = MARGIN_L
 
-    for label, value, color in kpis:
-        canvas.setFillColor(colors.HexColor("#111826"))
-        canvas.setStrokeColor(colors.HexColor("#242E42"))
-        canvas.setLineWidth(0.8)
-        canvas.rect(card_x, card_y, card_w, card_h, fill=1, stroke=1)
+    row_specs = [3, 4]
+    offset = 0
+    for row_idx, row_count in enumerate(row_specs):
+        row = kpis[offset:offset + row_count]
+        if not row:
+            break
+        card_w = (CONTENT_W - card_gap * (row_count - 1)) / row_count
+        card_x = MARGIN_L
+        row_y = card_y - (row_idx * (card_h + 10))
 
-        canvas.setFillColor(color if color else NA)
-        canvas.rect(card_x, card_y + card_h - 3, card_w, 3, fill=1, stroke=0)
+        for label, value, color in row:
+            canvas.setFillColor(colors.HexColor("#111826"))
+            canvas.setStrokeColor(colors.HexColor("#242E42"))
+            canvas.setLineWidth(0.8)
+            canvas.rect(card_x, row_y, card_w, card_h, fill=1, stroke=1)
 
-        canvas.setFont(body_bold, 22)
-        canvas.setFillColor(color if color else NA)
-        canvas.drawString(card_x + 8, card_y + card_h - 28, str(value))
+            canvas.setFillColor(color if color else NA)
+            canvas.rect(card_x, row_y + card_h - 3, card_w, 3, fill=1, stroke=0)
 
-        canvas.setFont(body_font, 7)
-        canvas.setFillColor(INK_LIGHT)
-        canvas.drawString(card_x + 8, card_y + 8, label.upper())
+            canvas.setFont(body_bold, 22)
+            canvas.setFillColor(color if color else NA)
+            canvas.drawString(card_x + 8, row_y + card_h - 28, str(value))
 
-        card_x += card_w + card_gap
+            canvas.setFont(body_font, 7)
+            canvas.setFillColor(INK_LIGHT)
+            canvas.drawString(card_x + 8, row_y + 8, label.upper())
+
+            card_x += card_w + card_gap
+
+        offset += row_count
 
     strip_h = 32
     strip_y = 46

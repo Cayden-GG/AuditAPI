@@ -36,6 +36,13 @@ def _category_audit_ids(categories: Dict[str, Any], category_key: str) -> List[s
                 audit_ids.append(audit_id)
     return audit_ids
 
+def _normalize_categories(raw: Any) -> List[str]:
+    if isinstance(raw, str):
+        return [c.strip().lower() for c in raw.split(",") if c.strip()]
+    if isinstance(raw, list):
+        return [str(c).strip().lower() for c in raw if str(c).strip()]
+    return []
+
 
 def format_lighthouse_output(lighthouse_data: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -47,6 +54,8 @@ def format_lighthouse_output(lighthouse_data: Dict[str, Any]) -> Dict[str, Any]:
 
     meta = lighthouse_data.get("meta", {})
     results = lighthouse_data.get("lighthouse_data", {})
+    categories = _normalize_categories(meta.get("categories"))
+    include_accessibility = "accessibility" in categories
 
     if not isinstance(results, dict) or not results:
         log(logs, "error", "No results found in input file.")
@@ -111,28 +120,29 @@ def format_lighthouse_output(lighthouse_data: Dict[str, Any]) -> Dict[str, Any]:
             url_entry["seo"]["desktop"] = desktop_seo
             seo_desktop[url] = desktop_seo
 
-        mobile_accessibility = reduce_url_accessibility(
-            url,
-            mobile_audits,
-            _category_audit_ids(mobile_categories, "accessibility"),
-            logs=logs,
-            errors=errors,
-        )
-        desktop_accessibility = reduce_url_accessibility(
-            url,
-            desktop_audits,
-            _category_audit_ids(desktop_categories, "accessibility"),
-            logs=logs,
-            errors=errors,
-        )
-        if mobile_accessibility or desktop_accessibility:
-            url_entry.setdefault("accessibility", {})
-        if mobile_accessibility is not None:
-            url_entry["accessibility"]["mobile"] = mobile_accessibility
-            accessibility_mobile[url] = mobile_accessibility
-        if desktop_accessibility is not None:
-            url_entry["accessibility"]["desktop"] = desktop_accessibility
-            accessibility_desktop[url] = desktop_accessibility
+        if include_accessibility:
+            mobile_accessibility = reduce_url_accessibility(
+                url,
+                mobile_audits,
+                _category_audit_ids(mobile_categories, "accessibility"),
+                logs=logs,
+                errors=errors,
+            )
+            desktop_accessibility = reduce_url_accessibility(
+                url,
+                desktop_audits,
+                _category_audit_ids(desktop_categories, "accessibility"),
+                logs=logs,
+                errors=errors,
+            )
+            if mobile_accessibility or desktop_accessibility:
+                url_entry.setdefault("accessibility", {})
+            if mobile_accessibility is not None:
+                url_entry["accessibility"]["mobile"] = mobile_accessibility
+                accessibility_mobile[url] = mobile_accessibility
+            if desktop_accessibility is not None:
+                url_entry["accessibility"]["desktop"] = desktop_accessibility
+                accessibility_desktop[url] = desktop_accessibility
 
         if url_entry:
             per_url[url] = url_entry
@@ -146,11 +156,12 @@ def format_lighthouse_output(lighthouse_data: Dict[str, Any]) -> Dict[str, Any]:
             "mobile": aggregate_website_seo(seo_mobile, logs=logs) if seo_mobile else {},
             "desktop": aggregate_website_seo(seo_desktop, logs=logs) if seo_desktop else {},
         },
-        "accessibility": {
+    }
+    if include_accessibility:
+        website["accessibility"] = {
             "mobile": aggregate_website_accessibility(accessibility_mobile, logs=logs) if accessibility_mobile else {},
             "desktop": aggregate_website_accessibility(accessibility_desktop, logs=logs) if accessibility_desktop else {},
-        },
-    }
+        }
 
     return {
         "meta": meta,

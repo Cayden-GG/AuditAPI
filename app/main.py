@@ -6,7 +6,8 @@ import subprocess
 import sys
 import math
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from .database import (
@@ -41,8 +42,31 @@ from .cleanup import run_full_cleanup
 from .audit_queue.models import QueueStatusResponse
 from .audit_queue.service import enqueue_job, queue_status, start_dispatcher, launch_job_in_thread
 from .audit_queue.worker import queue_worker
+from .rate_limit import build_rate_limiter, rate_limit_key
 
 app = FastAPI(title="Valvanta Site Audit")
+_rate_limit_enabled, _rate_limit_max, _rate_limit_window, _rate_limiter = build_rate_limiter()
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    if not _rate_limit_enabled:
+        return await call_next(request)
+    if request.url.path.startswith("/api/"):
+        key = rate_limit_key(request)
+        allowed, retry_after = _rate_limiter.allow(key)
+        if not allowed:
+            headers = {"Retry-After": str(retry_after)}
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "detail": "Rate limit exceeded.",
+                    "max_requests": _rate_limit_max,
+                    "window_seconds": _rate_limit_window,
+                },
+                headers=headers,
+            )
+    return await call_next(request)
 
 @app.on_event("startup")
 def startup():
@@ -56,6 +80,21 @@ def _safe_update_status(db: Session, audit_id: str, status: AuditStatus, logger,
         update_audit_status(db, audit_id, status, completed_at=completed_at)
     except Exception as exc:
         logger.exception("Failed to update audit status.", exc, status=status)
+
+
+def _normalize_categories(value: str, *, include_accessibility: bool = False) -> str:
+    categories = [c.strip().lower() for c in (value or "").split(",") if c.strip()]
+    if not categories:
+        categories = ["performance", "seo"]
+    if include_accessibility and "accessibility" not in categories:
+        categories.append("accessibility")
+    seen = set()
+    ordered = []
+    for category in categories:
+        if category not in seen:
+            seen.add(category)
+            ordered.append(category)
+    return ",".join(ordered)
 
 
 def run_audit_task(
@@ -137,6 +176,10 @@ def run_audit_task(
         if not audit:
             raise ValueError(f"Audit {audit_id} not found")
 
+        normalized_categories = _normalize_categories(
+            only_categories,
+            include_accessibility=(tier == "paid"),
+        )
         client_name = audit.client_name or "client"
         output_dir = f"audit_results/{client_name}_audit_{timestamp}"
         logger.info("Audit starting", client_name=client_name, target_url=audit.target_url, output_dir=output_dir)
@@ -160,7 +203,7 @@ def run_audit_task(
                 "--max-urls",
                 str(max_urls),
                 "--only-categories",
-                only_categories,
+                normalized_categories,
             ]
             result = subprocess.run(
                 cmd,
@@ -283,13 +326,11 @@ def run_audit_task(
                     audit_id=audit.id,
                     gcs_bucket=gcs_bucket or None,
                     gcs_objects=list(gcs_objects.values()) if gcs_objects else None,
-                    # report_paths=[str(path) for path in report_paths] if report_paths else None,
                 )
                 send_audit_email(
                     to_email=company_email,
                     client_name="Valvanta Digital",
                     target_url=audit.target_url,
-                    # report_paths=report_paths,
                     subject=subject,
                     html_content=html_content,
                 )
@@ -345,13 +386,6 @@ def validateDomain(db, domain):
 
 @app.post("/api/v1/audit", response_model=AuditResponse, status_code=202)
 async def start_website_audit(payload: AuditCreate):
-    # validate target url
-    # if validateDomain(db, payload.url):
-    #     return AuditResponse(
-    #         job_id=None,
-    #         status="Denied",
-    #         message="This domain has already been audited."
-    #     )
     try:
         job_token, audit_id = enqueue_job(
             url=str(payload.url),

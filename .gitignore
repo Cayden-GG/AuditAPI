@@ -18,6 +18,7 @@ AGENTS.md
 
 # audits
 audit_results/
+logs/
 *.pdf
 *.json
 *.jsonl
@@ -35,3 +36,4 @@ eggs/
 
 # spec docs
 VALVANTA_REPORT_DESIGN_SPEC.md
+AUDIT_QUEUE_SPEC.md

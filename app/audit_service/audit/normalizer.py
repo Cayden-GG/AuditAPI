@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Tuple
 
-from .audit_config import SEO_AUDIT_IDS
+from .audit_config import ACCESSIBILITY_AUDIT_IDS, SEO_AUDIT_IDS
 
 SEO_GROUPS: Dict[str, str] = {
     "meta-description": "Metadata",
@@ -233,6 +233,8 @@ def _accessibility_findings(
 ) -> List[Dict[str, Any]]:
     findings: List[Dict[str, Any]] = []
     audit_ids = _category_audit_ids(categories, "accessibility")
+    if not audit_ids:
+        audit_ids = ACCESSIBILITY_AUDIT_IDS
     for audit_id in audit_ids:
         audit = audits.get(audit_id, {})
         if not isinstance(audit, dict):

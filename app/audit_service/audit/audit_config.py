@@ -33,6 +33,27 @@ SEO_AUDIT_IDS = [
     "charset",
 ]
 
+ACCESSIBILITY_AUDIT_IDS = [
+    "color-contrast",
+    "image-alt",
+    "label",
+    "link-name",
+    "button-name",
+    "aria-allowed-attr",
+    "aria-valid-attr",
+    "aria-required-attr",
+    "form-field-multiple-labels",
+    "heading-order",
+    "html-has-lang",
+    "html-lang-valid",
+    "frame-title",
+    "duplicate-id-aria",
+    "bypass",
+    "landmark-one-main",
+    "meta-viewport",
+    "target-size",
+]
+
 @dataclass
 class LighthouseDesktopRunOptions:
     preset: str = "desktop"  # "desktop" or "mobile"

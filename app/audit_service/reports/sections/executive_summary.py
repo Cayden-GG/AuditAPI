@@ -24,7 +24,15 @@ def executive_summary_section(
     styles = get_styles()
 
     story = []
-    
+
+    def _clean_ai_text(value: str) -> str:
+        if not isinstance(value, str):
+            return ""
+        cleaned = value.replace("<br/>- -", "<br/>- ").replace("<br>- -", "<br/>- ")
+        cleaned = cleaned.replace("\n- -", "\n- ").replace("\r\n- -", "\n- ")
+        cleaned = cleaned.replace("- - ", "- ")
+        return cleaned
+
     story.append(SectionRule("Executive Summary"))
     story.append(Spacer(1, 10))
 
@@ -46,6 +54,7 @@ def executive_summary_section(
     else:
         exec_text = exec_data
     if exec_text:
+        exec_text = _clean_ai_text(exec_text)
         safe_text = exec_text.replace("<br>", "<br/>").replace("\n", "<br/>")
         story.append(Paragraph(safe_text, styles["Body"]))
     else:

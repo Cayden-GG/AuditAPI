@@ -13,13 +13,23 @@ def _strip_heading(value: str, heading: str) -> str:
         return ""
     lowered = value.strip().lower()
     heading_l = heading.lower()
-    if lowered.startswith(heading_l):
-        cleaned = value.strip()[len(heading):].lstrip(" :\n\r-")
-        return cleaned
+    for prefix in (heading_l, f"- {heading_l}", f"• {heading_l}"):
+        if lowered.startswith(prefix):
+            cleaned = value.strip()[len(prefix):].lstrip(" :\n\r-")
+            return cleaned
     if "<b>" in lowered:
         cleaned = re.sub(r"<b>\\s*" + re.escape(heading) + r"\\s*</b>", "", value, flags=re.IGNORECASE)
         return cleaned.strip()
     return value
+
+
+def _clean_ai_text(value: str) -> str:
+    if not isinstance(value, str):
+        return ""
+    cleaned = value.replace("<br/>- -", "<br/>- ").replace("<br>- -", "<br/>- ")
+    cleaned = cleaned.replace("\n- -", "\n- ").replace("\r\n- -", "\n- ")
+    cleaned = cleaned.replace("- - ", "- ")
+    return cleaned
 
 
 def _select_per_url_ai(ai: Dict[str, Any], report_type: str) -> Dict[str, Any]:
@@ -76,18 +86,14 @@ def url_block(ai: Dict[str, Any], url: str, d: Dict[str, Any], report_type: str)
 
     ai_note = per_url_ai.get(url)
     if ai_note and isinstance(ai_note, dict):
-        what = _strip_heading(ai_note.get("what_the_data_shows", ""), "What the data shows")
-        strengths = _strip_heading(ai_note.get("key_strengths", ""), "Key strengths")
-        weaknesses = _strip_heading(ai_note.get("primary_weaknesses", ""), "Primary weaknesses")
-        recs = _strip_heading(ai_note.get("recommendations", ""), "Recommendations")
+        what = _clean_ai_text(_strip_heading(ai_note.get("what_the_data_shows", ""), "What the data shows"))
+        strengths = _clean_ai_text(_strip_heading(ai_note.get("key_strengths", ""), "Key strengths"))
+        weaknesses = _clean_ai_text(_strip_heading(ai_note.get("primary_weaknesses", ""), "Primary weaknesses"))
+        recs = _clean_ai_text(_strip_heading(ai_note.get("recommendations", ""), "Recommendations"))
         text = (
-            # "<b>What the data shows</b><br/>"
             f"{what}<br/><br/>"
-            # "<b>Key strengths</b><br/>"
             f"{strengths}<br/><br/>"
-            # "<b>Primary weaknesses</b><br/>"
             f"{weaknesses}<br/><br/>"
-            # "<b>Recommendations</b><br/>"
             f"{recs}"
         )
         blocks.append(Paragraph(text, styles["Body"]))

@@ -265,7 +265,18 @@ def main() -> None:
     payload = {"audit": audit, "ai": ai}
     if args.report_type == "all":
         output_dir = os.path.dirname(args.output) or "."
-        build_reports(payload, output_dir, client_name=args.client_name)
+        categories_raw = (audit.get("lighthouse", {}) or {}).get("categories") or ""
+        if isinstance(categories_raw, str):
+            categories = [c.strip() for c in categories_raw.split(",") if c.strip()]
+        else:
+            categories = [str(c).strip() for c in (categories_raw or []) if str(c).strip()]
+        include_accessibility = "accessibility" in categories
+        build_reports(
+            payload,
+            output_dir,
+            client_name=args.client_name,
+            include_accessibility=include_accessibility,
+        )
     else:
         build_pdf(payload, args.output, client_name=args.client_name, report_type=args.report_type)
 

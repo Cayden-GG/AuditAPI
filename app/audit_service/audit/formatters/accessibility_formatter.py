@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 from .helpers import add_error, log, safe_average
+from ..audit_config import ACCESSIBILITY_AUDIT_IDS
 
 
 def _audit_status(audit: Dict[str, Any]) -> str:
@@ -28,8 +29,8 @@ def reduce_url_accessibility(
         return None
 
     if not audit_ids:
-        log(logs, "warning", f"No accessibility audit IDs found for {url}")
-        return None
+        log(logs, "warning", f"No accessibility audit IDs found for {url}; using defaults.")
+        audit_ids = ACCESSIBILITY_AUDIT_IDS
 
     audit_map: Dict[str, Any] = {}
     scores: List[float] = []

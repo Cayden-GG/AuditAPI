@@ -13,7 +13,7 @@ from .ai.request import call_openai
 from datetime import datetime
 
 import json
-from typing import Dict
+from typing import Any, Dict
 from app.logging_utils import build_audit_logger
 
 REPORT_KEYS = ("performance", "seo", "accessibility", "key_findings")
@@ -22,6 +22,10 @@ REPORT_KEYS = ("performance", "seo", "accessibility", "key_findings")
 def _normalize_categories(value: str) -> str:
     categories = [c.strip() for c in (value or "").split(",") if c.strip()]
     return ",".join(categories) or "performance,seo"
+
+def _should_include_accessibility(only_categories: str) -> bool:
+    categories = [c.strip().lower() for c in (only_categories or "").split(",") if c.strip()]
+    return "accessibility" in categories
 
 
 def run_audit(config: AppConfig) -> Dict[str, str]:
@@ -142,7 +146,7 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
     # generate pdfs
     reports: Dict[str, str] = {}
     try:
-        include_accessibility = "accessibility" in only_categories.split(",")
+        include_accessibility = _should_include_accessibility(only_categories)
         reports = build_reports(
             pdf_data,
             output_dir=output_dir,

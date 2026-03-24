@@ -1,7 +1,7 @@
 """ AI Schema config
 """
 
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 class KeyFinding(BaseModel):
@@ -35,11 +35,13 @@ class ExecutiveSummaries(BaseModel):
     model_config = ConfigDict(extra="forbid")
     performance: ExecutiveSummary
     seo: ExecutiveSummary
+    accessibility: Optional[ExecutiveSummary] = None
 
 class PerUrlSummaries(BaseModel):
     model_config = ConfigDict(extra="forbid")
     performance: List[PerUrlSummaryItem]
     seo: List[PerUrlSummaryItem]
+    accessibility: Optional[List[PerUrlSummaryItem]] = None
 
 class AuditInsights(BaseModel):
     model_config = ConfigDict(extra="forbid")

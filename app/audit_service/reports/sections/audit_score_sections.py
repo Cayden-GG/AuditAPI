@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import re
 
-from reportlab.platypus import KeepTogether, Paragraph, Spacer, Table
+from reportlab.platypus import Paragraph, Spacer, Table
 
 from ..helpers import bar_chart, fmt_num, style_table
 
@@ -25,13 +25,23 @@ def _strip_heading(value: str, heading: str) -> str:
         return ""
     lowered = value.strip().lower()
     heading_l = heading.lower()
-    if lowered.startswith(heading_l):
-        cleaned = value.strip()[len(heading):].lstrip(" :\n\r-")
-        return cleaned
+    for prefix in (heading_l, f"- {heading_l}", f"• {heading_l}"):
+        if lowered.startswith(prefix):
+            cleaned = value.strip()[len(prefix):].lstrip(" :\n\r-")
+            return cleaned
     if "<b>" in lowered:
         cleaned = re.sub(r"<b>\\s*" + re.escape(heading) + r"\\s*</b>", "", value, flags=re.IGNORECASE)
         return cleaned.strip()
     return value
+
+
+def _clean_ai_text(value: str) -> str:
+    if not isinstance(value, str):
+        return ""
+    cleaned = value.replace("<br/>- -", "<br/>- ").replace("<br>- -", "<br/>- ")
+    cleaned = cleaned.replace("\n- -", "\n- ").replace("\r\n- -", "\n- ")
+    cleaned = cleaned.replace("- - ", "- ")
+    return cleaned
 from ..styles import CONTENT_W, MAX_URLS, SectionRule, get_styles
 
 
@@ -39,6 +49,15 @@ def _fmt_score(value: Any) -> str:
     if not isinstance(value, (int, float)):
         return "n/a"
     return f"{value * 100:.1f}%"
+
+def _format_audit_list(items: List[str], max_items: int = 30) -> str:
+    if not items:
+        return "n/a"
+    if len(items) <= max_items:
+        return "<br/>".join(items)
+    remainder = len(items) - max_items
+    trimmed = "<br/>".join(items[:max_items])
+    return f"{trimmed}<br/>...and {remainder} more"
 
 
 def audit_score_overview_section(website: Dict[str, Any], report_label: str, section_label: str | None = None) -> List[Any]:
@@ -169,18 +188,14 @@ def audit_score_per_url_section(
 
         ai_note = per_url_ai.get(url)
         if ai_note and isinstance(ai_note, dict):
-            what = _strip_heading(ai_note.get("what_the_data_shows", ""), "What the data shows")
-            strengths = _strip_heading(ai_note.get("key_strengths", ""), "Key strengths")
-            weaknesses = _strip_heading(ai_note.get("primary_weaknesses", ""), "Primary weaknesses")
-            recs = _strip_heading(ai_note.get("recommendations", ""), "Recommendations")
+            what = _clean_ai_text(_strip_heading(ai_note.get("what_the_data_shows", ""), "What the data shows"))
+            strengths = _clean_ai_text(_strip_heading(ai_note.get("key_strengths", ""), "Key strengths"))
+            weaknesses = _clean_ai_text(_strip_heading(ai_note.get("primary_weaknesses", ""), "Primary weaknesses"))
+            recs = _clean_ai_text(_strip_heading(ai_note.get("recommendations", ""), "Recommendations"))
             text = (
-                "<b>What the data shows</b><br/>"
                 f"{what}<br/><br/>"
-                "<b>Key strengths</b><br/>"
                 f"{strengths}<br/><br/>"
-                "<b>Primary weaknesses</b><br/>"
                 f"{weaknesses}<br/><br/>"
-                "<b>Recommendations</b><br/>"
                 f"{recs}"
             )
             blocks.append(Paragraph(text, styles["Body"]))
@@ -197,12 +212,12 @@ def audit_score_per_url_section(
 
         blocks.append(style_table(Table([
             ["Audit status", "Tests"],
-            ["Passed", Paragraph("<br/>".join(passed) if passed else "n/a", styles["URLCell"])],
-            ["Failed", Paragraph("<br/>".join(failed) if failed else "n/a", styles["URLCell"])],
-            ["N/A", Paragraph("<br/>".join(not_applicable) if not_applicable else "n/a", styles["URLCell"])],
+            ["Passed", Paragraph(_format_audit_list(passed), styles["URLCell"])],
+            ["Failed", Paragraph(_format_audit_list(failed), styles["URLCell"])],
+            ["N/A", Paragraph(_format_audit_list(not_applicable), styles["URLCell"])],
         ], colWidths=[CONTENT_W * 0.18, CONTENT_W * 0.82])))
         blocks.append(Spacer(1, 8))
 
-        story.append(KeepTogether(blocks))
+        story.extend(blocks)
 
     return story

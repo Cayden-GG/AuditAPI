@@ -15,114 +15,104 @@ client = OpenAI()
 
 MAX_URLS = 100
 
-AI_SCHEMA = {
-  "name": "audit_insights",
-  "schema": {
-    "type": "object",
-    "additionalProperties": False,
-    "properties": {
-      "executive_summaries": {
+def _summary_schema() -> Dict[str, Any]:
+    return {
         "type": "object",
         "additionalProperties": False,
         "properties": {
-          "performance": {
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {
-              "what_the_data_shows": {"type": "string"},
-              "key_strengths": {"type": "string"},
-              "primary_weaknesses": {"type": "string"},
-              "high_level_roadmap": {"type": "string"}
-            },
-            "required": ["what_the_data_shows", "key_strengths", "primary_weaknesses", "high_level_roadmap"]
-          },
-          "seo": {
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {
-              "what_the_data_shows": {"type": "string"},
-              "key_strengths": {"type": "string"},
-              "primary_weaknesses": {"type": "string"},
-              "high_level_roadmap": {"type": "string"}
-            },
-            "required": ["what_the_data_shows", "key_strengths", "primary_weaknesses", "high_level_roadmap"]
-          }
+            "what_the_data_shows": {"type": "string"},
+            "key_strengths": {"type": "string"},
+            "primary_weaknesses": {"type": "string"},
+            "high_level_roadmap": {"type": "string"},
         },
-        "required": ["performance", "seo"]
-      },
-      "prioritisation_method": {"type": "string"},
-      "key_findings": {
+        "required": ["what_the_data_shows", "key_strengths", "primary_weaknesses", "high_level_roadmap"],
+    }
+
+
+def _per_url_schema() -> Dict[str, Any]:
+    return {
         "type": "array",
         "items": {
-          "type": "object",
-          "additionalProperties": False,
-          "properties": {
-            "issue": {"type": "string"},
-            "priority": {"type": "string", "enum": ["High", "Medium", "Low"]},
-            "impact": {"type": "string"},
-            "effort": {"type": "string", "enum": ["Low", "Medium", "High"]},
-            "explanation": {"type": "string"}
-          },
-          "required": ["issue", "priority", "impact", "effort", "explanation"]
-        }
-      },
-      "per_url_summaries": {
-        "type": "object",
-        "additionalProperties": False,
-        "properties": {
-          "performance": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": False,
-              "properties": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
                 "url": {"type": "string"},
                 "analysis": {
-                  "type": "object",
-                  "additionalProperties": False,
-                  "properties": {
-                    "what_the_data_shows": {"type": "string"},
-                    "key_strengths": {"type": "string"},
-                    "primary_weaknesses": {"type": "string"},
-                    "recommendations": {"type": "string"}
-                  },
-                  "required": ["what_the_data_shows", "key_strengths", "primary_weaknesses", "recommendations"]
-                }
-              },
-              "required": ["url", "analysis"]
-            }
-          },
-          "seo": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": False,
-              "properties": {
-                "url": {"type": "string"},
-                "analysis": {
-                  "type": "object",
-                  "additionalProperties": False,
-                  "properties": {
-                    "what_the_data_shows": {"type": "string"},
-                    "key_strengths": {"type": "string"},
-                    "primary_weaknesses": {"type": "string"},
-                    "recommendations": {"type": "string"}
-                  },
-                  "required": ["what_the_data_shows", "key_strengths", "primary_weaknesses", "recommendations"]
-                }
-              },
-              "required": ["url", "analysis"]
-            }
-          }
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        "what_the_data_shows": {"type": "string"},
+                        "key_strengths": {"type": "string"},
+                        "primary_weaknesses": {"type": "string"},
+                        "recommendations": {"type": "string"},
+                    },
+                    "required": ["what_the_data_shows", "key_strengths", "primary_weaknesses", "recommendations"],
+                },
+            },
+            "required": ["url", "analysis"],
         },
-        "required": ["performance", "seo"]
-      }
-    },
-    "required": ["executive_summaries", "prioritisation_method", "key_findings", "per_url_summaries"]
-  }
-}
+    }
+
+
+def _build_ai_schema(categories: List[str]) -> Dict[str, Any]:
+    executive_props: Dict[str, Any] = {}
+    per_url_props: Dict[str, Any] = {}
+    for category in categories:
+        executive_props[category] = _summary_schema()
+        per_url_props[category] = _per_url_schema()
+
+    return {
+        "name": "audit_insights",
+        "schema": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "executive_summaries": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": executive_props,
+                    "required": categories,
+                },
+                "prioritisation_method": {"type": "string"},
+                "key_findings": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "issue": {"type": "string"},
+                            "priority": {"type": "string", "enum": ["High", "Medium", "Low"]},
+                            "impact": {"type": "string"},
+                            "effort": {"type": "string", "enum": ["Low", "Medium", "High"]},
+                            "explanation": {"type": "string"},
+                        },
+                        "required": ["issue", "priority", "impact", "effort", "explanation"],
+                    },
+                },
+                "per_url_summaries": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": per_url_props,
+                    "required": categories,
+                },
+            },
+            "required": ["executive_summaries", "prioritisation_method", "key_findings", "per_url_summaries"],
+        },
+    }
 
 # ------- helper fucntions -----
+
+def _extract_categories(audit: Dict[str, Any]) -> List[str]:
+    lh = audit.get("lighthouse", {}) or {}
+    categories_raw = lh.get("categories") or ""
+    categories: List[str] = []
+    if isinstance(categories_raw, str):
+        categories = [c.strip() for c in categories_raw.split(",") if c.strip()]
+    elif isinstance(categories_raw, list):
+        categories = [str(c).strip() for c in categories_raw if str(c).strip()]
+    if not categories:
+        categories = ["performance", "seo"]
+    return categories
 
 def build_single_prompt(audit: Dict[str, Any]) -> str:
     """
@@ -139,27 +129,26 @@ def build_single_prompt(audit: Dict[str, Any]) -> str:
     per_url = lh.get("per_url_performance_data", {}) or {}
     urls = list(per_url.keys())[:MAX_URLS]
 
-    per_url_by_category: Dict[str, Dict[str, Any]] = {
-        "performance": {},
-        "seo": {},
-    }
+    categories = _extract_categories(audit)
+    per_url_by_category: Dict[str, Dict[str, Any]] = {category: {} for category in categories}
     for url in urls:
         entry = per_url.get(url, {}) or {}
-        for category in ("performance", "seo"):
+        for category in categories:
             if entry.get(category):
                 per_url_by_category[category][url] = entry.get(category)
 
+    report_labels = ", ".join(categories)
     payload = {
         "context": {
             "audience": "Business owners and technical leads",
-            "purpose": "Summarise performance and SEO plus provide a prioritised implementation roadmap and per-URL improvement notes.",
+            "purpose": f"Summarise {report_labels} plus provide a prioritised implementation roadmap and per-URL improvement notes.",
             "constraints": [
                 "Use only the provided metrics. Do not invent measurements.",
                 "Be specific: mention what is good, what is bad, and how to fix it.",
                 "Priorities must be explainable and consistent.",
-                "Write two executive summaries (performance, seo) using the required structure.",
+                f"Write executive summaries for: {report_labels}, using the required structure.",
                 "Per-URL summaries must be split by topic and use only that topic's metrics.",
-                "Do not mention other topics in a per-URL summary (e.g., no SEO notes in performance).",
+                "Do not mention other topics in a per-URL summary.",
                 "Use these exact executive summary sections: What the data shows, Key strengths, Primary weaknesses, High level roadmap.",
                 "Use these exact per-URL sections: What the data shows, Key strengths, Primary weaknesses, Recommendations.",
                 "Format sections using simple HTML tags: <b>Heading</b> and <br/> line breaks.",
@@ -170,15 +159,15 @@ def build_single_prompt(audit: Dict[str, Any]) -> str:
         },
         "site_averages": wp,
         "per_url_metrics_by_category": per_url_by_category,
-        "schema": AI_SCHEMA["schema"]
+        "schema": _build_ai_schema(categories)["schema"]
     }
 
     return (
         "You are a senior web performance consultant.\n"
         "Analyse the following Lighthouse-derived dataset.\n"
-        "Create two executive summaries: performance and seo.\n"
+        f"Create executive summaries for: {report_labels}.\n"
         "Use these sections for executive summaries: What the data shows, Key strengths, Primary weaknesses, High level roadmap.\n"
-        "Create per-URL summaries split by category: performance, seo.\n"
+        f"Create per-URL summaries split by category: {report_labels}.\n"
         "Use these sections for per-URL summaries: What the data shows, Key strengths, Primary weaknesses, Recommendations.\n"
         "For each category, use only the per_url_metrics_by_category[category] data.\n"
         "Do not mix topics in per-URL summaries.\n"
@@ -215,6 +204,7 @@ def call_openai(audit: Dict[str, Any], logger: AuditLogger | NullAuditLogger | N
     if not audit:
         active_logger.warning("AI summary skipped: no audit provided.")
 
+    categories = _extract_categories(audit)
     prompt = build_single_prompt(audit)
 
     try:
@@ -232,6 +222,10 @@ def call_openai(audit: Dict[str, Any], logger: AuditLogger | NullAuditLogger | N
             "performance": {item.url: item.analysis for item in parsed.per_url_summaries.performance},
             "seo": {item.url: item.analysis for item in parsed.per_url_summaries.seo},
         }
+        if "accessibility" in categories and parsed.per_url_summaries.accessibility:
+            per_url_map["accessibility"] = {
+                item.url: item.analysis for item in parsed.per_url_summaries.accessibility
+            }
         data_for_pdf = parsed.model_dump()
         data_for_pdf["per_url_summaries"] = {
             category: {k: v.model_dump() for k, v in per_url_map[category].items()}
