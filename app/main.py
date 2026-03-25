@@ -26,11 +26,14 @@ from .models import (
     AuditResendResponse,
     AuditResponse,
     AuditStatus,
+    SendEmailRequest,
+    SendEmailResponse
 )
 from .emails.brevo_email import (
     collect_report_paths,
     find_latest_report_dir,
     send_audit_email,
+    send_generic_email,
     build_client_audit_failed_email,
     build_client_audit_results_email,
     build_company_audit_completion_email,
@@ -604,3 +607,37 @@ async def resend_audit_email(
         target_url=audit.target_url,
         resent_to=to_email,
     )
+
+@app.post("/api/sendEmail", response_model=SendEmailResponse)
+def sendWebsiteEmail(payload: SendEmailRequest):
+    if not payload.to_email or not payload.html_content:
+        raise HTTPException(status_code=400, detail="Provide to_email and html_content.")
+
+    attachments = []
+    if payload.attachments:
+        for raw in payload.attachments.split(","):
+            path = Path(raw.strip())
+            if not path:
+                continue
+            if not path.exists():
+                raise HTTPException(status_code=400, detail=f"Attachment not found: {path}")
+            attachments.append(path)
+
+    try:
+        send_generic_email(
+            to_email=payload.to_email,
+            sender_email=payload.send_email,
+            subject=payload.subject_line,
+            html_content=payload.html_content,
+            attachments=attachments or None,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return SendEmailResponse(
+        status="sent",
+        message="Email sent.",
+        sent_to=payload.to_email,
+    )
+
+

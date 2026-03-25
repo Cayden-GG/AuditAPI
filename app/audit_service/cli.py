@@ -152,6 +152,7 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
             output_dir=output_dir,
             client_name=config.client_name,
             include_accessibility=include_accessibility,
+            is_free_audit=not include_accessibility,
         )
     except Exception as exc:
         logger.exception("PDF report generation failed.", exc)

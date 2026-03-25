@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import re
 
-from reportlab.platypus import Paragraph, Spacer, Table
+from reportlab.platypus import Paragraph, Spacer, Table, PageBreak, KeepTogether
 
 from ..helpers import bar_chart, fmt_num, style_table
 
@@ -43,6 +43,7 @@ def _clean_ai_text(value: str) -> str:
     cleaned = cleaned.replace("- - ", "- ")
     return cleaned
 from ..styles import CONTENT_W, MAX_URLS, SectionRule, get_styles
+from .upsell import UpsellBackgroundPage
 
 
 def _fmt_score(value: Any) -> str:
@@ -154,6 +155,8 @@ def audit_score_per_url_section(
     section_label: str | None = None,
     ai: Dict[str, Any] | None = None,
     report_type: str = "seo",
+    *,
+    show_upsell: bool = False,
 ) -> List[Any]:
     styles = get_styles()
     story: List[Any] = []
@@ -166,7 +169,7 @@ def audit_score_per_url_section(
 
     per_url_ai = _select_per_url_ai(ai or {}, report_type)
 
-    for url, data in list(per_url.items())[:MAX_URLS]:
+    def _build_url_blocks(url: str, data: Dict[str, Any]) -> List[Any]:
         summary = data.get("summary", {}) or {}
         audits = data.get("audits", {}) or {}
 
@@ -218,6 +221,16 @@ def audit_score_per_url_section(
         ], colWidths=[CONTENT_W * 0.18, CONTENT_W * 0.82])))
         blocks.append(Spacer(1, 8))
 
-        story.extend(blocks)
+        return blocks
+
+    items = list(per_url.items())[:MAX_URLS]
+    for url, data in items:
+        story.extend(_build_url_blocks(url, data))
+
+    if show_upsell and items:
+        story.append(PageBreak())
+        story.append(
+            UpsellBackgroundPage("Upgrade to the premium audit to access data for the rest of the URLs.")
+        )
 
     return story

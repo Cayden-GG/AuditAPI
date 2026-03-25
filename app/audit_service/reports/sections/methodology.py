@@ -1,12 +1,18 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from reportlab.platypus import Paragraph, Spacer, Table
 
 from ..helpers import style_table
-from ..styles import CONTENT_W, SectionRule, get_styles
+from ..styles import CONTENT_W, MAX_URLS, SectionRule, get_styles
 
 
-def methodology_section(lh: Dict[str, Any], tested_urls: List[str]) -> List[Any]:
+def methodology_section(
+    lh: Dict[str, Any],
+    tested_urls: List[str],
+    *,
+    sitemap_url_count: Optional[int] = None,
+    show_upsell: bool = False,
+) -> List[Any]:
     styles = get_styles()
     story: List[Any] = []
 
@@ -15,13 +21,24 @@ def methodology_section(lh: Dict[str, Any], tested_urls: List[str]) -> List[Any]
     story.append(Paragraph("This audit uses Lighthouse in navigation mode with mobile emulation.", styles["Body"]))
     story.append(Spacer(1, 6))
 
+    tested_count = lh.get("tested_url_count")
+    if tested_count is None:
+        tested_count = len(tested_urls) if tested_urls else "n/a"
+
+    urls_tested_value = str(tested_count)
+    if show_upsell and isinstance(tested_count, int) and isinstance(sitemap_url_count, int):
+        urls_tested_value = (
+            f"{tested_count} of {sitemap_url_count} | "
+            f"audit up to {MAX_URLS} urls with premium audit"
+        )
+
     story.append(style_table(Table([
         ["Lighthouse version", str(lh.get("lighthouse_version", "n/a"))],
         ["Audit date", str(lh.get("run_at", "n/a"))],
         ["Categories tested", lh.get("categories") or "n/a"],
         ["Mode", str(lh.get("mode", "n/a"))],
         ["Device emulation", ", ".join(lh.get("devices") or []) or "n/a"],
-        ["URLs tested", str(lh.get("tested_url_count", "n/a"))],
+        ["URLs tested", urls_tested_value],
     ], colWidths=[CONTENT_W * 0.4, CONTENT_W * 0.6])))
     story.append(Spacer(1, 6))
 

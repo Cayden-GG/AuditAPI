@@ -138,6 +138,53 @@ def send_audit_email(
         raise RuntimeError(f"Brevo email failed: {detail}") from exc
 
 
+def send_generic_email(
+    *,
+    to_email: str,
+    sender_email: Optional[str],
+    subject: str,
+    html_content: str,
+    attachments: Optional[Iterable[Path]] = None,
+    sender_name: Optional[str] = None,
+) -> None:
+    api_key = os.getenv("BREVO_API_KEY")
+    if not api_key:
+        raise ValueError("BREVO_API_KEY is not set")
+
+    default_sender = os.getenv("BREVO_SENDER_EMAIL")
+    resolved_sender = sender_email or default_sender
+    if not resolved_sender:
+        raise ValueError("BREVO_SENDER_EMAIL is not set")
+
+    resolved_sender_name = sender_name or os.getenv("BREVO_SENDER_NAME", "Valvanta Digital")
+
+    payload = {
+        "sender": {"name": resolved_sender_name, "email": resolved_sender},
+        "to": [{"email": to_email}],
+        "subject": subject,
+        "htmlContent": html_content,
+    }
+    if attachments:
+        payload["attachment"] = _build_attachments(attachments)
+
+    req = request.Request(
+        BREVO_API_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"api-key": api_key, "Content-Type": "application/json"},
+        method="POST",
+    )
+
+    try:
+        with request.urlopen(req, timeout=30) as response:
+            if response.status >= 400:
+                raise RuntimeError(
+                    f"Brevo email failed with status {response.status}"
+                )
+    except error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"Brevo email failed: {detail}") from exc
+
+
 def build_client_confirmation_email(
     client_name: Optional[str], target_url: str
 ) -> Tuple[str, str]:
@@ -164,7 +211,6 @@ def build_company_audit_completion_email(
     audit_id: Optional[str] = None,
     gcs_bucket: Optional[str] = None,
     gcs_objects: Optional[Iterable[str]] = None,
-    # report_paths: Optional[Iterable[str]] = None,
 ) -> Tuple[str, str]:
     return company_audit_completion(
         client_name=client_name,
@@ -173,7 +219,6 @@ def build_company_audit_completion_email(
         audit_id=audit_id,
         gcs_bucket=gcs_bucket,
         gcs_objects=gcs_objects,
-        # report_paths=report_paths,
     )
 
 

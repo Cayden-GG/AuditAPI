@@ -69,6 +69,8 @@ def build_pdf(
     output_pdf: str,
     client_name: str,
     report_type: str = "performance",
+    *,
+    is_free_audit: bool = False,
 ) -> None:
     """
     Creates the PDF output with all the seo and performance data 
@@ -109,7 +111,7 @@ def build_pdf(
         rightMargin=MARGIN_R,
         topMargin=MARGIN_T + HEADER_H,
         bottomMargin=MARGIN_B + FOOTER_H,
-        title=f"Website Performance Audit - {client_domain}",
+        title=f"Website {report_type} Report - {client_domain}",
         author="Valvanta Digital",
     )
 
@@ -120,7 +122,12 @@ def build_pdf(
     summary = lh.get("summary", {}) or {}
 
     if report_type == "performance":
-        story += methodology_section(lh, tested_urls)
+        story += methodology_section(
+            lh,
+            tested_urls,
+            sitemap_url_count=sitemap.get("url_count"),
+            show_upsell=is_free_audit,
+        )
         story.append(PageBreak())
         story += executive_summary_section(ai, summary.get(report_type, {}) or {}, report_type=report_type)
 
@@ -148,11 +155,22 @@ def build_pdf(
             per_url_data = _select_per_url_data(lh, report_type, platform_label)
             section_label = platform_label.title()
 
-            story += per_url_section(ai, per_url_data, section_label=section_label, report_type=report_type)
+            story += per_url_section(
+                ai,
+                per_url_data,
+                section_label=section_label,
+                report_type=report_type,
+                show_upsell=is_free_audit,
+            )
             story.append(PageBreak())
 
     elif report_type in ("seo", "accessibility"):
-        story += methodology_section(lh, tested_urls)
+        story += methodology_section(
+            lh,
+            tested_urls,
+            sitemap_url_count=sitemap.get("url_count"),
+            show_upsell=is_free_audit,
+        )
         story.append(PageBreak())
         story += executive_summary_section(ai, summary.get(report_type, {}) or {}, report_type=report_type)
 
@@ -186,11 +204,17 @@ def build_pdf(
                 section_label=section_label,
                 ai=ai,
                 report_type=report_type,
+                show_upsell=is_free_audit,
             )
             story.append(PageBreak())
 
     elif report_type == "key_findings":
-        story += methodology_section(lh, tested_urls)
+        story += methodology_section(
+            lh,
+            tested_urls,
+            sitemap_url_count=sitemap.get("url_count"),
+            show_upsell=is_free_audit,
+        )
         story.append(PageBreak())
         story += key_findings_section(ai)
     else:
@@ -213,6 +237,7 @@ def build_pdf(
             logo_path,
             cover_image_path,
             report_title=title_map.get(report_type),
+            is_free_audit=is_free_audit,
         )
     
     def _header_footer(canvas, doc):
@@ -227,6 +252,8 @@ def build_reports(
     output_dir: str,
     client_name: str,
     include_accessibility: bool = False,
+    *,
+    is_free_audit: bool = False,
 ) -> Dict[str, str]:
     ts = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
     reports = {
@@ -242,6 +269,7 @@ def build_reports(
             output_pdf=path,
             client_name=client_name,
             report_type=report_type,
+            is_free_audit=is_free_audit,
         )
     return reports
 
@@ -276,6 +304,7 @@ def main() -> None:
             output_dir,
             client_name=args.client_name,
             include_accessibility=include_accessibility,
+            is_free_audit=not include_accessibility,
         )
     else:
         build_pdf(payload, args.output, client_name=args.client_name, report_type=args.report_type)

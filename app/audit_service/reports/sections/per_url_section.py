@@ -3,6 +3,7 @@ from typing import Dict, List, Any
 from reportlab.platypus import KeepTogether, PageBreak, Paragraph, Spacer, Table
 
 from ..styles import CONTENT_W, SectionRule, get_styles, MAX_URLS
+from .upsell import UpsellBackgroundPage
 import re
 
 from ..helpers import fmt_ms, fmt_bytes, style_table
@@ -44,7 +45,14 @@ def _select_per_url_ai(ai: Dict[str, Any], report_type: str) -> Dict[str, Any]:
         return per_url_ai
     return {}
 
-def per_url_section(ai: Dict, per_url: Dict, section_label: str | None = None, report_type: str = "performance"):
+def per_url_section(
+    ai: Dict,
+    per_url: Dict,
+    section_label: str | None = None,
+    report_type: str = "performance",
+    *,
+    show_upsell: bool = False,
+):
     """
     Creates report section that displays all the metrics for each discovered url
 
@@ -66,10 +74,17 @@ def per_url_section(ai: Dict, per_url: Dict, section_label: str | None = None, r
     story.append(Spacer(1, 8))
 
 
-    for i, (url, d) in enumerate(list(per_url.items())[:MAX_URLS], start=1):
+    items = list(per_url.items())[:MAX_URLS]
+    for i, (url, d) in enumerate(items, start=1):
         story.append(url_block(ai, url, d, report_type=report_type))
         if i % 3 == 0:
             story.append(PageBreak())
+
+    if show_upsell and items:
+        story.append(PageBreak())
+        story.append(
+            UpsellBackgroundPage("Upgrade to the Premium Brand Audit to access data for the rest of the URLs.")
+        )
 
     return story
 

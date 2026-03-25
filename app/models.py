@@ -89,3 +89,16 @@ class AuditRecord(BaseModel):
 
     class Config:
         orm_mode = True
+
+class SendEmailRequest(BaseModel): 
+    to_email: EmailStr
+    send_email: EmailStr
+    subject_line: str
+    html_content: str
+    attachments: Optional[str] = None
+
+class SendEmailResponse(BaseModel): 
+    status: str
+    message: str
+    sent_to: Optional[EmailStr] = None
+

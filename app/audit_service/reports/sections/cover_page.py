@@ -37,7 +37,19 @@ def _format_score(value):
     return f"{value * 100:.0f}"
 
 
-def cover_page(canvas, doc, sitemap, lighthouse, client_name, client_domain, logo_path, cover_image_path, report_title: str | None = None):
+def cover_page(
+    canvas,
+    doc,
+    sitemap,
+    lighthouse,
+    client_name,
+    client_domain,
+    logo_path,
+    cover_image_path,
+    report_title: str | None = None,
+    *,
+    is_free_audit: bool = False,
+):
     """
     Generate the report cover page with branding logo.
     """
@@ -139,6 +151,11 @@ def cover_page(canvas, doc, sitemap, lighthouse, client_name, client_domain, log
             canvas.setFont(body_font, 7)
             canvas.setFillColor(INK_LIGHT)
             canvas.drawString(card_x + 8, row_y + 8, label.upper())
+
+            if is_free_audit and "Accessibility" in label and str(value).lower() == "n/a":
+                canvas.setFont(body_font, 6)
+                canvas.setFillColor(PURPLE)
+                canvas.drawString(card_x + 8, row_y + 20, "Accessible in premium audit")
 
             card_x += card_w + card_gap
 
