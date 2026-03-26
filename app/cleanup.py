@@ -42,13 +42,12 @@ def clean_up_system_files():
         print("System files: /tmp/lighthouse.* cleared and logs vacuumed.")
     except Exception: 
         print("journalctl --vacuum failed.")
-        raise 
 
 def run_full_cleanup():
     try: 
         clean_up_service_files()
         clean_up_system_files()
-    except CleanUpError:
-        print("Error: failed full cleanup service")
+    except Exception as e:
+        print(f"Cleanup failed: {e}")
         raise
 
