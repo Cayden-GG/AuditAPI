@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from typing import Generator, Optional
 
 from sqlalchemy import create_engine, text
@@ -38,6 +39,9 @@ def _ensure_audit_columns() -> None:
         "ai_json_object": "TEXT",
         "audit_log_object": "TEXT",
         "tier": "TEXT",
+        "order_id": "TEXT",
+        "callback_url": "TEXT",
+        "social_links": "TEXT",
     }
     with engine.connect() as conn:
         existing = {
@@ -107,8 +111,15 @@ def create_audit(
     client_email: str,
     client_name: Optional[str] = None,
     tier: str = "free",
+    order_id: Optional[str] = None,
+    callback_url: Optional[str] = None,
+    social_links: Optional[list[str]] = None,
 ):
     from .models import AuditTable, AuditStatus
+
+    social_links_payload = None
+    if social_links:
+        social_links_payload = json.dumps(social_links)
 
     audit = AuditTable(
         target_url=target_url,
@@ -116,6 +127,9 @@ def create_audit(
         client_name=client_name or "",
         tier=tier,
         status=AuditStatus.PENDING,
+        order_id=order_id,
+        callback_url=str(callback_url) if callback_url else None,
+        social_links=social_links_payload,
     )
     db.add(audit)
     db.commit()

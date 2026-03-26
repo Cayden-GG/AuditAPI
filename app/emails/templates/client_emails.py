@@ -102,17 +102,17 @@ def _needs_client_action(error_message: Optional[str]) -> bool:
 def client_confirmation(client_name: Optional[str], target_url: str) -> Tuple[str, str]:
     name = html.escape(_normalize_name(client_name))
     safe_url = html.escape(target_url)
-    subject = "We received your website audit request"
+    subject = "Payment received - your website audit is underway"
     content_html = f"""
     <p>Hi {name},</p>
-    <p>Thanks for requesting a website audit from Valvanta Digital. We have started the audit for <strong>{safe_url}</strong>.</p>
+    <p>Thanks for your payment. We have started the audit for <strong>{safe_url}</strong>.</p>
     <p>What happens next:</p>
     <ol style="padding-left: 18px; margin: 0 0 16px 0;">
-      <li>We crawl your site to map the key pages.</li>
-      <li>We run performance and SEO checks.</li>
-      <li>We assemble your reports and email them to you.</li>
+      <li>Our team will scan your entire website and generate your Technical SEO, Performance and Accessibility reports.</li>
+      <li>If you provided social media profiles, our team will audit and review them.</li>
+      <li>Your full report package will be delivered to your inbox within 24 - 48 hours by the Valvanta team.</li>
     </ol>
-    <p>Most audits complete within 10-15 minutes depending on site size.</p>
+    <p>Most audits complete within 24 - 48 hours depending on our teams current work load.</p>
     <p>If you have questions, reply to this email and we will help.</p>
     <p style="margin-bottom: 0;">Warm regards,<br><strong>The Valvanta Digital Team</strong></p>
     """

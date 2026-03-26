@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, HttpUrl, conlist
 from sqlalchemy import Column, DateTime, Enum as SQLEnum, String
 
 from .database import Base
@@ -23,6 +23,9 @@ class AuditTable(Base):
     client_name = Column(String)
     tier = Column(String, default="free")
     status = Column(SQLEnum(AuditStatus), default=AuditStatus.PENDING)
+    order_id = Column(String, nullable=True)
+    callback_url = Column(String, nullable=True)
+    social_links = Column(String, nullable=True)
     
     # Store links to your GCS Reports
     seo_report_url = Column(String, nullable=True)
@@ -44,6 +47,18 @@ class AuditCreate(BaseModel):
     url: HttpUrl
     email: EmailStr
     client_name: Optional[str] = None
+
+
+class PaidAuditCreate(BaseModel):
+    customer_name: Optional[str] = Field(None, alias="customerName")
+    customer_email: EmailStr = Field(..., alias="customerEmail")
+    website_url: HttpUrl = Field(..., alias="websiteUrl")
+    social_links: conlist(str, max_items=3) = Field(..., alias="socialLinks")
+    order_id: str = Field(..., alias="orderId")
+    callback_url: HttpUrl = Field(..., alias="callbackUrl")
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 class AuditResponse(BaseModel):
@@ -74,6 +89,9 @@ class AuditRecord(BaseModel):
     client_name: Optional[str] = None
     tier: Optional[str] = None
     status: AuditStatus
+    order_id: Optional[str] = None
+    callback_url: Optional[str] = None
+    social_links: Optional[str] = None
     seo_report_url: Optional[str] = None
     perf_report_url: Optional[str] = None
     action_list_url: Optional[str] = None
@@ -101,4 +119,3 @@ class SendEmailResponse(BaseModel):
     status: str
     message: str
     sent_to: Optional[EmailStr] = None
-

@@ -211,6 +211,8 @@ def build_company_audit_completion_email(
     audit_id: Optional[str] = None,
     gcs_bucket: Optional[str] = None,
     gcs_objects: Optional[Iterable[str]] = None,
+    report_paths: Optional[Iterable[str]] = None,
+    social_links: Optional[Iterable[str]] = None,
 ) -> Tuple[str, str]:
     return company_audit_completion(
         client_name=client_name,
@@ -219,6 +221,8 @@ def build_company_audit_completion_email(
         audit_id=audit_id,
         gcs_bucket=gcs_bucket,
         gcs_objects=gcs_objects,
+        report_paths=report_paths,
+        social_links=social_links,
     )
 
 

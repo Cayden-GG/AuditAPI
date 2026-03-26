@@ -44,8 +44,13 @@ def company_audit_completion(
     gcs_bucket: Optional[str] = None,
     gcs_objects: Optional[Iterable[str]] = None,
     report_paths: Optional[Iterable[str]] = None,
+    social_links: Optional[Iterable[str]] = None,
 ) -> Tuple[str, str]:
     subject = f"Audit delivered for {client_name or target_url or 'client'}"
+    
+    if social_links: 
+        subject = f"Premium Brand Audit complete for {client_name or target_url} or 'client'"
+
     summary_bits = []
     if client_name:
         summary_bits.append(f"<p><strong>Client:</strong> {html.escape(client_name)}</p>")
@@ -72,13 +77,22 @@ def company_audit_completion(
         {_render_list(list(report_paths))}
         """
 
+    social_list = ""
+    if social_links:
+        social_list = f"""
+        <p><strong>Social links:</strong></p>
+        <p>Use these links to audit the clients social media accounts.</p>
+        {_render_list(list(social_links))}
+        """
+
     content_html = f"""
-    <p>An audit has completed and the client email was sent.</p>
+    <p>An audit has completed.</p>
     {''.join(summary_bits)}
     {bucket_line}
     {gcs_intro}
     {gcs_list}
     {report_list}
+    {social_list}
     """
     html_content = _email_shell("Audit completed", "Audit delivered and files uploaded.", content_html)
     return subject, html_content
