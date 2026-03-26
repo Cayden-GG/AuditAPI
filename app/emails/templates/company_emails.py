@@ -49,7 +49,7 @@ def company_audit_completion(
     subject = f"Audit delivered for {client_name or target_url or 'client'}"
     
     if social_links: 
-        subject = f"Premium Brand Audit complete for {client_name or target_url} or 'client'"
+        subject = f"Premium Brand Audit complete for {client_name or target_url or 'client'}"
 
     summary_bits = []
     if client_name:
@@ -70,13 +70,6 @@ def company_audit_completion(
     if gcs_bucket:
         bucket_line = f"<p><strong>Bucket:</strong> {html.escape(gcs_bucket)}</p>"
 
-    report_list = ""
-    if report_paths:
-        report_list = f"""
-        <p><strong>Local report paths:</strong></p>
-        {_render_list(list(report_paths))}
-        """
-
     social_list = ""
     if social_links:
         social_list = f"""
@@ -91,7 +84,6 @@ def company_audit_completion(
     {bucket_line}
     {gcs_intro}
     {gcs_list}
-    {report_list}
     {social_list}
     """
     html_content = _email_shell("Audit completed", "Audit delivered and files uploaded.", content_html)

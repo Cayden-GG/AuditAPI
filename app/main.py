@@ -398,6 +398,7 @@ def run_audit_task(
         # Delete local reports 
         try: 
             run_full_cleanup()
+            logger.info("Service files clean up successful.")
         except Exception as exc:
             logger.exception("Service files clean up failed.", exc)
 

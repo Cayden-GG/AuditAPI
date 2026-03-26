@@ -36,11 +36,19 @@ def clean_up_system_files():
         except Exception:
             pass # Usually means the file is still in use
 
-    # Delete System Logs (Keep only the last 1 days)
-    subprocess.run(["sudo", "journalctl", "--vacuum-time=1d"], capture_output=True)
-
-    print("System files: /tmp/lighthouse.* cleared and logs vacuumed.")
+    try: 
+        # Delete System Logs (Keep only the last 1 days)
+        subprocess.run(["sudo", "journalctl", "--vacuum-time=1d"], capture_output=True)
+        print("System files: /tmp/lighthouse.* cleared and logs vacuumed.")
+    except Exception: 
+        print("journalctl --vacuum failed.")
+        raise 
 
 def run_full_cleanup():
-    clean_up_service_files()
-    clean_up_system_files()
+    try: 
+        clean_up_service_files()
+        clean_up_system_files()
+    except CleanUpError:
+        print("Error: failed full cleanup service")
+        raise
+
