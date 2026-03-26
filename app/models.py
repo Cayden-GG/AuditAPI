@@ -53,7 +53,7 @@ class PaidAuditCreate(BaseModel):
     customer_name: Optional[str] = Field(None, alias="customerName")
     customer_email: EmailStr = Field(..., alias="customerEmail")
     website_url: HttpUrl = Field(..., alias="websiteUrl")
-    social_links: conlist(str, max_items=3) = Field(..., alias="socialLinks")
+    social_links: conlist(str, min_length=0, max_length=3) = Field(..., alias="socialLinks")
     order_id: str = Field(..., alias="orderId")
     callback_url: HttpUrl = Field(..., alias="callbackUrl")
 
