@@ -406,8 +406,8 @@ def run_audit_task(
         try: 
             run_full_cleanup()
             logger.info("Service files clean up successful.")
-        except Exception as exc:
-            logger.exception("Service files clean up failed.", exc)
+        except Exception:
+            logger.exception("Service files clean up failed.")
 
         _safe_update_status(db, audit_id, AuditStatus.COMPLETED, logger, completed_at=datetime.utcnow())
         _send_paid_audit_callback(audit, "completed", logger)
