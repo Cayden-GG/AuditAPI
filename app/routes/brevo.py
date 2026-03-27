@@ -20,10 +20,8 @@ def signup_newsletter(payload: BrevoListSignupRequest):
     BREVO_API_KEY = os.getenv("BREVO_API_KEY")
     BREVO_NEWSLETTER_SIGNUP_LIST_ID = os.getenv("BREVO_NEWSLETTER_SIGNUP_LIST_ID")
     if not BREVO_API_KEY or not BREVO_NEWSLETTER_SIGNUP_LIST_ID:
-        return BrevoListSignupResponse(
-            status_code=500,
-            message="Brevo not configured"
-        )
+        raise HTTPException(status_code=500, detail="Brevo keys not configured.")
+
     
     brevo_payload = {
         "email": payload.email, 
@@ -73,7 +71,6 @@ def signup_newsletter(payload: BrevoListSignupRequest):
         )
 
 
-
 @router.post("/api/signupAuditList", response_model=BrevoListSignupResponse)
 def audit_signup(payload: BrevoListSignupRequest):
     if not payload.email or not payload.name: 
@@ -82,10 +79,7 @@ def audit_signup(payload: BrevoListSignupRequest):
     BREVO_API_KEY = os.getenv("BREVO_API_KEY")
     BREVO_AUDIT_SIGNUP_LIST_ID = os.getenv("BREVO_AUDIT_SIGNUP_LIST_ID")
     if not BREVO_API_KEY or not BREVO_AUDIT_SIGNUP_LIST_ID:
-        return BrevoListSignupResponse(
-            status_code="500",
-            message="Brevo not configured"
-        )
+        raise HTTPException(status_code=500, detail="Brevo keys not configured.")
     
     brevo_payload = {
         "email": payload.email, 
