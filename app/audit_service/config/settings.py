@@ -10,6 +10,7 @@ class AppConfig:
     audit_id: str | None = None
     output_dir: str | None = None
     log_path: str | None = None
+    debug_mode: bool = False
 
 def build_config() -> AppConfig:
     """
@@ -58,6 +59,11 @@ def build_config() -> AppConfig:
         default=None,
         help="Write structured audit logs to this path",
     )
+    parser.add_argument(
+        "--debug-mode",
+        action="store_true",
+        help="Skip paid AI requests (used for testing).",
+    )
 
     args = parser.parse_args()
 
@@ -69,4 +75,5 @@ def build_config() -> AppConfig:
         audit_id=args.audit_id,
         output_dir=args.output_dir,
         log_path=args.log_path,
+        debug_mode=args.debug_mode,
     )

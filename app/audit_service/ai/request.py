@@ -186,7 +186,11 @@ def load_input_file(input_file):
 
 # ----- main AI request -------
 
-def call_openai(audit: Dict[str, Any], logger: AuditLogger | NullAuditLogger | None = None):
+def call_openai(
+    audit: Dict[str, Any],
+    logger: AuditLogger | NullAuditLogger | None = None,
+    debug_mode: bool = False,
+):
     """
     Creates a requests to openai using the gpt-5.2 model. 
     inputs context from the lighthouse audit and a json schema for the output.
@@ -200,6 +204,9 @@ def call_openai(audit: Dict[str, Any], logger: AuditLogger | NullAuditLogger | N
         AI summary data
     """
     active_logger = logger or NullAuditLogger()
+    if debug_mode:
+        active_logger.info("AI summary skipped: debug mode enabled.")
+        return {}
 
     if not audit:
         active_logger.warning("AI summary skipped: no audit provided.")

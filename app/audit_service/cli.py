@@ -128,7 +128,7 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
     print("Generating AI summaries.")
     
     # Get ai summary 
-    ai_result = call_openai(result, logger=logger)
+    ai_result = call_openai(result, logger=logger, debug_mode=config.debug_mode)
     if ai_result is None:
         logger.warning("AI summary missing; continuing without AI output.")
         ai_result = {}

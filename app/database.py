@@ -42,6 +42,7 @@ def _ensure_audit_columns() -> None:
         "order_id": "TEXT",
         "callback_url": "TEXT",
         "social_links": "TEXT",
+        "debug_mode": "INTEGER",
     }
     with engine.connect() as conn:
         existing = {
@@ -114,6 +115,7 @@ def create_audit(
     order_id: Optional[str] = None,
     callback_url: Optional[str] = None,
     social_links: Optional[list[str]] = None,
+    debug_mode: Optional[bool] = None,
 ):
     from .models import AuditTable, AuditStatus
 
@@ -130,6 +132,7 @@ def create_audit(
         order_id=order_id,
         callback_url=str(callback_url) if callback_url else None,
         social_links=social_links_payload,
+        debug_mode=bool(debug_mode) if debug_mode is not None else False,
     )
     db.add(audit)
     db.commit()

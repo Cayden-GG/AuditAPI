@@ -124,6 +124,7 @@ def enqueue_job(
     order_id: Optional[str] = None,
     callback_url: Optional[str] = None,
     social_links: Optional[List[str]] = None,
+    debug_mode: Optional[bool] = None,
 ) -> Tuple[str, Optional[str]]:
     customer_key = customer_id or email
     domain = normalize_domain(url)
@@ -244,6 +245,7 @@ def enqueue_job(
             order_id=order_id,
             callback_url=callback_url,
             social_links=social_links,
+            debug_mode=debug_mode,
         )
         audit_id = audit.id
     finally:

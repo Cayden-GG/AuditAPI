@@ -42,6 +42,7 @@ async def start_website_audit(payload: AuditCreate):
             customer_id=None,
             tier="free",
             urls=None,
+            debug_mode=payload.debug_mode,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -70,6 +71,7 @@ async def start_paid_website_audit(payload: PaidAuditCreate):
             order_id=payload.order_id,
             callback_url=str(payload.callback_url),
             social_links=payload.social_links,
+            debug_mode=payload.debug_mode,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

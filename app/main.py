@@ -38,11 +38,13 @@ from .audit_queue.worker import queue_worker
 from .rate_limit import build_rate_limiter, rate_limit_key
 from .routes.audit import router as audit_router
 from .routes.email import router as email_router
+from .routes.brevo import router as brevo_router
 
 app = FastAPI(title="Valvanta Site Audit")
 _rate_limit_enabled, _rate_limit_max, _rate_limit_window, _rate_limiter = build_rate_limiter()
 app.include_router(audit_router)
 app.include_router(email_router)
+app.include_router(brevo_router)
 
 
 @app.middleware("http")
@@ -227,6 +229,7 @@ def run_audit_task(
         if not audit:
             raise ValueError(f"Audit {audit_id} not found")
         social_links = _parse_social_links(getattr(audit, "social_links", None))
+        debug_mode = bool(getattr(audit, "debug_mode", False))
 
         normalized_categories = _normalize_categories(
             only_categories,
@@ -257,6 +260,8 @@ def run_audit_task(
                 "--only-categories",
                 normalized_categories,
             ]
+            if debug_mode:
+                cmd.append("--debug-mode")
             result = subprocess.run(
                 cmd,
                 check=True,
@@ -302,8 +307,10 @@ def run_audit_task(
         gcs_bucket = os.getenv("GCS_BUCKET_NAME", "")
         gcs_creds = os.getenv("GCS_SERVICE_ACCOUNT_JSON", "")
         gcs_objects = {}
-        if gcs_creds:
-            try: 
+        if debug_mode:
+            logger.info("Debug mode enabled; skipping GCS upload.")
+        elif gcs_creds:
+            try:
                 output_dir_path = Path(output_dir)
                 file_paths = list(output_dir_path.glob("*.pdf")) + list(output_dir_path.glob("*.json"))
                 log_file = Path(log_path)
