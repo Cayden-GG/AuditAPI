@@ -83,7 +83,7 @@ def audit_signup(payload: BrevoListSignupRequest):
     BREVO_AUDIT_SIGNUP_LIST_ID = os.getenv("BREVO_AUDIT_SIGNUP_LIST_ID")
     if not BREVO_API_KEY or not BREVO_AUDIT_SIGNUP_LIST_ID:
         return BrevoListSignupResponse(
-            status_code=500,
+            status_code="500",
             message="Brevo not configured"
         )
     
