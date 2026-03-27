@@ -43,25 +43,24 @@ def signup_newsletter(payload: BrevoListSignupRequest):
         
     try:
         with request.urlopen(req, timeout=30) as response:
-            if not response.status == 201:
-                if response.code == "duplicate_parameter":
-                    return BrevoListSignupResponse(
-                        status_code=400,
-                        message="Dulplicate contact entry",
-                        data={"code": "duplicate_parameter"}
-                    )
-
-                raise RuntimeError(
-                    f"Failed to add Brevo newsletter contact with status {response.status}"
-                )
-            else: 
+            if response.status == 201:
                 return BrevoListSignupResponse(
                     status_code="200",
                     message="Successfully subscribed new contact",
                 )
+                
     except error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"Brevo newsletter signup failed: {detail}") from exc
+        if exc.code == "duplicate_parameter":
+            return BrevoListSignupResponse(
+                status_code=400,
+                message="Dulplicate contact entry",
+                data={"code": "duplicate_parameter"}
+            )
+
+        return BrevoListSignupResponse(
+            status_code=400,
+            message=f"Failed to add Brevo newsletter contact with status {response.status}"
+        )
 
 
 @router.post("/api/signupAuditList", response_model=BrevoListSignupResponse)
@@ -96,24 +95,22 @@ def audit_signup(payload: BrevoListSignupRequest):
 
     try:
         with request.urlopen(req, timeout=30) as response:
-            if not response.status == 201:
-                if response.code == "duplicate_parameter":
-                    return BrevoListSignupResponse(
-                        status_code=400,
-                        message="Dulplicate contact entry",
-                        data={"code": "duplicate_parameter"}
-                    )
-
-                raise RuntimeError(
-                    f"Failed to add Brevo audit list contact with status {response.status}"
-                )
-            else: 
+            if response.status == 201:
                 return BrevoListSignupResponse(
                     status_code="200",
                     message="Successfully subscribed new contact",
                 )
+                
     except error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"Brevo audit list add failed: {detail}") from exc
+        if exc.code == "duplicate_parameter":
+            return BrevoListSignupResponse(
+                status_code=400,
+                message="Dulplicate contact entry",
+                data={"code": "duplicate_parameter"}
+            )
 
+        return BrevoListSignupResponse(
+            status_code=400,
+            message=f"Failed to add Brevo audit contact with status {response.status}"
+        )
 
