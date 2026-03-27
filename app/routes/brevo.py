@@ -32,9 +32,7 @@ def signup_newsletter(payload: BrevoListSignupRequest):
             "LASTNAME": " ".join(payload.name.split(" ")[1:]) or ""
         },
         "listIds": [int(BREVO_NEWSLETTER_SIGNUP_LIST_ID)],
-        "updateEnabled": True,
     }
-    print(f"bp: {brevo_payload}")
 
     req = request.Request(
             BREVO_CONTACTS_URL,
@@ -45,7 +43,7 @@ def signup_newsletter(payload: BrevoListSignupRequest):
         
     try:
         with request.urlopen(req, timeout=30) as response:
-            if not response.ok:
+            if not response.status == 201:
                 if response.code == "duplicate_parameter":
                     return BrevoListSignupResponse(
                         status_code=400,
@@ -88,7 +86,6 @@ def audit_signup(payload: BrevoListSignupRequest):
         "listIds": [int(BREVO_AUDIT_SIGNUP_LIST_ID)],
         "updateEnabled": True,
     }
-    print(brevo_payload)
 
     req = request.Request(
             BREVO_CONTACTS_URL,
@@ -99,7 +96,7 @@ def audit_signup(payload: BrevoListSignupRequest):
 
     try:
         with request.urlopen(req, timeout=30) as response:
-            if not response.ok:
+            if not response.status == 201:
                 if response.code == "duplicate_parameter":
                     return BrevoListSignupResponse(
                         status_code=400,
