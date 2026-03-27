@@ -59,7 +59,7 @@ def signup_newsletter(payload: BrevoListSignupRequest):
 
         return BrevoListSignupResponse(
             status_code=400,
-            message=f"Failed to add Brevo newsletter contact: {exc.message}"
+            message=f"Failed to add Brevo newsletter contact: {exc.msg}"
         )
 
 
@@ -111,6 +111,6 @@ def audit_signup(payload: BrevoListSignupRequest):
 
         return BrevoListSignupResponse(
             status_code=400,
-            message=f"Failed to add Brevo audit contact: {exc.message}"
+            message=f"Failed to add Brevo audit contact: {exc.msg}"
         )
 
