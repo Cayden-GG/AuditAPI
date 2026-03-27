@@ -4,7 +4,7 @@ import base64
 from urllib import error, request
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 
 from ..models import BrevoListSignupRequest, BrevoListSignupResponse 
 
@@ -50,17 +50,28 @@ def signup_newsletter(payload: BrevoListSignupRequest):
                 )
                 
     except error.HTTPError as exc:
-        if exc.code == "duplicate_parameter":
-            return BrevoListSignupResponse(
-                status_code=400,
-                message="Dulplicate contact entry",
-                data={"code": "duplicate_parameter"}
+        try:
+            error_content = json.loads(exc.read().decode())
+            brevo_code = error_content.get("code")
+            brevo_message = error_content.get("message")
+        except Exception:
+            brevo_code = None
+            brevo_message = str(exc)
+
+        if brevo_code == "duplicate_parameter":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={ 
+                    "message": "Dulplicate contact entry",
+                    "code": "duplicate_parameter",
+                }
             )
 
-        return BrevoListSignupResponse(
-            status_code=400,
-            message=f"Failed to add Brevo newsletter contact: {exc.msg}"
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to add Brevo newsletter contact: {brevo_message}"
         )
+
 
 
 @router.post("/api/signupAuditList", response_model=BrevoListSignupResponse)
@@ -102,15 +113,25 @@ def audit_signup(payload: BrevoListSignupRequest):
                 )
                 
     except error.HTTPError as exc:
-        if exc.code == "duplicate_parameter":
-            return BrevoListSignupResponse(
-                status_code=400,
-                message="Dulplicate contact entry",
-                data={"code": "duplicate_parameter"}
+        try:
+            error_content = json.loads(exc.read().decode())
+            brevo_code = error_content.get("code")
+            brevo_message = error_content.get("message")
+        except Exception:
+            brevo_code = None
+            brevo_message = str(exc)
+
+        if brevo_code == "duplicate_parameter":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={ 
+                    "message": "Dulplicate contact entry",
+                    "code": "duplicate_parameter",
+                }
             )
 
-        return BrevoListSignupResponse(
-            status_code=400,
-            message=f"Failed to add Brevo audit contact: {exc.msg}"
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to add Brevo audit contact: {brevo_message}"
         )
 
