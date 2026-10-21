@@ -62,3 +62,62 @@ def seo_audits(score=1, only=None, **overrides):
     }
     audits.update(overrides)
     return audits
+
+
+class RecordingLogger:
+    """Stands in for AuditLogger. Entries are kept in .entries as (level, message, context)"""
+
+    def __init__(self):
+        self.entries = []
+
+    def _record(self, level, message, **context):
+        self.entries.append((level, message, context))
+
+    def info(self, message, **context):
+        self._record("info", message, **context)
+
+    def warning(self, message, **context):
+        self._record("warning", message, **context)
+
+    def error(self, message, **context):
+        self._record("error", message, **context)
+
+    def exception(self, message, exc, **context):
+        self._record("exception", message, **context)
+
+    def messages(self, level):
+        return [m for lvl, m, _ in self.entries if lvl == level]
+
+
+def audit_insights(categories=("performance", "seo"), urls=("https://example.com/",)):
+    """An AuditInsights model like the one the AI request returns"""
+    from app.audit_service.ai.schema import AuditInsights
+
+    summary = {
+        "what_the_data_shows": "data",
+        "key_strengths": "strengths",
+        "primary_weaknesses": "weaknesses",
+        "high_level_roadmap": "roadmap",
+    }
+    per_url = [
+        {
+            "url": url,
+            "analysis": {
+                "what_the_data_shows": "d",
+                "key_strengths": "s",
+                "primary_weaknesses": "w",
+                "recommendations": "r",
+            },
+        }
+        for url in urls
+    ]
+    return AuditInsights.model_validate(
+        {
+            "executive_summaries": {category: summary for category in categories},
+            "prioritisation_method": "impact over effort",
+            "key_findings": [
+                {"issue": "Slow LCP", "priority": "High", "impact": "i", "effort": "Low", "explanation": "e"}
+            ],
+            "per_url_summaries": {category: per_url for category in categories},
+        }
+    )

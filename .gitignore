@@ -38,3 +38,7 @@ eggs/
 docs/
 VALVANTA_REPORT_DESIGN_SPEC.md
 AUDIT_QUEUE_SPEC.md
+
+# coverage
+.coverage
+htmlcov/

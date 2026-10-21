@@ -16,30 +16,8 @@ from app.main import (
     validateDomain,
 )
 from app.models import AuditStatus
+from tests.builders import RecordingLogger
 from tests.conftest import brevo_http_error
-
-
-class RecordingLogger:
-    def __init__(self):
-        self.entries = []
-
-    def _record(self, level, message, **context):
-        self.entries.append((level, message, context))
-
-    def info(self, message, **context):
-        self._record("info", message, **context)
-
-    def warning(self, message, **context):
-        self._record("warning", message, **context)
-
-    def error(self, message, **context):
-        self._record("error", message, **context)
-
-    def exception(self, message, exc, **context):
-        self._record("exception", message, **context)
-
-    def messages(self, level):
-        return [m for lvl, m, _ in self.entries if lvl == level]
 
 
 # _normalize_categories

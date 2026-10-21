@@ -5,26 +5,7 @@ import pytest
 from google.cloud import storage
 
 from app.gcs.uploader import download_objects, upload_files
-
-
-class RecordingLogger:
-    def __init__(self):
-        self.entries = []
-
-    def _record(self, level, message, **context):
-        self.entries.append((level, message, context))
-
-    def info(self, message, **context):
-        self._record("info", message, **context)
-
-    def warning(self, message, **context):
-        self._record("warning", message, **context)
-
-    def exception(self, message, exc, **context):
-        self._record("exception", message, **context)
-
-    def messages(self, level):
-        return [m for lvl, m, _ in self.entries if lvl == level]
+from tests.builders import RecordingLogger
 
 
 class FakeBlob:
