@@ -83,8 +83,8 @@ def test_resend_email_by_job_id(monkeypatch, tmp_path: Path):
         sent["subject"] = subject
         sent["html_content"] = html_content
 
-    monkeypatch.setattr("app.main.download_objects", fake_download_objects)
-    monkeypatch.setattr("app.main.send_audit_email", fake_send_audit_email)
+    monkeypatch.setattr("app.routes.audit.download_objects", fake_download_objects)
+    monkeypatch.setattr("app.routes.audit.send_audit_email", fake_send_audit_email)
     upload_calls = {}
 
     def fake_upload_files(*, file_paths, bucket_name, prefix, credentials_path, logger=None):
@@ -100,8 +100,8 @@ def test_resend_email_by_job_id(monkeypatch, tmp_path: Path):
     def fake_run_full_cleanup():
         cleanup_calls["count"] += 1
 
-    monkeypatch.setattr("app.main.upload_files", fake_upload_files)
-    monkeypatch.setattr("app.main.run_full_cleanup", fake_run_full_cleanup)
+    monkeypatch.setattr("app.routes.audit.upload_files", fake_upload_files)
+    monkeypatch.setattr("app.routes.audit.run_full_cleanup", fake_run_full_cleanup)
 
     client = TestClient(app)
     response = client.post(
