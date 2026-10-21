@@ -17,7 +17,7 @@
 - **Two product tiers** (free and paid) with different URL limits, report contents, timeouts and email behaviour.
 - **Webhook callbacks** notify the storefront when a paid audit completes or fails, authenticated with a shared secret.
 - **Production concerns covered**: rate limiting, structured JSONL audit logging, artifact cleanup, consistent `HTTPException` error handling and resendable results.
-- **Documented and tested**: every module and function is documented, with a pytest suite covering the accessibility flow, rate limiting, email templates, PDF upsell and resend.
+- **Documented and tested**: every module and function is documented, with a pytest suite of about 950 tests (97% coverage) covering the API routes, audit queue, database, report generation, integrations and the audit pipeline. External services (Brevo, GCS, OpenAI, Lighthouse) are always faked.
 
 ## Architecture
 
@@ -143,7 +143,7 @@ Interactive API docs are served by FastAPI at `http://localhost:8000/docs`.
 ### Run a full audit from the CLI
 
 ```bash
-python app/audit_service/cli.py \
+python -m app.audit_service.cli \
   --client-name "Acme" \
   --domain-url https://example.com \
   --only-categories seo,performance \
@@ -155,8 +155,12 @@ Other flags: `--audit-id`, `--output-dir`, `--log-path`, `--debug-mode`.
 ### Run the tests
 
 ```bash
-pytest
+pip install -r requirements-dev.txt
+pytest                 # run the suite
+pytest --cov           # with coverage, fails below the 90% set in .coveragerc
 ```
+
+Tests live in `tests/`, grouped by area (`audit_service`, `audit_queue`, `routes`, `emails`, `reports`, `gcs`, `core`). Shared fixtures are in `tests/conftest.py`: an isolated SQLite database per test, a test client, and fakes for GCS, Brevo and OpenAI. No test touches the network or the real `storage/` database, and the server cleanup is redirected to a temp folder. CI runs the suite with coverage on Python 3.11 and 3.12.
 
 ## Configuration
 
