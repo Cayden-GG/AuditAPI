@@ -135,15 +135,15 @@ def _root_type(root: ET.Element) -> str:
 
 def _extract_locs(root: ET.Element) -> List[str]:
     """
-    Extract all <loc> values under the sitemap namespace.
-    In both sitemapindex and urlset formats.
+    Extract all <loc> values, in both sitemapindex and urlset formats.
+    Matches <loc> in the sitemap namespace and without a namespace, but not <loc> elements from extensions
+    such as <image:loc>.
 
     @Returns:
         list of all <loc> elements in the sitemap
     """
-    # Namespace-aware: sm:loc
-    loc_elems = root.findall(".//sm:loc", NS)
-    return [el.text.strip() for el in loc_elems if el.text and el.text.strip()]
+    loc_tags = (f"{{{SITEMAP_NS}}}loc", "loc")
+    return [el.text.strip() for el in root.iter() if el.tag in loc_tags and el.text and el.text.strip()]
 
 
 def _dedupe_preserve_order(items: Iterable[str]) -> List[str]:
@@ -290,12 +290,12 @@ def discover_urls_from_sitemaps(
     sitemap_indexes: List[str] = []
     urlset_sitemaps: List[str] = []
 
-    # BFS/DFS through sitemap references
+    # Breadth first through sitemap references, so sitemaps are visited in the order they are listed
     while to_visit:
         if len(visited) >= max_sitemaps:
             break
 
-        sitemap_url = to_visit.pop()
+        sitemap_url = to_visit.pop(0)
         if sitemap_url in visited:
             continue
 

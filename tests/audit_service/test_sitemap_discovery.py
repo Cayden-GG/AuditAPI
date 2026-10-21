@@ -137,6 +137,22 @@ def test_extract_locs_reads_index_sitemaps_too():
     ]
 
 
+def test_extract_locs_ignores_loc_elements_from_extensions():
+    root = ET.fromstring(
+        f'<urlset {NS} xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'
+        "<url><loc>https://a.com/page</loc>"
+        "<image:image><image:loc>https://a.com/photo.jpg</image:loc></image:image></url></urlset>"
+    )
+
+    assert _extract_locs(root) == ["https://a.com/page"]
+
+
+def test_extract_locs_reads_sitemaps_without_a_namespace():
+    root = ET.fromstring(urlset("https://a.com/1", ns=False))
+
+    assert _extract_locs(root) == ["https://a.com/1"]
+
+
 def test_dedupe_preserves_first_occurrence_order():
     assert _dedupe_preserve_order(["b", "a", "b", "c", "a"]) == ["b", "a", "c"]
     assert _dedupe_preserve_order([]) == []
@@ -327,11 +343,6 @@ def test_sitemap_indexes_are_followed_recursively(web):
     assert sorted(result.sitemaps) == ["https://a.com/pages.xml", "https://a.com/posts.xml"]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="child sitemaps are popped from the end of the to-visit list, so URLs from the sitemaps listed last in "
-    "an index come first and --max-urls keeps those instead of the first listed",
-)
 def test_urls_follow_the_order_the_sitemaps_are_listed_in(web):
     web.pages["https://a.com/sitemap.xml"] = index("https://a.com/first.xml", "https://a.com/second.xml")
     web.pages["https://a.com/first.xml"] = urlset("https://a.com/home")
@@ -340,6 +351,18 @@ def test_urls_follow_the_order_the_sitemaps_are_listed_in(web):
     result = discover(web, domain="https://a.com/sitemap.xml")
 
     assert result.urls == ["https://a.com/home", "https://a.com/blog"]
+
+
+def test_nested_indexes_are_visited_in_the_order_they_are_listed(web):
+    web.pages["https://a.com/sitemap.xml"] = index("https://a.com/sub-index.xml", "https://a.com/last.xml")
+    web.pages["https://a.com/sub-index.xml"] = index("https://a.com/one.xml", "https://a.com/two.xml")
+    for name in ("one", "two", "last"):
+        web.pages[f"https://a.com/{name}.xml"] = urlset(f"https://a.com/{name}")
+
+    result = discover(web, domain="https://a.com/sitemap.xml")
+
+    assert result.sitemaps == ["https://a.com/last.xml", "https://a.com/one.xml", "https://a.com/two.xml"]
+    assert result.urls == ["https://a.com/last", "https://a.com/one", "https://a.com/two"]
 
 
 def test_urls_are_deduplicated_across_sitemaps(web):
@@ -410,11 +433,6 @@ def test_nothing_found_returns_an_empty_result_with_the_errors(web):
     assert result.errors[-1]["message"].startswith("No sitemap found")
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="_extract_locs only matches namespaced <loc> elements, so a sitemap written without the sitemaps.org "
-    "xmlns is detected as a urlset but yields no URLs",
-)
 def test_a_sitemap_without_a_namespace_still_yields_its_urls(web):
     web.pages["https://a.com/sitemap.xml"] = urlset("https://a.com/1", "https://a.com/2", ns=False)
 

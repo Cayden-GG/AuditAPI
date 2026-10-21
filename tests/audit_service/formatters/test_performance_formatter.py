@@ -197,11 +197,6 @@ def test_aggregate_with_no_urls_has_no_averages():
     assert result["mainthread_work_breakdown"]["mode_mainthread_work_items"] == []
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="a url with no diagnostics data gives None metrics and safe_average raises a TypeError on them, "
-    "which crashes the whole audit",
-)
 def test_aggregate_survives_a_url_without_diagnostics_data():
     per_url = {"full": reduced(), "empty": reduce({})[0]}
 

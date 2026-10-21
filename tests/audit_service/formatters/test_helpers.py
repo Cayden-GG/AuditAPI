@@ -44,6 +44,15 @@ def test_safe_average():
     assert isinstance(safe_average([1, 2]), float)
 
 
+def test_safe_average_ignores_values_that_are_not_numbers():
+    assert safe_average([None, 2, "x", 4, None, True]) == 3.0
+
+
+@pytest.mark.parametrize("values", [[None], [None, None], ["a"], [True, False]])
+def test_safe_average_of_only_non_numbers_is_none(values):
+    assert safe_average(values) is None
+
+
 @pytest.mark.parametrize("values", [[], None])
 def test_safe_average_of_nothing_is_none(values):
     assert safe_average(values) is None

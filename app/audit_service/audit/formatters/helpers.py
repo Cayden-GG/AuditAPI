@@ -3,6 +3,7 @@ Shared helpers for the lighthouse formatters
 Safe data access, aggregation utilities and log / error structures
 """
 import json
+from numbers import Real
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
@@ -54,19 +55,22 @@ def safe_get(d: Any, path: List[Any], default: Any = None) -> Any:
 
 def safe_average(values: List[float]) -> Optional[float]:
     """
-    Calculates the average of the provided values with numpy mean
-    Returns None instead of crashing when there are no values
+    Calculates the average of the provided values with numpy mean, ignoring values that are not numbers
+    (e.g. None for a url that has no data for the metric)
+    Returns None instead of crashing when there are no numeric values
 
     @Args:
         values (List[float]) -- list of values to average
 
     @Returns:
-        average of the provided list, None if the list is empty (Optional[float])
+        average of the numeric values, None if there are none (Optional[float])
     """
-    if not values:
+    numbers = [v for v in values or [] if isinstance(v, Real) and not isinstance(v, bool)]
+
+    if not numbers:
         return None
     
-    return float(np.mean(values))
+    return float(np.mean(numbers))
 
 
 def top_n_by_key(items: List[Dict[str, Any]], key: str, n: int = 3) -> List[Dict[str, Any]]:
