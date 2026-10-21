@@ -121,3 +121,83 @@ def audit_insights(categories=("performance", "seo"), urls=("https://example.com
             "per_url_summaries": {category: per_url for category in categories},
         }
     )
+
+
+# ---- PDF report data and text extraction
+
+def story_text(story):
+    """All the text in a list of platypus flowables (paragraphs, tables, keep-together blocks and section titles)"""
+    from reportlab.platypus import KeepTogether, Paragraph, Table
+
+    parts = []
+    for item in story:
+        if isinstance(item, Paragraph):
+            parts.append(item.getPlainText())
+        elif isinstance(item, Table):
+            for row in item._cellvalues:
+                for cell in row:
+                    parts.append(story_text([cell]) if not isinstance(cell, str) else cell)
+        elif isinstance(item, KeepTogether):
+            parts.append(story_text(item._content))
+        elif isinstance(item, str):
+            parts.append(item)
+        elif hasattr(item, "title") and isinstance(item.title, str):
+            parts.append(item.title)
+            if getattr(item, "subtitle", None):
+                parts.append(item.subtitle)
+        elif hasattr(item, "text") and isinstance(item.text, str):
+            parts.append(item.text)
+    return "\n".join(p for p in parts if p)
+
+
+def audit_result(categories="performance,seo", urls=("https://example.com/", "https://example.com/about"), start="https://example.com"):
+    """The audit dict the CLI builds (sitemap + lighthouse sections), made with the real formatter and normalizer"""
+    from app.audit_service.audit.formatter import format_lighthouse_output
+    from app.audit_service.audit.normalizer import normalize_lighthouse_results
+
+    failing = {"robots-txt": {"score": 0, "title": "robots.txt is not valid", "description": "Fix robots."}}
+    audits = {**performance_audits(), **seo_audits(**failing), "color-contrast": {"score": 0, "title": "Contrast"}}
+    audits["largest-contentful-paint"] = {"numericValue": 5200}
+    payload = lighthouse_payload(categories, url=urls[0], audits=audits)
+    for url in urls[1:]:
+        payload["lighthouse_data"][url] = payload["lighthouse_data"][urls[0]]
+    payload["meta"].update({"tool": "lighthouse-automation", "run_at": "2026-01-02T03:04:05+00:00", "lighthouse_version": "12.0.0", "mode": "navigation", "devices": ["mobile", "desktop"], "config": {"only_categories": categories}})
+    for entry in payload["lighthouse_data"].values():
+        for platform in ("mobile", "desktop"):
+            entry[platform]["categories"] = {
+                "performance": {"score": 0.62},
+                "seo": {"score": 0.91},
+                "accessibility": {"score": 0.7},
+            }
+
+    formatted = format_lighthouse_output(payload)
+    normalized = normalize_lighthouse_results(payload)
+    meta = payload["meta"]
+    return {
+        "sitemap": {"start": start, "indexes": [], "sitemaps": [f"{start}/sitemap.xml"], "url_count": len(urls) + 3, "per_sitemap": [], "errors": [], "logs": []},
+        "lighthouse": {
+            "tested_url_count": len(urls),
+            "tested_urls": list(urls),
+            "run_at": meta["run_at"],
+            "lighthouse_version": meta["lighthouse_version"],
+            "categories": categories,
+            "mode": meta["mode"],
+            "devices": meta["devices"],
+            "config": meta["config"],
+            "website_performance_data": formatted["website"],
+            "per_url_performance_data": formatted["per_url"],
+            "normalized_findings": normalized["findings"],
+            "summary": normalized["summary"],
+        },
+    }
+
+
+def ai_result(categories=("performance", "seo"), urls=("https://example.com/", "https://example.com/about")):
+    """The AI summary dict call_openai returns, with per url summaries reshaped to {category: {url: analysis}}"""
+    insights = audit_insights(categories=categories, urls=urls).model_dump()
+    insights["per_url_summaries"] = {
+        category: {item["url"]: item["analysis"] for item in items}
+        for category, items in insights["per_url_summaries"].items()
+        if items
+    }
+    return {k: v for k, v in insights.items()}
