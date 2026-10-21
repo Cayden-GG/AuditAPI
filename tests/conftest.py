@@ -1,6 +1,8 @@
 import json
 import os
+import subprocess
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 # This adds the parent directory (AuditAPI) to the path
@@ -56,12 +58,18 @@ def client(isolated_db, monkeypatch):
 
 @pytest.fixture
 def fake_gcs(monkeypatch):
-    """Replaces GCS upload and download everywhere they are imported. Calls are recorded on the returned object"""
+    """Replaces GCS upload and download everywhere they are imported. Calls are recorded on the returned object.
+
+    Uploads report every file as stored under its prefix, set .download_result for downloads
+    """
     state = SimpleNamespace(uploads=[], downloads=[], download_result={})
 
     def upload_files(*args, **kwargs):
         state.uploads.append((args, kwargs))
-        return {}
+        prefix = kwargs.get("prefix", "").strip("/")
+        return {
+            str(path): f"{prefix}/{Path(path).name}".lstrip("/") for path in kwargs.get("file_paths", [])
+        }
 
     def download_objects(*args, **kwargs):
         state.downloads.append((args, kwargs))
@@ -90,7 +98,8 @@ class _FakeHTTPResponse:
 
 @pytest.fixture
 def fake_brevo(monkeypatch):
-    """Intercepts the urllib calls Brevo is sent through. Requests are recorded in .requests as parsed json.
+    """Intercepts urllib.request.urlopen, which Brevo and the paid audit callback are sent through.
+    Requests are recorded in .requests with their url, parsed json payload and lower-cased headers.
 
     Set .status to simulate Brevo answering with an error status, or .error to make the call raise (e.g. an HTTPError)
     """
@@ -105,7 +114,11 @@ def fake_brevo(monkeypatch):
 
     def urlopen(req, timeout=None):
         state.requests.append(
-            SimpleNamespace(url=req.full_url, payload=json.loads(req.data) if req.data else None)
+            SimpleNamespace(
+                url=req.full_url,
+                payload=json.loads(req.data) if req.data else None,
+                headers={k.lower(): v for k, v in req.header_items()},
+            )
         )
         if state.error:
             raise state.error
@@ -141,3 +154,35 @@ def brevo_http_error(status=400, body=b'{"code": "bad_request", "message": "Nope
     import urllib.error
 
     return urllib.error.HTTPError("https://api.brevo.com", status, "Error", {}, io.BytesIO(body))
+
+
+@pytest.fixture(autouse=True)
+def cleanup_sandbox(tmp_path_factory, monkeypatch):
+    """Keeps app.cleanup away from the real machine for every test.
+
+    The real cleanup deletes everything under /var/www/valvanta-audit, removes /tmp/lighthouse.* and runs
+    sudo journalctl. Its directories point into a temp folder and .journal_calls records the commands it
+    would have run
+    """
+    import app.cleanup as cleanup
+
+    root = tmp_path_factory.mktemp("cleanup")
+    sandbox = SimpleNamespace(
+        results=root / "audit_results", logs=root / "logs", tmp=root / "tmp", journal_calls=[]
+    )
+    sandbox.tmp.mkdir()
+    real_path = Path
+
+    def sandboxed_path(*parts):
+        path = real_path(*parts)
+        return sandbox.tmp if str(path) == "/tmp" else path
+
+    def run(cmd, **kwargs):
+        sandbox.journal_calls.append(cmd)
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr(cleanup, "RESULTS_DIR", sandbox.results)
+    monkeypatch.setattr(cleanup, "LOGS_DIR", sandbox.logs)
+    monkeypatch.setattr(cleanup, "Path", sandboxed_path)
+    monkeypatch.setattr(cleanup, "subprocess", SimpleNamespace(run=run))
+    return sandbox
