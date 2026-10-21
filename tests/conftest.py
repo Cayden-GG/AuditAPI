@@ -92,7 +92,7 @@ class _FakeHTTPResponse:
 def fake_brevo(monkeypatch):
     """Intercepts the urllib calls Brevo is sent through. Requests are recorded in .requests as parsed json.
 
-    Set .status to simulate Brevo rejecting a call
+    Set .status to simulate Brevo answering with an error status, or .error to make the call raise (e.g. an HTTPError)
     """
     monkeypatch.setenv("BREVO_API_KEY", "test-key")
     monkeypatch.setenv("BREVO_SENDER_EMAIL", "sender@example.com")
@@ -101,12 +101,14 @@ def fake_brevo(monkeypatch):
     monkeypatch.setenv("BREVO_AUDIT_SIGNUP_LIST_ID", "1")
     monkeypatch.setenv("BREVO_NEWSLETTER_SIGNUP_LIST_ID", "2")
 
-    state = SimpleNamespace(requests=[], status=201)
+    state = SimpleNamespace(requests=[], status=201, error=None)
 
     def urlopen(req, timeout=None):
         state.requests.append(
             SimpleNamespace(url=req.full_url, payload=json.loads(req.data) if req.data else None)
         )
+        if state.error:
+            raise state.error
         return _FakeHTTPResponse(status=state.status)
 
     monkeypatch.setattr("urllib.request.urlopen", urlopen)
@@ -131,3 +133,11 @@ def fake_openai(monkeypatch):
     fake_client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(parse=parse)))
     monkeypatch.setattr("app.audit_service.ai.request.client", fake_client)
     return state
+
+
+def brevo_http_error(status=400, body=b'{"code": "bad_request", "message": "Nope"}'):
+    """An HTTPError like urllib raises when Brevo answers with an error status"""
+    import io
+    import urllib.error
+
+    return urllib.error.HTTPError("https://api.brevo.com", status, "Error", {}, io.BytesIO(body))
