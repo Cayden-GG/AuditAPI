@@ -50,3 +50,15 @@ def lighthouse_payload(categories="performance,seo", url="https://example.com", 
             }
         },
     }
+
+
+def seo_audits(score=1, only=None, **overrides):
+    """SEO audits for every SEO audit id, all with the same score. overrides maps audit id -> audit dict"""
+    from app.audit_service.audit.audit_config import SEO_AUDIT_IDS
+
+    audits = {
+        audit_id: {"score": score, "displayValue": f"{audit_id} value", "numericValue": 1}
+        for audit_id in (only or SEO_AUDIT_IDS)
+    }
+    audits.update(overrides)
+    return audits
