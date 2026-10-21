@@ -9,7 +9,7 @@ from reportlab.platypus import Paragraph, Spacer, PageBreak, Table
 from ..helpers import style_table
 from ..styles import CONTENT_W, SectionRule, get_styles
 
-def tested_urls_section(lh: Dict[Any], tested_urls):
+def tested_urls_section(lh: Dict[str, Any], tested_urls):
     """
     Create report section that displays the tested urls in a table
 
