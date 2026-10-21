@@ -98,7 +98,8 @@ def _classify_error(exc: Exception) -> Tuple[str, str]:
     """
     msg = str(exc)
 
-    if isinstance(exc, subprocess.TimeoutExpired):
+    # run_lighthouse_json re-raises timeouts as a RuntimeError, keeping the TimeoutExpired as its cause
+    if isinstance(exc, subprocess.TimeoutExpired) or isinstance(exc.__cause__, subprocess.TimeoutExpired):
         return "timeout", "Lighthouse execution exceeded timeout."
 
     # raises RuntimeError with specific prefixes; classify by message.

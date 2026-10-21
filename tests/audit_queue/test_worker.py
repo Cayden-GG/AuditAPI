@@ -110,11 +110,6 @@ def test_the_module_exposes_one_shared_worker():
     assert isinstance(queue_worker, QueueWorker)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="_run has no error handling, so one exception from the dispatcher (e.g. a locked database) ends the "
-    "thread for good and queued jobs are never started until the server restarts",
-)
 def test_the_worker_keeps_going_after_a_dispatch_error(worker, ticks):
     ticks.error = RuntimeError("database is locked")
     worker.start()
@@ -124,3 +119,27 @@ def test_the_worker_keeps_going_after_a_dispatch_error(worker, ticks):
     time.sleep(0.1)
 
     assert len(ticks.dispatches) > first_count
+
+
+def test_dispatch_errors_are_logged(worker, ticks, caplog):
+    ticks.error = RuntimeError("database is locked")
+
+    with caplog.at_level("ERROR", logger="app.audit_queue.worker"):
+        worker.start()
+        assert ticks.dispatched.wait(2)
+        assert wait_for(lambda: "database is locked" in caplog.text)
+
+    assert "Queue worker task dispatcher failed." in caplog.text
+
+
+def test_a_failing_watchdog_does_not_stop_dispatching(worker, ticks, monkeypatch):
+    def broken_watchdog():
+        raise RuntimeError("watchdog failed")
+
+    monkeypatch.setattr(worker_module, "watchdog_timeouts", broken_watchdog)
+    monkeypatch.setattr(worker_module, "WATCHDOG_INTERVAL_S", 0.01)
+
+    worker.start()
+
+    assert wait_for(lambda: len(ticks.dispatches) >= 5)
+    assert worker._thread.is_alive()

@@ -226,14 +226,11 @@ def test_an_unexpected_response_shape_returns_none(fake_openai):
     assert logger.messages("exception") == ["AI summary request failed."]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="an empty audit logs 'AI summary skipped' but the function carries on and still pays for an OpenAI request",
-)
 def test_an_empty_audit_does_not_call_openai(fake_openai):
     fake_openai.parsed = audit_insights()
     logger = RecordingLogger()
 
-    call_openai({}, logger)
+    assert call_openai({}, logger) == {}
 
     assert fake_openai.calls == []
+    assert logger.messages("warning") == ["AI summary skipped: no audit provided."]

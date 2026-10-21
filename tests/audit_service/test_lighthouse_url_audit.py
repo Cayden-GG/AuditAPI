@@ -144,6 +144,16 @@ def test_classify_error(exc, expected):
     assert _classify_error(exc)[0] == expected
 
 
+def test_a_timeout_wrapped_in_a_runtime_error_is_still_a_timeout():
+    try:
+        try:
+            raise subprocess.TimeoutExpired("lh", 5)
+        except subprocess.TimeoutExpired as timeout:
+            raise RuntimeError("Lighthouse timed out for https://a.com") from timeout
+    except RuntimeError as wrapped:
+        assert _classify_error(wrapped) == ("timeout", "Lighthouse execution exceeded timeout.")
+
+
 def test_unknown_errors_keep_their_message():
     assert _classify_error(ValueError("something else")) == ("unknown", "something else")
 
@@ -348,11 +358,6 @@ def test_no_urls_gives_an_empty_result(lighthouse):
     assert result["meta"]["tested_urls"] == []
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="run_lighthouse_json turns a timeout into a RuntimeError, so _classify_error never sees a "
-    "TimeoutExpired and timed out urls are reported as error_type 'unknown'",
-)
 def test_a_timed_out_url_is_reported_as_a_timeout(run, monkeypatch):
     monkeypatch.setattr(lh, "resolve_chrome_path", lambda configured=None: "/usr/bin/fake-chrome")
     monkeypatch.setattr(lh, "_get_lighthouse_version", lambda: None)

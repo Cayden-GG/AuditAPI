@@ -247,6 +247,7 @@ def call_openai(
 
     if not audit:
         logger.warning("AI summary skipped: no audit provided.")
+        return {}
 
     categories = _extract_categories(audit)
     prompt = build_single_prompt(audit)

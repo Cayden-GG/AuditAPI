@@ -2,6 +2,7 @@
 Audit queue worker
 Background thread that dispatches queued audit jobs and times out stuck ones
 """
+import logging
 import threading
 import time
 
@@ -9,6 +10,8 @@ from .service import launch_job_in_thread, start_dispatcher, watchdog_timeouts
 
 WATCHDOG_INTERVAL_S = 60
 DISPATCH_INTERVAL_S = 5
+
+logger = logging.getLogger(__name__)
 
 
 class QueueWorker:
@@ -36,6 +39,14 @@ class QueueWorker:
         if self._thread:
             self._thread.join(timeout=5)
 
+    @staticmethod
+    def _safely(task, *args) -> None:
+        """Runs a worker task, logging instead of raising so one failure (e.g. a locked database) cannot stop the worker"""
+        try:
+            task(*args)
+        except Exception:
+            logger.exception("Queue worker task %s failed.", getattr(task, "__name__", task))
+
     def _run(self) -> None:
         """Worker loop, polls the watchdog and dispatches jobs on a fixed cadence until stopped"""
         last_watchdog = 0.0
@@ -43,10 +54,10 @@ class QueueWorker:
             now = time.time()
 
             if now - last_watchdog >= WATCHDOG_INTERVAL_S:
-                watchdog_timeouts()
                 last_watchdog = now
+                self._safely(watchdog_timeouts)
 
-            start_dispatcher(launch_job_in_thread)
+            self._safely(start_dispatcher, launch_job_in_thread)
             self._stop_event.wait(DISPATCH_INTERVAL_S)
 
 
