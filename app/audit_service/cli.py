@@ -17,6 +17,7 @@ from datetime import datetime
 
 import json
 from typing import Any, Dict
+from app.emails.brevo_email import normalize_client_name
 from app.logging_utils import build_audit_logger
 
 REPORT_KEYS = ("performance", "seo", "accessibility", "key_findings")
@@ -46,7 +47,7 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
         report type to report file path (Dict[str, str])
     """
     timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
-    folder = f"{config.client_name}_audit_{timestamp}"
+    folder = f"{normalize_client_name(config.client_name) or 'client'}_audit_{timestamp}"
     output_dir = config.output_dir or f"audit_results/{folder}"
     log_path = config.log_path or f"{output_dir}/audit_log.jsonl"
     logger = build_audit_logger(config.audit_id, log_path)

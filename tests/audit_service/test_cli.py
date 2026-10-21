@@ -172,6 +172,16 @@ def test_default_output_paths_are_built_from_the_client_name(pipeline, monkeypat
     assert (folder / "audit_log.jsonl").exists()
 
 
+@pytest.mark.parametrize("name, folder", [("Acme Co", "Acme_Co_audit_"), ("../evil", "___evil_audit_"), ("", "client_audit_")])
+def test_default_output_folder_is_filesystem_safe(pipeline, monkeypatch, tmp_path, name, folder):
+    monkeypatch.chdir(tmp_path)
+
+    run_audit(pipeline.config(client_name=name, output_dir=None, log_path=None))
+
+    (created,) = (tmp_path / "audit_results").iterdir()
+    assert created.name.startswith(folder)
+
+
 def test_sitemap_discovery_failure_is_recorded_and_the_audit_continues(pipeline):
     pipeline.discovery = RuntimeError("dns failure")
 

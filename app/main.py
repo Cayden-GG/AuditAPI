@@ -29,6 +29,7 @@ from .models import (
 from .emails.brevo_email import (
     collect_report_paths,
     find_latest_report_dir,
+    normalize_client_name,
     send_audit_email,
     build_client_audit_failed_email,
     build_client_audit_results_email,
@@ -322,7 +323,8 @@ def run_audit_task(
         )
 
         client_name = audit.client_name or "client"
-        output_dir = f"audit_results/{client_name}_audit_{timestamp}"
+        folder_name = normalize_client_name(client_name) or "client"
+        output_dir = f"audit_results/{folder_name}_audit_{timestamp}"
         logger.info("Audit starting", client_name=client_name, target_url=audit.target_url, output_dir=output_dir)
 
         # Run Lighthouse Subprocess

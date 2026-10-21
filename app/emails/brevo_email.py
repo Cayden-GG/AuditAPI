@@ -5,6 +5,7 @@ Sends audit and generic emails through the Brevo API and finds the report files 
 import base64
 import json
 import os
+import re
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
 from urllib import error, request
@@ -26,11 +27,20 @@ BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 REPORT_PREFIXES = ("Performance_PDF", "SEO_PDF", "Key_Findings")
 
 
-def _normalize_client_name(client_name: Optional[str]) -> Optional[str]:
-    """Matches the client name to its audit folder naming by replacing spaces with underscores, None if empty"""
-    if not client_name:
+def normalize_client_name(client_name: Optional[str]) -> Optional[str]:
+    """
+    Turns a client name into the form used in audit folder names, replacing every character that is not a letter,
+    digit, underscore or hyphen with an underscore so the name can never contain a path separator or dots.
+
+    @Args:
+        client_name (Optional[str]) -- client name as entered
+
+    @Returns:
+        filesystem safe client name, None if empty (Optional[str])
+    """
+    if not client_name or not client_name.strip():
         return None
-    return client_name.strip().replace(" ", "_")
+    return re.sub(r"[^\w-]", "_", client_name.strip())
 
 
 def find_latest_report_dir(
@@ -50,7 +60,7 @@ def find_latest_report_dir(
     if not base_dir.exists():
         raise FileNotFoundError(f"Report directory not found: {base_dir}")
 
-    normalized = _normalize_client_name(client_name)
+    normalized = normalize_client_name(client_name)
     candidates = [path for path in base_dir.iterdir() if path.is_dir()]
     if normalized:
         candidates = [

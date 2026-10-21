@@ -156,7 +156,7 @@ def test_the_subprocess_gets_the_audit_details(harness):
     assert harness.option(cmd, "--audit-id") == audit_id
     assert harness.option(cmd, "--max-urls") == "3"
     assert harness.option(cmd, "--only-categories") == "performance,seo"
-    assert harness.option(cmd, "--output-dir").startswith("audit_results/Acme Co_audit_")
+    assert harness.option(cmd, "--output-dir").startswith("audit_results/Acme_Co_audit_")
     assert harness.option(cmd, "--log-path").startswith(f"logs/audit_{audit_id}_")
     assert "--debug-mode" not in cmd
     assert harness.run_kwargs[0]["timeout"] == 99
@@ -348,11 +348,6 @@ def test_reports_are_found_on_disk_when_the_subprocess_prints_no_paths(harness):
     assert [p.name for p in result["report_paths"]] == ["Performance_PDF_1.pdf", "SEO_PDF_1.pdf", "Key_Findings_1.pdf"]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="the output folder is named after the raw client name (Acme Co_audit_...) but the on-disk lookup "
-    "searches for the underscored name (Acme_Co_audit_...), so clients with spaces never match",
-)
 def test_reports_are_found_on_disk_for_a_client_name_with_spaces(harness):
     harness.write_reports = False
     harness.create("free", client_name="Acme Co")
@@ -362,11 +357,6 @@ def test_reports_are_found_on_disk_for_a_client_name_with_spaces(harness):
     assert [p.name for p in result["report_paths"]] == ["Performance_PDF_1.pdf", "SEO_PDF_1.pdf", "Key_Findings_1.pdf"]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="the client name comes from the public audit form and is used unsanitised in the output path, "
-    "so ../ in it writes outside audit_results",
-)
 @pytest.mark.parametrize("name", ["../evil", "a/../../evil"])
 def test_output_stays_inside_audit_results_whatever_the_client_name(harness, name):
     harness.create("free", client_name=name)

@@ -6,7 +6,7 @@ import pytest
 from app.emails.brevo_email import (
     BREVO_API_URL,
     _build_attachments,
-    _normalize_client_name,
+    normalize_client_name,
     collect_report_paths,
     find_latest_report_dir,
     send_audit_email,
@@ -29,10 +29,23 @@ def make_dir(base, name, files=(), mtime=None):
 
 @pytest.mark.parametrize(
     "name, expected",
-    [("Acme Co", "Acme_Co"), ("  Acme  ", "Acme"), ("Acme", "Acme"), ("", None), (None, None)],
+    [
+        ("Acme Co", "Acme_Co"),
+        ("  Acme  ", "Acme"),
+        ("Acme", "Acme"),
+        ("", None),
+        ("   ", None),
+        (None, None),
+        ("Café Münch", "Café_Münch"),
+        ("Acme-Co_2", "Acme-Co_2"),
+        ("../evil", "___evil"),
+        ("a/../../evil", "a_______evil"),
+        ("a\\b:c*d", "a_b_c_d"),
+        ("Acme & Sons, Ltd.", "Acme___Sons__Ltd_"),
+    ],
 )
-def test_normalize_client_name(name, expected):
-    assert _normalize_client_name(name) == expected
+def testnormalize_client_name(name, expected):
+    assert normalize_client_name(name) == expected
 
 
 def test_find_latest_report_dir_returns_the_newest_directory_with_pdfs(tmp_path):
