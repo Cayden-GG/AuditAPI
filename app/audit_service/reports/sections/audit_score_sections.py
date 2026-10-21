@@ -1,3 +1,7 @@
+"""
+Audit score sections
+SEO and accessibility report sections: site wide score overview and per url breakdown
+"""
 from typing import Any, Dict, List
 
 import re
@@ -8,6 +12,7 @@ from ..helpers import bar_chart, fmt_num, style_table
 
 
 def _select_per_url_ai(ai: Dict[str, Any], report_type: str) -> Dict[str, Any]:
+    """Gets the AI per url summaries for a report type, as a dict keyed by url, handles the older list and flat formats"""
     per_url_ai = (ai or {}).get("per_url_summaries") or {}
     if isinstance(per_url_ai, dict) and isinstance(per_url_ai.get(report_type), dict):
         return per_url_ai.get(report_type) or {}
@@ -21,6 +26,7 @@ def _select_per_url_ai(ai: Dict[str, Any], report_type: str) -> Dict[str, Any]:
 
 
 def _strip_heading(value: str, heading: str) -> str:
+    """Removes the leading heading the AI repeats inside a section's text, returns empty string if value is not a string"""
     if not isinstance(value, str):
         return ""
     lowered = value.strip().lower()
@@ -36,6 +42,7 @@ def _strip_heading(value: str, heading: str) -> str:
 
 
 def _clean_ai_text(value: str) -> str:
+    """Fixes doubled bullet markers ("- -") in AI text, returns empty string if value is not a string"""
     if not isinstance(value, str):
         return ""
     cleaned = value.replace("<br/>- -", "<br/>- ").replace("<br>- -", "<br/>- ")
@@ -47,11 +54,13 @@ from .upsell import UpsellBackgroundPage
 
 
 def _fmt_score(value: Any) -> str:
+    """Formats a 0-1 score as a percentage ("92.5%"), "n/a" if value is not a number"""
     if not isinstance(value, (int, float)):
         return "n/a"
     return f"{value * 100:.1f}%"
 
 def _format_audit_list(items: List[str], max_items: int = 30) -> str:
+    """Joins audit ids with line breaks, trimmed to max_items with a count of the rest"""
     if not items:
         return "n/a"
     if len(items) <= max_items:
@@ -62,6 +71,17 @@ def _format_audit_list(items: List[str], max_items: int = 30) -> str:
 
 
 def audit_score_overview_section(website: Dict[str, Any], report_label: str, section_label: str | None = None) -> List[Any]:
+    """
+    Creates report section with the site wide score averages, audit outcome chart and most failed audits
+
+    @Args:
+        website (Dict[str, Any]) -- website wide audit data for one platform
+        report_label (str) -- report name shown in the title: SEO | Accessibility
+        section_label (str | None) -- platform shown in the title: Mobile | Desktop
+
+    @Returns:
+        list of all the items in the section (List[Any])
+    """
     styles = get_styles()
     story: List[Any] = []
 
@@ -158,6 +178,20 @@ def audit_score_per_url_section(
     *,
     show_upsell: bool = False,
 ) -> List[Any]:
+    """
+    Creates report section with each url's AI notes, score summary and passed / failed audits
+
+    @Args:
+        per_url (Dict[str, Any]) -- reduced audit data keyed by url for one platform
+        report_label (str) -- report name shown in the title: SEO | Accessibility
+        section_label (str | None) -- platform shown in the title: Mobile | Desktop
+        ai (Dict[str, Any] | None) -- ai summary data
+        report_type (str) -- seo | accessibility
+        show_upsell (bool) -- if true an upsell page follows the urls
+
+    @Returns:
+        list of all the items in the section (List[Any])
+    """
     styles = get_styles()
     story: List[Any] = []
 

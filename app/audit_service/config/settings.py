@@ -1,3 +1,7 @@
+"""
+Audit cli config
+Parses the command line arguments into the AppConfig used to run an audit
+"""
 import argparse
 from dataclasses import dataclass
 
@@ -14,7 +18,10 @@ class AppConfig:
 
 def build_config() -> AppConfig:
     """
-    Builds config object with all the nessary data for the program
+    Builds config object with all the necessary data for the program from the cli arguments
+
+    @Returns:
+        audit run config (AppConfig)
     """
     parser = argparse.ArgumentParser()
 

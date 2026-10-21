@@ -1,3 +1,7 @@
+"""
+Test email sender
+Sends every client and company email template to one address to preview them
+"""
 from __future__ import annotations
 
 import argparse
@@ -22,6 +26,16 @@ def _send_one(
     subject: str,
     html_content: str,
 ) -> None:
+    """Sends one test email with the subject prefix and no attachments
+
+    @Args:
+        to_email (str) -- recipient email
+        target_url (str) -- website url for the template data
+        client_name (Optional[str]) -- recipient name
+        subject_prefix (str) -- prefix added to the subject, e.g. [TEST]
+        subject (str) -- template subject
+        html_content (str) -- template body
+    """
     send_audit_email(
         to_email=to_email,
         client_name=client_name,
@@ -33,6 +47,7 @@ def _send_one(
 
 
 def main() -> None:
+    """Sends the confirmation, results, failed and company test emails to the address from the cli arguments"""
     parser = argparse.ArgumentParser(description="Send test email templates via Brevo.")
     parser.add_argument("--to-email", required=True, help="Recipient address for test emails.")
     parser.add_argument("--client-name", default="Acme Co", help="Client name for template data.")

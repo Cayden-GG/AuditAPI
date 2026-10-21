@@ -1,3 +1,7 @@
+"""
+Report helpers
+Formatting, statistics, table styling, chart and logo utilities shared by the report sections
+"""
 from .styles import (
     ADVISORY,
     BORDER,
@@ -42,9 +46,12 @@ from reportlab.lib.utils import ImageReader
 def benchmarks_metric(per_url: Dict[str, Dict[str, Any]]) -> Dict:
     """
     Formats benchmark metrics into p10, average, and p90
-    
-    Args: 
-        per_url (Dict, required): per-url performance data
+
+    @Args:
+        per_url (Dict[str, Dict[str, Any]]) -- per-url performance data
+
+    @Returns:
+        p10, avg and p90 for FCP, LCP, Speed Index, TBT and server latency (Dict)
     """
 
     metric_map = {
@@ -64,11 +71,11 @@ def domain_from_url(url: str) -> str:
     """
     Parses inputted url for domain string
 
-    Args: 
-        url (str, required): website url 
+    @Args:
+        url (str) -- website url
 
-    Returns: 
-        only domain string 
+    @Returns:
+        domain of the url, the url itself if it cannot be parsed (str)
     """
     try:
         return urllib.parse.urlparse(url).netloc or url
@@ -77,76 +84,87 @@ def domain_from_url(url: str) -> str:
 
 
 def ms_to_s(ms: float) -> float:
+    """Converts milliseconds to seconds"""
     return ms / 1000.0
 
 # format ms
 def fmt_ms(value: Any, unit: str = "ms", decimals: int = 0) -> str:
     """
-    Formats input to time 
-    
-    Args: 
-        value (Any, required): value to be converted to time value
-        unit (str, optional, default="ms"): time unit ["ms", "s"]
-        decimals (int, optional, default=0): number of digits after the "."
+    Formats input to time
 
-    Returns: 
-        formatted str time value ("0.50 s", "199 ms") 
+    @Args:
+        value (Any) -- value in milliseconds to be converted to a time value
+        unit (str) -- time unit to display: ms | s
+        decimals (int) -- number of digits after the "."
+
+    @Returns:
+        formatted time value ("0.50 s", "199 ms"), "n/a" if value is not a number (str)
     """
     if value is None:
         return "n/a"
+
     try:
         value = float(value)
     except Exception:
         return "n/a"
+    
     if math.isnan(value):
         return "n/a"
+    
     if unit == "s":
         return f"{ms_to_s(value):.{decimals}f} s"
+    
     return f"{value:.{decimals}f} ms"
 
 # format numbers
 def fmt_num(value: Any, decimals: int = 1) -> str:
     """
-    Formats input to number 
-    
-    Args: 
-        value (Any, required): value to be converted to time value
-        decimals (int, optional, default=0): number of digits after the "."
+    Formats input to number
 
-    Returns: 
-        formatted str number value ("0.6", "199.8") 
+    @Args:
+        value (Any) -- value to be converted to a number
+        decimals (int) -- number of digits after the "."
+
+    @Returns:
+        formatted number value ("0.6", "199.8"), "n/a" if value is not a number (str)
     """
     if value is None:
         return "n/a"
+
     try:
         value = float(value)
     except Exception:
         return "n/a"
+
     if math.isnan(value):
         return "n/a"
+
     return f"{value:.{decimals}f}"
 
 # format bytes
 def fmt_bytes(value: Any) -> str:
     """
-    Formats input to bytes 
-    
-    Args: 
-        value (Any, required): value to be converted to time value
+    Formats input to bytes
 
-    Returns: 
-        formatted str byte value ("0.6 KB", "199.8 MB") 
+    @Args:
+        value (Any) -- value in bytes to be converted to the largest fitting unit
+
+    @Returns:
+        formatted byte value ("0.6 KB", "199.8 MB"), "n/a" if value is not a number (str)
     """
     if value is None:
         return "n/a"
+
     try:
         n = float(value)
     except Exception:
         return "n/a"
+
     for u in ["B", "KB", "MB", "GB"]:
         if n < 1024 or u == "GB":
             return f"{n:.1f} {u}" if u != "B" else f"{n:.0f} {u}"
         n /= 1024
+
     return "n/a"
 
 
@@ -154,31 +172,36 @@ def percentile(values: List[Any], p: float) -> Optional[float]:
     """
     Calculates the pth percentile of the provided values
 
-    Args: 
-        values (List[Any], required): list of values
-        p (float, required): the percentile
+    @Args:
+        values (List[Any]) -- list of values, non numeric values are ignored
+        p (float) -- the percentile
 
-    Returns:
-        returns nth perctile value (float) 
+    @Returns:
+        pth percentile value, None if there are no numeric values (Optional[float])
 
-    Notes: 
+    Notes:
         if p=0, output will be the smallest value
-        if p=0, outpur will be the middle value
+        if p=50, output will be the middle value
         if p=100, output will be the largest value
     """
     vals: List[float] = []
     for x in values:
         if x is None:
             continue
+
         try:
             xf = float(x)
         except Exception:
             continue
+
         if math.isnan(xf):
             continue
+        
         vals.append(xf)
+        
     if not vals:
         return None
+
     return float(np.percentile(vals, p))
 
 
@@ -186,39 +209,42 @@ def mean(values: List[Any]) -> Optional[float]:
     """
     Calculates the mean (average) value of the provided values
 
-    Args: 
-        values (List[Any], required): list of values
+    @Args:
+        values (List[Any]) -- list of values, non numeric values are ignored
 
-    Returns:
-        returns mean value (float) 
-   
+    @Returns:
+        mean value, None if there are no numeric values (Optional[float])
     """
     vals: List[float] = []
     for x in values:
         if x is None:
             continue
+
         try:
             xf = float(x)
         except Exception:
             continue
+
         if math.isnan(xf):
             continue
         vals.append(xf)
+
     if not vals:
         return None
+
     return float(np.mean(vals))
 
 
 def style_table(t: Table, header_bg=LIGHT_BG) -> Table:
     """
-    Styles all the tables consistenly
-    
-    Args: 
-        t (Table, required): the table object to be styled
-        header_bg (str, required): table header color (color.hexColor("#ffffff")) 
+    Styles all the tables consistently
 
-    Returns: 
-        the table with computed styles 
+    @Args:
+        t (Table) -- the table object to be styled
+        header_bg (Color) -- table header color, e.g. colors.HexColor("#ffffff")
+
+    @Returns:
+        the table with computed styles (Table)
     """
     _register_fonts()
     header_font = FONT_HEADING_BOLD if fonts_registered() else "Helvetica-Bold"
@@ -252,8 +278,10 @@ def style_table(t: Table, header_bg=LIGHT_BG) -> Table:
 
 
 def severity_color(label: Any):
+    """Returns the report color for a severity label (critical | high | moderate | advisory | pass), NA color if unknown"""
     if not isinstance(label, str):
         return NA
+
     lowered = label.strip().lower()
     return {
         "critical": CRITICAL,
@@ -267,12 +295,16 @@ def severity_color(label: Any):
 
 
 def score_color(value: Any):
+    """Returns the report color for a 0-1 lighthouse score: good from 0.9, mid from 0.5, bad below, NA color if not a number"""
     if not isinstance(value, (int, float)):
         return NA
+        
     if value >= 0.9:
         return SCORE_GOOD
+
     if value >= 0.5:
         return SCORE_MID
+
     return SCORE_BAD
 
 
@@ -280,14 +312,14 @@ def bar_chart(labels: List[str], series: List[Tuple[str, List[Optional[float]]]]
     """
     Renders a bar chart with provided data
 
-    Args: 
-        labels (List[str], required): list of chart labels
-        series (List[Tuple[str, List[Optional[float]]]], required): list of values to add to the bar chart
-        width (int, required): width of pie chart
-        height (int, required): hight of pie chart
+    @Args:
+        labels (List[str]) -- list of chart labels
+        series (List[Tuple[str, List[Optional[float]]]]) -- named series of values to add to the bar chart
+        width (int) -- width of bar chart
+        height (int) -- height of bar chart
 
-    Returns:
-        d (Drawing): drawing of bar chart to render on the canvas
+    @Returns:
+        drawing of bar chart to render on the canvas (Drawing)
     """
 
     d = Drawing(width, height)
@@ -301,15 +333,19 @@ def bar_chart(labels: List[str], series: List[Tuple[str, List[Optional[float]]]]
     bc.categoryAxis.labels.fontSize = 7
     bc.valueAxis.labels.fontSize = 7
     bc.valueAxis.valueMin = 0
+
     flat = [v for row in bc.data for v in row]
     vmax = (max(flat) * 1.15) if flat else 1
+    
     bc.valueAxis.valueMax = vmax
     bc.valueAxis.valueStep = vmax / 5 if vmax else 1
     palette = _purple_palette(max(len(series), 1))
+
     for idx in range(len(series)):
         bc.bars[idx].fillColor = palette[idx % len(palette)]
         bc.bars[idx].strokeColor = BORDER
     d.add(bc)
+
     return d
 
 
@@ -317,13 +353,13 @@ def pie_chart(parts: List[Tuple[str, Any]], width: int = 460, height: int = 200)
     """
     Renders a pie chart with provided data
 
-    Args: 
-        parts (List[Tuple[str, Any]], required): parts/slices of the pie chart
-        width (int, required): width of pie chart
-        height (int, required): hight of pie chart
+    @Args:
+        parts (List[Tuple[str, Any]]) -- labelled parts/slices of the pie chart, empty and non positive values are skipped
+        width (int) -- width of pie chart
+        height (int) -- height of pie chart
 
-    Returns:
-        d (Drawing): drawing of pie chart to render on the canvas
+    @Returns:
+        drawing of pie chart to render on the canvas, empty if there are no values (Drawing)
     """
     d = Drawing(width, height)
     pie = Pie()
@@ -341,15 +377,19 @@ def pie_chart(parts: List[Tuple[str, Any]], width: int = 460, height: int = 200)
 
     labels: List[str] = []
     values: List[float] = []
+
     for lbl, v in parts:
         if v is None:
             continue
+
         try:
             vf = float(v)
         except Exception:
             continue
+
         if vf <= 0:
             continue
+
         labels.append(lbl)
         values.append(vf)
 
@@ -359,15 +399,20 @@ def pie_chart(parts: List[Tuple[str, Any]], width: int = 460, height: int = 200)
     pie.data = values
     pie.labels = labels
     palette = _purple_palette(max(len(values), 1))
+
     for idx in range(len(values)):
         pie.slices[idx].fillColor = palette[idx % len(palette)]
+
     pie.slices.strokeWidth = 0.5
     d.add(pie)
+
     return d
 
 
 def _tint_color(base: colors.Color, factor: float) -> colors.Color:
+    """Lightens a color towards white, factor is clamped between 0 (unchanged) and 1 (white)"""
     factor = max(0.0, min(1.0, factor))
+
     return colors.Color(
         base.red + (1 - base.red) * factor,
         base.green + (1 - base.green) * factor,
@@ -376,30 +421,30 @@ def _tint_color(base: colors.Color, factor: float) -> colors.Color:
 
 
 def _purple_palette(count: int) -> List[colors.Color]:
+    """Builds count shades of the brand purple, from dark to light, for chart series"""
     if count <= 1:
         return [PURPLE]
+    
     start = 0.15
     end = 0.75
     steps = max(count - 1, 1)
+
     return [_tint_color(PURPLE, start + (end - start) * (i / steps)) for i in range(count)]
 
 
 def render_logo(canvas, logo_path: Optional[str], x: float, y: float, w: float, h: float) -> None:
     """
     Renders brand logo on the report.
-    
+
     If no logo passed logo is left blank no placeholder.
 
-    Args: 
-        canvas (canvas, required): canvas for the logo to be render to
-        logo_path (str, optional): path to logo
-        x (float, required): x co-ordenate
-        y (float, required): y co-ordenate
-        w (float, required): width of logo
-        h (float, required): hight of logo
-
-    Returns:
-        None
+    @Args:
+        canvas (Canvas) -- canvas for the logo to be rendered to
+        logo_path (Optional[str]) -- path to logo
+        x (float) -- x co-ordinate
+        y (float) -- y co-ordinate
+        w (float) -- width of logo
+        h (float) -- height of logo
     """
     canvas.saveState()
 
@@ -420,6 +465,7 @@ def render_logo(canvas, logo_path: Optional[str], x: float, y: float, w: float, 
             cx = x + (w - dw) / 2
             cy = y + (h - dh) / 2
             canvas.drawImage(img, cx, cy, width=dw, height=dh, mask="auto")
+
         except Exception:
             pass
 

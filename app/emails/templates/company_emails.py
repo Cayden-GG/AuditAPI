@@ -1,4 +1,7 @@
-
+"""
+Company email templates
+Internal emails sent to the company: audit completed and audit failed
+"""
 from __future__ import annotations
 
 import html
@@ -6,6 +9,16 @@ from typing import Iterable, Optional, Tuple
 
 
 def _email_shell(title: str, preheader: str, content_html: str) -> str:
+    """Wraps content in the internal notification email layout with a header, footer and hidden preheader
+
+    @Args:
+        title (str) -- heading shown above the content
+        preheader (str) -- hidden preview text
+        content_html (str) -- email body html
+
+    @Returns:
+        complete email html (str)
+    """
     return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -29,6 +42,7 @@ def _email_shell(title: str, preheader: str, content_html: str) -> str:
 
 
 def _render_list(items: Iterable[str]) -> str:
+    """Renders the items as an escaped html list, empty string if there are none"""
     safe_items = [html.escape(item) for item in items if item]
     if not safe_items:
         return ""
@@ -46,6 +60,23 @@ def company_audit_completion(
     report_paths: Optional[Iterable[str]] = None,
     social_links: Optional[Iterable[str]] = None,
 ) -> Tuple[str, str]:
+    """
+    Internal email notifying that an audit completed, listing the client, uploaded GCS files and social links.
+    The subject marks it as a premium brand audit when social links are provided.
+
+    @Args:
+        client_name (Optional[str]) -- client name
+        client_email (Optional[str]) -- client email
+        target_url (Optional[str]) -- audited website url
+        audit_id (Optional[str]) -- audit id
+        gcs_bucket (Optional[str]) -- GCS bucket the reports were uploaded to
+        gcs_objects (Optional[Iterable[str]]) -- uploaded GCS object names
+        report_paths (Optional[Iterable[str]]) -- local report paths, not shown in the email
+        social_links (Optional[Iterable[str]]) -- client social links to audit
+
+    @Returns:
+        email subject and html content (Tuple[str, str])
+    """
     subject = f"Audit delivered for {client_name or target_url or 'client'}"
     
     if social_links: 
@@ -97,6 +128,19 @@ def company_audit_failed(
     audit_id: Optional[str] = None,
     error_message: Optional[str] = None,
 ) -> Tuple[str, str]:
+    """
+    Internal email notifying that an audit failed, with the client details and error message
+
+    @Args:
+        client_name (Optional[str]) -- client name
+        client_email (Optional[str]) -- client email
+        target_url (Optional[str]) -- audited website url
+        audit_id (Optional[str]) -- audit id
+        error_message (Optional[str]) -- failure reason
+
+    @Returns:
+        email subject and html content (Tuple[str, str])
+    """
     subject = f"Audit failed for {client_name or target_url or 'client'}"
     detail_parts = []
     if client_name:

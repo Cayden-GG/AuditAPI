@@ -1,3 +1,5 @@
+"""Lighthouse execution config"""
+
 from dataclasses import dataclass
 from typing import List, Optional
 

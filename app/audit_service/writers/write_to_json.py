@@ -11,6 +11,7 @@ from typing import Any, Dict
 
 
 def _json_fallback(value: Any) -> Any:
+    """json.dumps fallback that converts numpy scalars, Paths, sets and pydantic models to serialisable values"""
     try:
         import numpy as np  # type: ignore
 
@@ -33,13 +34,13 @@ def _json_fallback(value: Any) -> Any:
 def write_json_to_file(data: Dict[str, Any], output_dir: str = "outputs", filename: str | None = None):
     """ Writes .json file from inputted data
 
-    Args: 
-        data (Dict, required): data to be witten to json file
-        output_dir (str, optional, default = "outputs/"): output directory that json file will be saved to 
-        filename (str, optional, default="audit_{timestamp}.json"): output json file, filename
-    
-    Returns:
-        str: json filepath 
+    @Args:
+        data (Dict[str, Any]) -- data to be written to json file
+        output_dir (str) -- output directory the json file will be saved to, defaults to "outputs"
+        filename (str | None) -- output json filename, defaults to "audit_{timestamp}.json"
+
+    @Returns:
+        json filepath (str)
     """
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 

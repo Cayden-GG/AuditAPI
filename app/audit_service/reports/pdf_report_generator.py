@@ -1,3 +1,7 @@
+"""
+PDF report generator
+Assembles the report sections into the performance, SEO, accessibility and key findings PDFs
+"""
 import argparse
 import datetime
 import json
@@ -41,17 +45,39 @@ from .sections.limitations import limitations_section
 
 
 def _legacy_perf_payload(data: Dict[str, Any]) -> bool:
+    """Returns whether the data is the old flat performance format, not split by category and platform"""
     return isinstance(data, dict) and "first_contentful_paint" in data
 
 
 def _select_website_data(lh: Dict[str, Any], report_type: str, platform_label: str) -> Dict[str, Any]:
+    """Gets the website wide audit data for a report type and platform
+
+    @Args:
+        lh (Dict[str, Any]) -- lighthouse section of the audit data
+        report_type (str) -- performance | seo | accessibility
+        platform_label (str) -- mobile | desktop
+
+    @Returns:
+        website data (Dict[str, Any])
+    """
     website = lh.get("website_performance_data", {}) or {}
     if report_type == "performance" and _legacy_perf_payload(website):
         return website
+
     return (website.get(report_type, {}) or {}).get(platform_label, {}) or {}
 
 
 def _select_per_url_data(lh: Dict[str, Any], report_type: str, platform_label: str) -> Dict[str, Any]:
+    """Gets the per url audit data for a report type and platform
+
+    @Args:
+        lh (Dict[str, Any]) -- lighthouse section of the audit data
+        report_type (str) -- performance | seo | accessibility
+        platform_label (str) -- mobile | desktop
+
+    @Returns:
+        audit data keyed by url (Dict[str, Any])
+    """
     per_url_all = lh.get("per_url_performance_data", {}) or {}
     if report_type == "performance" and per_url_all and _legacy_perf_payload(next(iter(per_url_all.values()))):
         return per_url_all
@@ -60,8 +86,10 @@ def _select_per_url_data(lh: Dict[str, Any], report_type: str, platform_label: s
     for url, data in per_url_all.items():
         report_entry = (data.get(report_type, {}) or {})
         platform_entry = report_entry.get(platform_label)
+
         if platform_entry:
             per_url[url] = platform_entry
+
     return per_url
 
 def build_pdf(
@@ -73,20 +101,14 @@ def build_pdf(
     is_free_audit: bool = False,
 ) -> None:
     """
-    Creates the PDF output with all the seo and performance data 
+    Creates a PDF report for one report type from the audit and AI data, raises ValueError if report_type is unknown
 
-    Args:
-        data (Dict[str, Any], required): lighthouse audit data and ai summary data
-        output_pdf (str, required): pdf filename
-        client_name (str, required): client name
-
-    Returns: 
-        None
-
-    Outputs:
-        lighthouse audit report 
-
-    Since: 31-01-2026 
+    @Args:
+        data (Dict[str, Any]) -- lighthouse audit data and ai summary data
+        output_pdf (str) -- pdf output path
+        client_name (str) -- client name
+        report_type (str) -- performance | seo | accessibility | key_findings
+        is_free_audit (bool) -- if true the report includes the upsell content
     """
     logo_path = "app/assets/valvanta-digital-logo.png"
     cover_image_path = "app/assets/pdf-cover-image.png"
@@ -128,6 +150,7 @@ def build_pdf(
             sitemap_url_count=sitemap.get("url_count"),
             show_upsell=is_free_audit,
         )
+
         story.append(PageBreak())
         story += executive_summary_section(ai, summary.get(report_type, {}) or {}, report_type=report_type)
 
@@ -171,6 +194,7 @@ def build_pdf(
             sitemap_url_count=sitemap.get("url_count"),
             show_upsell=is_free_audit,
         )
+
         story.append(PageBreak())
         story += executive_summary_section(ai, summary.get(report_type, {}) or {}, report_type=report_type)
 
@@ -255,14 +279,29 @@ def build_reports(
     *,
     is_free_audit: bool = False,
 ) -> Dict[str, str]:
-    ts = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    """
+    Builds every PDF report for the audit: performance, seo, key findings and optionally accessibility
+
+    @Args:
+        data (Dict[str, Any]) -- lighthouse audit data and ai summary data
+        output_dir (str) -- directory the PDFs are saved to
+        client_name (str) -- client name
+        include_accessibility (bool) -- if true the accessibility report is built too
+        is_free_audit (bool) -- if true the reports include the upsell content
+
+    @Returns:
+        report type to pdf file path (Dict[str, str])
+    """
+    ts =datetime.datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
     reports = {
         "performance": os.path.join(output_dir, f"Performance_PDF_{ts}.pdf"),
         "seo": os.path.join(output_dir, f"SEO_PDF_{ts}.pdf"),
         "key_findings": os.path.join(output_dir, f"Key_Findings_{ts}.pdf"),
     }
+
     if include_accessibility:
         reports["accessibility"] = os.path.join(output_dir, f"Accessibility_PDF_{ts}.pdf")
+
     for report_type, path in reports.items():
         build_pdf(
             data,
@@ -271,11 +310,13 @@ def build_reports(
             report_type=report_type,
             is_free_audit=is_free_audit,
         )
+
     return reports
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    """Builds PDF report(s) from saved audit and AI json files, used for running the generator on its own"""
+    parser =argparse.ArgumentParser()
     parser.add_argument("--audit-input", required=True, help="Lighthouse audit json file")
     parser.add_argument("--ai-input", required=True, help="Ai summary json file")
     parser.add_argument("--output", required=True, help="output PDF")
@@ -294,10 +335,12 @@ def main() -> None:
     if args.report_type == "all":
         output_dir = os.path.dirname(args.output) or "."
         categories_raw = (audit.get("lighthouse", {}) or {}).get("categories") or ""
+
         if isinstance(categories_raw, str):
             categories = [c.strip() for c in categories_raw.split(",") if c.strip()]
         else:
             categories = [str(c).strip() for c in (categories_raw or []) if str(c).strip()]
+
         include_accessibility = "accessibility" in categories
         build_reports(
             payload,

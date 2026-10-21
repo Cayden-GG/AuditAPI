@@ -1,3 +1,7 @@
+"""
+Tested urls section
+Report section listing the urls included in the audit run
+"""
 from typing import Any, Dict
 
 from reportlab.platypus import Paragraph, Spacer, PageBreak, Table
@@ -5,15 +9,16 @@ from reportlab.platypus import Paragraph, Spacer, PageBreak, Table
 from ..helpers import style_table
 from ..styles import CONTENT_W, SectionRule, get_styles
 
-def tested_urls_section(lh: Dict[Any], tested_urls): 
+def tested_urls_section(lh: Dict[Any], tested_urls):
     """
-    Create report section that displays the tested urls in a table 
+    Create report section that displays the tested urls in a table
 
-    Args: 
-        lh (Dict, required): lighthouse audit data
+    @Args:
+        lh (Dict) -- lighthouse audit data
+        tested_urls (List[str]) -- urls included in the audit run
 
-    Returns: 
-        List of all the items in the section
+    @Returns:
+        list of all the items in the section (List)
     """
     styles = get_styles()
 

@@ -1,3 +1,7 @@
+"""
+Database
+SQLite engine and session setup, schema migrations for the audit and queue tables and audit record queries
+"""
 from datetime import datetime
 import json
 from typing import Generator, Optional
@@ -16,6 +20,7 @@ Base = declarative_base()
 
 
 def get_db() -> Generator:
+    """FastAPI dependency that yields a database session and closes it after the request"""
     db = SessionLocal()
     try:
         yield db
@@ -24,12 +29,14 @@ def get_db() -> Generator:
 
 
 def init_db() -> None:
+    """Creates any missing tables and adds any missing audit columns and queue tables"""
     Base.metadata.create_all(bind=engine)
     _ensure_audit_columns()
     _ensure_queue_tables()
 
 
 def _ensure_audit_columns() -> None:
+    """Adds the audits table columns introduced after the table was first created, if they are missing"""
     columns = {
         "seo_report_object": "TEXT",
         "perf_report_object": "TEXT",
@@ -49,6 +56,7 @@ def _ensure_audit_columns() -> None:
             row[1]
             for row in conn.execute(text("PRAGMA table_info(audits)")).fetchall()
         }
+
         for name, col_type in columns.items():
             if name in existing:
                 continue
@@ -57,7 +65,7 @@ def _ensure_audit_columns() -> None:
 
 
 def _ensure_queue_tables() -> None:
-    # Create queue tables and seed two runner slots.
+    """Creates the queue tables and indexes if missing and seeds the two runner slots"""
     table_sql = [
         """
         CREATE TABLE IF NOT EXISTS customers (
@@ -117,6 +125,23 @@ def create_audit(
     social_links: Optional[list[str]] = None,
     debug_mode: Optional[bool] = None,
 ):
+    """
+    Creates a pending audit record
+
+    @Args:
+        db (Session) -- database session
+        target_url (str) -- website url to audit
+        client_email (str) -- client email
+        client_name (Optional[str]) -- client name
+        tier (str) -- free | paid
+        order_id (Optional[str]) -- paid order id
+        callback_url (Optional[str]) -- url notified when the audit completes
+        social_links (Optional[list[str]]) -- client social links, stored as json
+        debug_mode (Optional[bool]) -- if true the AI request is skipped
+
+    @Returns:
+        created audit (AuditTable)
+    """
     from .models import AuditTable, AuditStatus
 
     social_links_payload = None
@@ -134,19 +159,39 @@ def create_audit(
         social_links=social_links_payload,
         debug_mode=bool(debug_mode) if debug_mode is not None else False,
     )
+
     db.add(audit)
     db.commit()
     db.refresh(audit)
+    
     return audit
 
 
 def get_audit(db, audit_id: str):
+    """Gets an audit by id
+
+    @Args:
+        db (Session) -- database session
+        audit_id (str) -- audit id
+
+    @Returns:
+        audit, None if not found (Optional[AuditTable])
+    """
     from .models import AuditTable
 
     return db.query(AuditTable).filter(AuditTable.id == audit_id).first()
 
 
 def get_latest_audit_by_target_url(db, target_url: str):
+    """Gets the most recently completed audit for a url
+
+    @Args:
+        db (Session) -- database session
+        target_url (str) -- audited website url
+
+    @Returns:
+        latest completed audit, None if there is none (Optional[AuditTable])
+    """
     from .models import AuditStatus, AuditTable
 
     return (
@@ -161,29 +206,66 @@ def get_latest_audit_by_target_url(db, target_url: str):
 
 
 def update_audit_status(db, audit_id: str, status, completed_at: Optional[datetime] = None):
+    """Updates an audit's status and optionally its completion time
+
+    @Args:
+        db (Session) -- database session
+        audit_id (str) -- audit id
+        status (AuditStatus) -- new status
+        completed_at (Optional[datetime]) -- completion time, left unchanged if not provided
+
+    @Returns:
+        updated audit, None if not found (Optional[AuditTable])
+    """
     audit = get_audit(db, audit_id)
     if not audit:
         return None
+
     audit.status = status
+    
     if completed_at:
         audit.completed_at = completed_at
+
     db.commit()
     db.refresh(audit)
+
     return audit
 
 
 def update_audit_report_objects(db, audit_id: str, **fields):
+    """Updates an audit's report object fields, fields that are not audit columns are ignored
+
+    @Args:
+        db (Session) -- database session
+        audit_id (str) -- audit id
+        fields (Any) -- column values to set, e.g. seo_report_object
+
+    @Returns:
+        updated audit, None if not found (Optional[AuditTable])
+    """
     audit = get_audit(db, audit_id)
     if not audit:
         return None
+    
     for key, value in fields.items():
         if hasattr(audit, key):
             setattr(audit, key, value)
+
     db.commit()
     db.refresh(audit)
+    
     return audit
 
 def validate_domain_audit(db, domain: str):
+    """Finds a completed audit for the domain, used to check if it was already audited
+
+    @Args:
+        db (Session) -- database session
+        domain (str) -- website url or domain, matched against the audits' target url
+
+    @Returns:
+        completed audit, None if there is none (Optional[AuditTable])
+    """
     from .models import AuditTable
 
     return db.query(AuditTable).filter(

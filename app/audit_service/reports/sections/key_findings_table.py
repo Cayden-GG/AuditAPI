@@ -1,3 +1,7 @@
+"""
+Key findings table
+Table of the AI key findings used by the key findings section
+"""
 from typing import Dict, List, Any
 
 from reportlab.platypus import Paragraph, Table
@@ -6,6 +10,15 @@ from ..styles import CONTENT_W, get_styles
 
 
 def key_findings_table(ai: Dict[str, Any]) -> Table:
+    """
+    Creates the key findings table of up to 12 findings, uses a placeholder row if the AI returned none
+
+    @Args:
+        ai (Dict[str, Any]) -- ai summary data
+
+    @Returns:
+        styled table with issue, priority, impact, effort and explanation columns (Table)
+    """
     styles = get_styles()
 
     findings = ai.get("key_findings") or []

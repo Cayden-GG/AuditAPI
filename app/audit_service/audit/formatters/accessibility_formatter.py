@@ -1,3 +1,7 @@
+"""
+Accessibility formatter
+Reduces lighthouse accessibility audits per url and aggregates them across the website
+"""
 from typing import Any, Dict, List, Optional
 
 from .helpers import add_error, log, safe_average
@@ -5,7 +9,8 @@ from ..audit_config import ACCESSIBILITY_AUDIT_IDS
 
 
 def _audit_status(audit: Dict[str, Any]) -> str:
-    mode = audit.get("scoreDisplayMode")
+    """Maps a lighthouse audit to pass | fail | not_applicable, pass requires a score of 0.9 or above"""
+    mode =audit.get("scoreDisplayMode")
     if mode in ("notApplicable", "manual", "informative"):
         return "not_applicable"
 
@@ -24,6 +29,19 @@ def reduce_url_accessibility(
     logs: List[Dict[str, str]],
     errors: List[Dict[str, str]],
 ) -> Optional[Dict[str, Any]]:
+    """
+    Reduces a single URL's accessibility lighthouse audits into a smaller summary
+
+    @Args:
+        url (str) -- page url of the audit data
+        audits (Dict[str, Any]) -- lighthouse audits object for one platform
+        audit_ids (List[str]) -- accessibility audit ids to reduce, defaults to ACCESSIBILITY_AUDIT_IDS if empty
+        logs (List[Dict[str, str]]) -- log list to add to
+        errors (List[Dict[str, str]]) -- error list to add to
+
+    @Returns:
+        summary counts and per audit results (Optional[Dict[str, Any]]), None if audits is invalid
+    """
     if not isinstance(audits, dict):
         add_error(errors, url=url, stage="input", message="Missing or invalid accessibility audits object.")
         return None
@@ -40,11 +58,13 @@ def reduce_url_accessibility(
 
     for audit_id in audit_ids:
         audit = audits.get(audit_id, {})
+
         if not isinstance(audit, dict):
             continue
 
         status = _audit_status(audit)
         score = audit.get("score")
+
         if isinstance(score, (int, float)):
             scores.append(float(score))
 
@@ -81,6 +101,16 @@ def aggregate_website_accessibility(
     *,
     logs: List[Dict[str, str]],
 ) -> Dict[str, Any]:
+    """
+    Aggregates reduced per url accessibility data into website wide averages and failure rates
+
+    @Args:
+        per_url (Dict[str, Dict[str, Any]]) -- reduced accessibility data keyed by url
+        logs (List[Dict[str, str]]) -- log list to add to
+
+    @Returns:
+        website accessibility summary with the top failed audits (Dict[str, Any])
+    """
     scores: List[float] = []
     passed_total = 0
     failed_total = 0
@@ -91,6 +121,7 @@ def aggregate_website_accessibility(
     for data in per_url.values():
         summary = data.get("summary", {})
         avg_score = summary.get("average_score")
+
         if isinstance(avg_score, (int, float)):
             scores.append(float(avg_score))
 
@@ -101,8 +132,10 @@ def aggregate_website_accessibility(
         for audit_id, audit in (data.get("audits", {}) or {}).items():
             if isinstance(audit, dict) and audit.get("status") == "fail":
                 fail_counts[audit_id] = fail_counts.get(audit_id, 0) + 1
+
             if not isinstance(audit, dict):
                 continue
+
             stats = audit_stats.setdefault(
                 audit_id,
                 {
@@ -113,17 +146,24 @@ def aggregate_website_accessibility(
                     "not_applicable_count": 0,
                 },
             )
+
             status = audit.get("status")
             if status == "pass":
                 stats["pass_count"] += 1
+
             elif status == "fail":
                 stats["fail_count"] += 1
+
             else:
                 stats["not_applicable_count"] += 1
+
             score = audit.get("score")
+
             if isinstance(score, (int, float)):
                 stats["scores"].append(float(score))
+
             numeric_value = audit.get("numeric_value")
+
             if isinstance(numeric_value, (int, float)):
                 stats["numeric_values"].append(float(numeric_value))
 
@@ -140,6 +180,7 @@ def aggregate_website_accessibility(
     log(logs, "info", f"Aggregated accessibility data across {total_urls} URLs")
 
     audit_summaries: Dict[str, Dict[str, Any]] = {}
+
     for audit_id, stats in audit_stats.items():
         total = stats["pass_count"] + stats["fail_count"] + stats["not_applicable_count"]
         summary = {

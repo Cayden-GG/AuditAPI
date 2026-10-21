@@ -1,3 +1,7 @@
+"""
+Methodology section
+Report section describing how the audit was run, the standards alignment, limitations and tested urls
+"""
 from typing import Any, Dict, List, Optional
 
 from reportlab.platypus import Paragraph, Spacer, Table
@@ -13,6 +17,18 @@ def methodology_section(
     sitemap_url_count: Optional[int] = None,
     show_upsell: bool = False,
 ) -> List[Any]:
+    """
+    Creates report section with the audit run details, execution config, standards statement and tested urls
+
+    @Args:
+        lh (Dict[str, Any]) -- lighthouse section of the audit data
+        tested_urls (List[str]) -- urls included in the audit run
+        sitemap_url_count (Optional[int]) -- number of urls found in the sitemap
+        show_upsell (bool) -- if true the tested url count shows the premium audit limit
+
+    @Returns:
+        list of all the items in the section (List[Any])
+    """
     styles = get_styles()
     story: List[Any] = []
 

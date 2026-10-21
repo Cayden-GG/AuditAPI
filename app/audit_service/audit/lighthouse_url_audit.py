@@ -1,5 +1,7 @@
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 import json
+import os
+import shutil
 import subprocess
 import time
 from datetime import datetime, timezone
@@ -7,10 +9,14 @@ from dataclasses import asdict
 
 from .audit_config import LighthouseDesktopRunOptions, LighthouseMobileRunOptions
 from ..writers.write_to_json import write_json_to_file
+
+VALID_LIGHTHOUSE_CATEGORIES = {"performance", "seo", "accessibility", "best-practices", "pwa"}
+
 # --------------- helpers ---------------
 
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
 
 def _get_lighthouse_version() -> Optional[str]:
     """
@@ -25,28 +31,88 @@ def _get_lighthouse_version() -> Optional[str]:
         )
         if r.returncode == 0 and r.stdout.strip():
             return r.stdout.strip()
+
     except Exception:
         pass
 
+
+def resolve_chrome_path(configured_path: Optional[str] = None) -> str:
+    """
+    Resolve a usable Chrome/Chromium binary path to reduce "no Chrome/Chromium" errors.
+    """
+    candidates = []
+    env_path = os.getenv("CHROME_PATH")
+
+    if env_path:
+        candidates.append(env_path)
+
+    if configured_path:
+        candidates.append(configured_path)
+    
+    for name in ("google-chrome-stable", "google-chrome", "chromium", "chromium-browser"):
+        found = shutil.which(name)
+        if found:
+            candidates.append(found)
+
+    for candidate in candidates:
+        if candidate and os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+
+    raise RuntimeError(
+        "No Chrome/Chromium installation found. Set the CHROME_PATH environment "
+        "variable to a valid Chrome/Chromium binary, or install Chrome/Chromium "
+        f"(checked: {', '.join(c for c in candidates if c) or 'no candidates'})."
+    )
+
+
+def validate_categories(only_categories: Optional[str]) -> None:
+    """
+    Validate user passed categories, raises RuntimeError if invalid
+    
+    @Args:
+        only_categories (Optional[str]) -- string list of lighthouse audit categories 
+    """
+    if not only_categories:
+        return
+
+    requested = {c.strip() for c in only_categories.split(",") if c.strip()}
+    unknown = requested - VALID_LIGHTHOUSE_CATEGORIES
+    
+    if unknown:
+        raise RuntimeError(
+            f"Unknown Lighthouse categor{'y' if len(unknown) == 1 else 'ies'}: "
+            f"{', '.join(sorted(unknown))}. Valid categories are: "
+            f"{', '.join(sorted(VALID_LIGHTHOUSE_CATEGORIES))}."
+        )
+
+
 def _classify_error(exc: Exception) -> Tuple[str, str]:
     """
-    Map exceptions to FRS-style error_type and human-readable message.
+    Map exceptions to FRS-style error_type and readable message.
+
+    @Args: 
+        exc (Exception) -- lighthouse exception
+    
+    @Returns:
+        error tuple with error code and message (Tuple[str, str])
     """
     msg = str(exc)
 
     if isinstance(exc, subprocess.TimeoutExpired):
         return "timeout", "Lighthouse execution exceeded timeout."
 
-    # Our code raises RuntimeError with specific prefixes; classify by message.
+    # raises RuntimeError with specific prefixes; classify by message.
     lowered = msg.lower()
     if "no json" in lowered or "produced no json" in lowered:
         return "no_json_output", "Lighthouse produced no JSON output."
+    
     if "invalid json" in lowered:
         return "invalid_json", "Lighthouse returned invalid JSON."
+    
     if "lighthouse failed" in lowered or "return code" in lowered:
         return "lighthouse_failed", "Lighthouse process failed."
+    
     return "unknown", msg
-    return None
 
 
 # ---------- Lighthouse runner ----------
@@ -55,13 +121,23 @@ def run_lighthouse_json(
     url: str,
     platform: str,
     only_categories: Optional[str] = None,
-) -> Dict[str, Any]:
+    chrome_path: Optional[str] = None,
+) -> Tuple[Any, float, list]:
     """
     Runs Lighthouse CLI and returns the parsed JSON report.
+
+    @Args:
+        url (str) -- client url to audit on
+        platform (str) -- platform to run audit on: mobile | desktop
+        only_categories (Optional[str]) -- categories to run audit on: seo | performance | accessibility
+        chrome_path (optional[str]) -- path to chrome on sys to reduce chrome errors
+
+    @Returns:
+        audit data (Dict[str, Any])
     """
     cmd = []
 
-    if platform == "desktop": 
+    if platform == "desktop":
         opts = LighthouseDesktopRunOptions()
         if only_categories:
             opts.only_categories = only_categories
@@ -77,13 +153,12 @@ def run_lighthouse_json(
             "--headless",
             "--no-sandbox",
             "--disable-gpu",
-            "--disable-dev-shm-usage"
-            f"--chrome-path={opts.chrome_path}",
+            "--disable-dev-shm-usage",
             f"--chrome-flags={opts.chrome_flags}",
             f"--max-wait-for-load={opts.max_wait_for_load_ms}",
         ]
 
-    else: 
+    else:
         opts = LighthouseMobileRunOptions()
         if only_categories:
             opts.only_categories = only_categories
@@ -101,17 +176,22 @@ def run_lighthouse_json(
             "--output=json",
             "--output-path=stdout",
             "--quiet",
-            f"--chrome-path={opts.chrome_path}",
             f"--chrome-flags={opts.chrome_flags}",
             f"--max-wait-for-load={opts.max_wait_for_load_ms}",
         ]
-        
+
+    env = os.environ.copy()
+    if chrome_path:
+        env["CHROME_PATH"] = chrome_path
+
     start = time.time()
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=opts.timeout_s)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=opts.timeout_s, env=env)
+
     except subprocess.TimeoutExpired as e:
         raise RuntimeError(f"Lighthouse timed out for {url}") from e
+    
     finally: 
         duration = time.time() - start
 
@@ -131,6 +211,7 @@ def run_lighthouse_json(
 
     try:
         report = json.loads(result.stdout)
+
     except json.JSONDecodeError as e:
         raise RuntimeError(
             f"Invalid JSON from Lighthouse for {url}\n"
@@ -147,33 +228,30 @@ def audit_urls_with_lighthouse(
     only_categories: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
-    Runs Lighthouse for each URL and returns:
-      {
-        "<url>": { "audits": {...}, "meta": {...} } OR { "error": "...", "stderr": "..." }
-      }
+    Runs Lighthouse for each URL for each specified category
+
+    @Args:
+        urls (list[str]) -- list of urls to audit 
+        only_categories (Optional[str]) -- string list of categories to run audit on 
+    
+    @Return:
+        return audit data with meta config 
     """
 
-    # if "," in only_categories:
-    #     categories = [c.strip() for c in only_categories.split(",") if c.strip()]
-    # else:
-    #     categories = [only_categories.strip()] if only_categories.strip() else []
-    #
-    # allowed = {"performance", "seo"}
-    # normalized = [c for c in categories if c in allowed]
-    # if not normalized:
-    #     normalized = ["performance"]
-    # categories = normalized
-    #
-    # normalized_only_categories = ",".join(categories)
-
+    validate_categories(only_categories)
 
     lighthouse_version = _get_lighthouse_version()
     run_at = _utc_now_iso()
     desktop_opts = LighthouseDesktopRunOptions()
     mobile_opts = LighthouseMobileRunOptions()
+
     if only_categories:
         desktop_opts.only_categories = only_categories
         mobile_opts.only_categories = only_categories
+
+    chrome_path = resolve_chrome_path(desktop_opts.chrome_path)
+    desktop_opts.chrome_path = chrome_path
+    mobile_opts.chrome_path = chrome_path
 
     results: Dict[str, Any] = {}
     logs: List[str] = []
@@ -183,8 +261,12 @@ def audit_urls_with_lighthouse(
         logs.append(f"Starting Lighthouse for {url}")
 
         try:
-            desktop_report, duration, cmd = run_lighthouse_json(url, "desktop", only_categories=only_categories)
-            mobile_report, duration, cmd = run_lighthouse_json(url, "mobile", only_categories=only_categories)
+            desktop_report, duration, cmd = run_lighthouse_json(
+                url, "desktop", only_categories=only_categories, chrome_path=chrome_path
+            )
+            mobile_report, duration, cmd = run_lighthouse_json(
+                url, "mobile", only_categories=only_categories, chrome_path=chrome_path
+            )
 
             desktop_categories = desktop_report.get("categories", {}) or {}
             mobile_categories = mobile_report.get("categories", {}) or {}

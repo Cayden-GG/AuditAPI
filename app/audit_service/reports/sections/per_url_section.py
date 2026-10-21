@@ -1,3 +1,7 @@
+"""
+Per url section
+Performance report section with each url's AI notes and metric tables
+"""
 from typing import Dict, List, Any
 
 from reportlab.platypus import KeepTogether, PageBreak, Paragraph, Spacer, Table
@@ -10,6 +14,7 @@ from ..helpers import fmt_ms, fmt_bytes, style_table
 
 
 def _strip_heading(value: str, heading: str) -> str:
+    """Removes the leading heading the AI repeats inside a section's text, returns empty string if value is not a string"""
     if not isinstance(value, str):
         return ""
     lowered = value.strip().lower()
@@ -25,6 +30,7 @@ def _strip_heading(value: str, heading: str) -> str:
 
 
 def _clean_ai_text(value: str) -> str:
+    """Fixes doubled bullet markers ("- -") in AI text, returns empty string if value is not a string"""
     if not isinstance(value, str):
         return ""
     cleaned = value.replace("<br/>- -", "<br/>- ").replace("<br>- -", "<br/>- ")
@@ -34,6 +40,7 @@ def _clean_ai_text(value: str) -> str:
 
 
 def _select_per_url_ai(ai: Dict[str, Any], report_type: str) -> Dict[str, Any]:
+    """Gets the AI per url summaries for a report type, as a dict keyed by url, handles the older list and flat formats"""
     per_url_ai = ai.get("per_url_summaries") or {}
     if isinstance(per_url_ai, dict) and isinstance(per_url_ai.get(report_type), dict):
         return per_url_ai.get(report_type) or {}
@@ -56,12 +63,15 @@ def per_url_section(
     """
     Creates report section that displays all the metrics for each discovered url
 
-    Args: 
-        ai (Dict, required): ai summary data
-        per_url (Dict, required): per-url performance data
+    @Args:
+        ai (Dict) -- ai summary data
+        per_url (Dict) -- per-url performance data
+        section_label (str | None) -- platform shown in the title: Mobile | Desktop
+        report_type (str) -- report the AI notes are selected for
+        show_upsell (bool) -- if true an upsell page follows the urls
 
-    Returns: 
-        List of all the items in the section
+    @Returns:
+        list of all the items in the section (List)
     """
     styles = get_styles()
     story = []
@@ -91,7 +101,16 @@ def per_url_section(
 
 def url_block(ai: Dict[str, Any], url: str, d: Dict[str, Any], report_type: str) -> KeepTogether:
     """
+    Creates the block for one url: AI notes followed by the metric tables, kept together on a page
 
+    @Args:
+        ai (Dict[str, Any]) -- ai summary data
+        url (str) -- page url of the metrics
+        d (Dict[str, Any]) -- reduced performance data for the url
+        report_type (str) -- report the AI notes are selected for
+
+    @Returns:
+        block of the url's items (KeepTogether)
     """
     styles = get_styles()
     blocks: List[Any] = []

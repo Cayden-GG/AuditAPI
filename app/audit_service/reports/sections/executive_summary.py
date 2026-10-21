@@ -1,3 +1,7 @@
+"""
+Executive summary section
+AI executive summary and the mobile vs desktop findings table
+"""
 from typing import Dict
 
 from reportlab.platypus import Paragraph, Spacer, Table
@@ -13,13 +17,13 @@ def executive_summary_section(
     """
     Creates report section with executive summary, combining ai summaries with lighthouse audit data.
    
-    Args: 
-        ai (Dict, required): ai summary data
-        summary_by_platform (Dict, required): summary data keyed by platform
-        report_type (str, required): performance|seo
-    
-    Returns: 
-        List of all the items in the section  
+    @Args:
+        ai (Dict) -- ai summary data
+        summary_by_platform (Dict) -- summary data keyed by platform
+        report_type (str) -- performance | seo | accessibility
+
+    @Returns:
+        list of all the items in the section (List)
     """
     styles = get_styles()
 

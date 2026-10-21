@@ -1,3 +1,7 @@
+"""
+API models
+Database table and request / response schemas for the audit, email and Brevo endpoints
+"""
 import enum
 import uuid
 from datetime import datetime
@@ -9,18 +13,22 @@ from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, String
 from .database import Base
 
 class AuditStatus(str, enum.Enum):
+    """Lifecycle status of an audit"""
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
 
 class AuditTable(Base):
+    """Audits table, one row per audit with its status, client details and stored report objects"""
     __tablename__ = "audits"
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
     target_url = Column(String)
     client_email = Column(String, index=True)
     client_name = Column(String)
+
+    # service tier: free | paid
     tier = Column(String, default="free")
     status = Column(SQLEnum(AuditStatus), default=AuditStatus.PENDING)
     order_id = Column(String, nullable=True)
@@ -45,6 +53,7 @@ class AuditTable(Base):
 
 
 class AuditCreate(BaseModel):
+    # free audit record
     url: HttpUrl
     email: EmailStr
     client_name: Optional[str] = None
@@ -52,6 +61,7 @@ class AuditCreate(BaseModel):
 
 
 class PaidAuditCreate(BaseModel):
+    # paid audit record
     customer_name: Optional[str] = Field(None, alias="customerName")
     customer_email: EmailStr = Field(..., alias="customerEmail")
     website_url: HttpUrl = Field(..., alias="websiteUrl")
@@ -96,6 +106,7 @@ class AuditRecord(BaseModel):
     callback_url: Optional[str] = None
     social_links: Optional[str] = None
     debug_mode: Optional[bool] = False
+
     seo_report_url: Optional[str] = None
     perf_report_url: Optional[str] = None
     action_list_url: Optional[str] = None
@@ -106,6 +117,7 @@ class AuditRecord(BaseModel):
     audit_json_object: Optional[str] = None
     ai_json_object: Optional[str] = None
     audit_log_object: Optional[str] = None
+
     created_at: datetime
     completed_at: Optional[datetime] = None
 

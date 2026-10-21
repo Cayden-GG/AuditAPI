@@ -1,4 +1,7 @@
-
+"""
+Client email templates
+Emails sent to the client: audit started, audit results and audit failed
+"""
 from __future__ import annotations
 
 import html
@@ -6,6 +9,16 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
 def _email_shell(title: str, preheader: str, content_html: str) -> str:
+    """Wraps content in the branded client email layout with a header, footer and hidden preheader
+
+    @Args:
+        title (str) -- heading shown above the content
+        preheader (str) -- hidden preview text
+        content_html (str) -- email body html
+
+    @Returns:
+        complete email html (str)
+    """
     return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -33,10 +46,21 @@ def _email_shell(title: str, preheader: str, content_html: str) -> str:
 
 
 def _normalize_name(client_name: Optional[str]) -> str:
+    """Client name for the greeting, "there" if empty"""
     return (client_name or "there").strip() or "there"
 
 
 def _extract_key_findings(audit_results: Optional[Dict[str, Any]], max_items: int = 3) -> List[Dict[str, str]]:
+    """
+    Gets the top key findings from the AI summary data
+
+    @Args:
+        audit_results (Optional[Dict[str, Any]]) -- AI summary data, or audit data with an "ai" section
+        max_items (int) -- max number of findings to return
+
+    @Returns:
+        findings with issue, priority, impact and effort (List[Dict[str, str]]), empty if there are none
+    """
     if not isinstance(audit_results, dict):
         return []
     ai_payload = {}
@@ -71,6 +95,7 @@ def _extract_key_findings(audit_results: Optional[Dict[str, Any]], max_items: in
 
 
 def _render_key_findings(findings: Iterable[Dict[str, str]]) -> str:
+    """Renders the findings as an escaped "Top findings" html list, empty string if there are none"""
     items = []
     for item in findings:
         issue = html.escape(item.get("issue", ""))
@@ -93,6 +118,7 @@ def _render_key_findings(findings: Iterable[Dict[str, str]]) -> str:
 
 
 def _needs_client_action(error_message: Optional[str]) -> bool:
+    """Returns whether the failure is a sitemap or robots.txt problem only the client can fix"""
     if not error_message:
         return False
     lowered = error_message.lower()
@@ -100,6 +126,16 @@ def _needs_client_action(error_message: Optional[str]) -> bool:
 
 
 def client_confirmation(client_name: Optional[str], target_url: str) -> Tuple[str, str]:
+    """
+    Email confirming payment was received and the audit has started
+
+    @Args:
+        client_name (Optional[str]) -- client name
+        target_url (str) -- audited website url
+
+    @Returns:
+        email subject and html content (Tuple[str, str])
+    """
     name = html.escape(_normalize_name(client_name))
     safe_url = html.escape(target_url)
     subject = "Payment received - your website audit is underway"
@@ -121,6 +157,17 @@ def client_confirmation(client_name: Optional[str], target_url: str) -> Tuple[st
 
 
 def client_audit_results(client_name: Optional[str], target_url: str, audit_results: Optional[Dict[str, Any]]) -> Tuple[str, str]:
+    """
+    Email delivering the completed audit, with the top findings when the AI data has them
+
+    @Args:
+        client_name (Optional[str]) -- client name
+        target_url (str) -- audited website url
+        audit_results (Optional[Dict[str, Any]]) -- AI summary data the top findings are taken from
+
+    @Returns:
+        email subject and html content (Tuple[str, str])
+    """
     name = html.escape(_normalize_name(client_name))
     safe_url = html.escape(target_url)
     subject = "Your website audit is ready"
@@ -145,6 +192,18 @@ def client_audit_results(client_name: Optional[str], target_url: str, audit_resu
 
 
 def client_audit_failed(client_name: Optional[str], target_url: str, error_message: Optional[str] = None) -> Tuple[str, str]:
+    """
+    Email telling the client the audit failed, asks them to fix their site for sitemap and robots.txt errors
+    otherwise says the team is investigating. The error message itself is not shown to the client.
+
+    @Args:
+        client_name (Optional[str]) -- client name
+        target_url (str) -- audited website url
+        error_message (Optional[str]) -- failure reason, used to pick the follow up message
+
+    @Returns:
+        email subject and html content (Tuple[str, str])
+    """
     name = html.escape(_normalize_name(client_name))
     safe_url = html.escape(target_url)
     subject = "We could not complete your website audit"

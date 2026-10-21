@@ -1,3 +1,7 @@
+"""
+Audit queue models
+Request and response schemas for the audit queue endpoints
+"""
 from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, HttpUrl

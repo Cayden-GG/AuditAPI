@@ -1,3 +1,7 @@
+"""
+Standards alignment section
+Report section with the standards alignment statement
+"""
 from typing import Any, List
 
 from reportlab.platypus import Paragraph, Spacer
@@ -6,6 +10,12 @@ from ..styles import SectionRule, get_styles
 
 
 def standards_alignment_section() -> List[Any]:
+    """
+    Creates report section with the standards alignment statement
+
+    @Returns:
+        list of all the items in the section (List[Any])
+    """
     styles = get_styles()
     story: List[Any] = []
 

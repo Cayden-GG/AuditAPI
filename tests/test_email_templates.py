@@ -29,7 +29,9 @@ def test_client_results_includes_findings():
             }
         ]
     }
+
     subject, html = client_audit_results("Acme Co", "https://example.com", audit_results)
+
     assert "ready" in subject.lower()
     assert "Large images" in html
     assert "High" in html
@@ -41,6 +43,7 @@ def test_client_failed_mentions_sitemap_for_related_errors():
         "https://example.com",
         "Sitemap fetch failed for robots.txt disallow.",
     )
+
     assert "could not complete" in subject.lower()
     assert "sitemap" in html.lower() or "robots" in html.lower()
 
@@ -51,6 +54,7 @@ def test_client_failed_default_message_for_general_errors():
         "https://example.com",
         "Unexpected timeout",
     )
+
     assert "investigating" in html.lower()
 
 
@@ -64,6 +68,7 @@ def test_company_completion_includes_gcs_details():
         gcs_objects=["audits/audit-123/Performance_PDF_1.pdf"],
         report_paths=["audit_results/acme_audit/report.pdf"],
     )
+
     assert "delivered" in subject.lower()
     assert "valvanta-audits" in html
     assert "Performance_PDF_1.pdf" in html
@@ -76,6 +81,7 @@ def test_company_failed_includes_error_details():
         audit_id="audit-123",
         error_message="Pipeline crashed",
     )
+
     assert "failed" in subject.lower()
     assert "Pipeline crashed" in html
 

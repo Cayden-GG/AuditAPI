@@ -1,7 +1,9 @@
-""" AI Schema config
+"""
+AI Schema config
+Pydantic models for the structured insights returned by the AI summary request
 """
 
-from typing import Dict, List, Literal, Optional
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 class KeyFinding(BaseModel):

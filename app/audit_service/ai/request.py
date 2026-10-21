@@ -1,3 +1,7 @@
+"""
+AI summary request
+Builds the prompt and structured output schema from the audit data and requests the AI insights from openai
+"""
 from openai import OpenAI
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 from dotenv import load_dotenv
@@ -6,7 +10,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from .schema import AuditInsights
-from app.logging_utils import AuditLogger, NullAuditLogger
+from app.logging_utils import AuditLogger, build_audit_logger
 
 # -------- constants ------ 
 load_dotenv()
@@ -16,6 +20,7 @@ client = OpenAI()
 MAX_URLS = 100
 
 def _summary_schema() -> Dict[str, Any]:
+    """Json schema for one executive summary: data, strengths, weaknesses and roadmap"""
     return {
         "type": "object",
         "additionalProperties": False,
@@ -30,6 +35,7 @@ def _summary_schema() -> Dict[str, Any]:
 
 
 def _per_url_schema() -> Dict[str, Any]:
+    """Json schema for a category's per url summaries: data, strengths, weaknesses and recommendations"""
     return {
         "type": "array",
         "items": {
@@ -55,8 +61,17 @@ def _per_url_schema() -> Dict[str, Any]:
 
 
 def _build_ai_schema(categories: List[str]) -> Dict[str, Any]:
+    """Creates AI schema used in request
+    
+    @Args:
+        categories (List[str]) -- list of categories audited
+    
+    @Returns:
+        AI schema (Dict[str, Any])
+    """
     executive_props: Dict[str, Any] = {}
     per_url_props: Dict[str, Any] = {}
+
     for category in categories:
         executive_props[category] = _summary_schema()
         per_url_props[category] = _per_url_schema()
@@ -103,9 +118,19 @@ def _build_ai_schema(categories: List[str]) -> Dict[str, Any]:
 # ------- helper fucntions -----
 
 def _extract_categories(audit: Dict[str, Any]) -> List[str]:
+    """Extract audit categories from lighthouse audit data
+
+    @Args:
+        audit (Dict[str, Any]) -- audit file 
+    
+    @Returns:
+        list of categories (list[str])
+    """
+
     lh = audit.get("lighthouse", {}) or {}
     categories_raw = lh.get("categories") or ""
     categories: List[str] = []
+
     if isinstance(categories_raw, str):
         categories = [c.strip() for c in categories_raw.split(",") if c.strip()]
     elif isinstance(categories_raw, list):
@@ -114,15 +139,16 @@ def _extract_categories(audit: Dict[str, Any]) -> List[str]:
         categories = ["performance", "seo"]
     return categories
 
+
 def build_single_prompt(audit: Dict[str, Any]) -> str:
     """
     Create prompt for AI request
 
-    Args: 
+    @Args: 
         Audit (Dict[str, Any]): lighthouse audit data
     
-    Returns: 
-        AI prompt
+    @Returns: 
+        AI prompt (str)
     """
     lh = audit.get("lighthouse", {}) or {}
     wp = lh.get("website_performance_data", {}) or {}
@@ -131,8 +157,10 @@ def build_single_prompt(audit: Dict[str, Any]) -> str:
 
     categories = _extract_categories(audit)
     per_url_by_category: Dict[str, Dict[str, Any]] = {category: {} for category in categories}
+
     for url in urls:
         entry = per_url.get(url, {}) or {}
+
         for category in categories:
             if entry.get(category):
                 per_url_by_category[category][url] = entry.get(category)
@@ -179,6 +207,14 @@ def build_single_prompt(audit: Dict[str, Any]) -> str:
     )
 
 def load_input_file(input_file):
+    """Loads lighthouse audit file
+
+    @Args:
+        input_file (str) -- path to the audit json file
+
+    @Returns:
+        audit data (Dict[str, Any])
+    """
     with open(input_file, "r", encoding="utf-8") as f:
         audit = json.load(f)
 
@@ -188,7 +224,7 @@ def load_input_file(input_file):
 
 def call_openai(
     audit: Dict[str, Any],
-    logger: AuditLogger | NullAuditLogger | None = None,
+    logger: AuditLogger,
     debug_mode: bool = False,
 ):
     """
@@ -197,19 +233,20 @@ def call_openai(
 
     prompts the AI for executive summary, key findings and per url summaries.
 
-    Args: 
-        Audit (Dict[str, Any]): lighthouse audit data
+    @Args: 
+        Audit (Dict[str, Any]) -- lighthouse audit data
+        logger (AuditLogger) -- logger 
+        debug_mode (bool) -- if true openai call is skipped and {} is returned
     
-    Returns: 
-        AI summary data
+    @Returns: 
+        AI summary data (Dict[str, Any])
     """
-    active_logger = logger or NullAuditLogger()
     if debug_mode:
-        active_logger.info("AI summary skipped: debug mode enabled.")
+        logger.info("AI summary skipped: debug mode enabled.")
         return {}
 
     if not audit:
-        active_logger.warning("AI summary skipped: no audit provided.")
+        logger.warning("AI summary skipped: no audit provided.")
 
     categories = _extract_categories(audit)
     prompt = build_single_prompt(audit)
@@ -242,15 +279,15 @@ def call_openai(
         return data_for_pdf 
 
     except json.JSONDecodeError as e:
-        active_logger.error("AI did not return valid JSON.")
-        active_logger.error(
+        logger.error("AI did not return valid JSON.")
+        logger.error(
             "AI raw output preview",
             preview=response.output_text[:1000] if "response" in locals() else "",
         )
         return None
 
     except Exception as e:
-        active_logger.exception("AI summary request failed.", e)
+        logger.exception("AI summary request failed.", e)
         return None
 
 
@@ -266,6 +303,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     audit = load_input_file(args.input_file)
+    logger = build_audit_logger(None, None)
     
     # AI request 
-    output = call_openai(audit)
+    output = call_openai(audit, logger)

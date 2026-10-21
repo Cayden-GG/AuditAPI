@@ -1,3 +1,7 @@
+"""
+Findings section
+Report section listing the normalised findings with severity and standard references
+"""
 from typing import Any, Dict, List
 
 from reportlab.platypus import Paragraph, Spacer, Table
@@ -8,6 +12,16 @@ from ..styles import CONTENT_W, SectionRule, get_styles
 
 
 def findings_section(findings: List[Dict[str, Any]], title: str) -> List[Any]:
+    """
+    Creates report section with a table of the findings, limited to the first 30
+
+    @Args:
+        findings (List[Dict[str, Any]]) -- normalised findings for one category and platform
+        title (str) -- section title prefix, e.g. "Performance (Mobile)"
+
+    @Returns:
+        list of all the items in the section (List[Any])
+    """
     styles = get_styles()
     story: List[Any] = []
 

@@ -5,7 +5,6 @@ from app.rate_limit import RateLimiter
 
 
 def test_rate_limit_applies_to_api_endpoints(monkeypatch):
-    monkeypatch.setattr("app.main._rate_limit_enabled", True)
     monkeypatch.setattr("app.main._rate_limit_max", 2)
     monkeypatch.setattr("app.main._rate_limit_window", 60)
     monkeypatch.setattr("app.main._rate_limiter", RateLimiter(2, 60))

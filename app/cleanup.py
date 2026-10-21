@@ -1,3 +1,7 @@
+"""
+Server cleanup
+Clears old audit results, logs and the lighthouse / chrome temp files
+"""
 import os
 import shutil
 import subprocess
@@ -44,7 +48,8 @@ def clean_up_system_files():
         print("journalctl --vacuum failed.")
 
 def run_full_cleanup():
-    try: 
+    """Runs the service file and system file cleanups, re-raises if either fails"""
+    try:
         clean_up_service_files()
         clean_up_system_files()
     except Exception as e:

@@ -35,6 +35,7 @@ def test_resend_email_by_job_id(monkeypatch, tmp_path: Path):
         key_findings_object="audits/audit-123/Key_Findings_1.pdf",
         ai_json_object="audits/audit-123/ai_audit_summary.json",
     )
+
     db.close()
 
     def fake_download_objects(
@@ -47,8 +48,10 @@ def test_resend_email_by_job_id(monkeypatch, tmp_path: Path):
     ):
         output_dir.mkdir(parents=True, exist_ok=True)
         mapping = {}
+
         for name in object_names:
             local_path = output_dir / Path(name).name
+
             if name.endswith(".json"):
                 payload = {
                     "key_findings": [
@@ -61,10 +64,13 @@ def test_resend_email_by_job_id(monkeypatch, tmp_path: Path):
                         }
                     ]
                 }
+
                 local_path.write_text(json.dumps(payload), encoding="utf-8")
             else:
                 local_path.write_bytes(b"%PDF-1.4")
+
             mapping[name] = str(local_path)
+
         return mapping
 
     sent = {}
@@ -86,6 +92,7 @@ def test_resend_email_by_job_id(monkeypatch, tmp_path: Path):
         upload_calls["bucket_name"] = bucket_name
         upload_calls["prefix"] = prefix
         upload_calls["credentials_path"] = credentials_path
+
         return {str(path): f"{prefix}/{path.name}".strip("/") for path in file_paths}
 
     cleanup_calls = {"count": 0}
@@ -103,7 +110,9 @@ def test_resend_email_by_job_id(monkeypatch, tmp_path: Path):
     )
 
     assert response.status_code == 200
+
     payload = response.json()
+
     assert payload["resent_to"] == "alt@example.com"
     assert sent["to_email"] == "alt@example.com"
     assert sent["report_count"] == 3

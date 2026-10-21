@@ -1,3 +1,7 @@
+"""
+Site average metrics section
+Performance report section with the site wide averages, benchmarks and charts
+"""
 from typing import Dict
 
 from reportlab.platypus import Paragraph, Spacer, Table
@@ -7,16 +11,17 @@ from ..helpers import benchmarks_metric, bar_chart, fmt_bytes, fmt_ms, fmt_num, 
 
 def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = None): 
     """
-    Creates report section displaying the site wide average metics
-    
-    This section has bar charts, bar charts and tables to display all the data
+    Creates report section displaying the site wide average metrics
 
-    Args: 
-        wp (Dict, required): website performance data
-        per_url (Dict, required): per-url performance data
+    This section has bar charts, a pie chart and tables to display all the data
 
-    Returns: 
-        List of all the items in the section 
+    @Args:
+        wp (Dict) -- website performance data
+        per_url (Dict) -- per-url performance data
+        section_label (str | None) -- platform shown in the title: Mobile | Desktop
+
+    @Returns:
+        list of all the items in the section (List)
     """
     styles = get_styles()
     

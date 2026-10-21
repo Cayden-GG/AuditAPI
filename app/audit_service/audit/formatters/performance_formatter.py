@@ -1,20 +1,28 @@
+"""
+Performance formatter
+Reduces lighthouse performance audits per url and aggregates them across the website
+"""
 import argparse
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
 from ...writers.write_to_json import write_json_to_file
-from .helpers import * 
+from .helpers import *
 
 
 def _get_audits_from_input(url_obj_or_audits: Dict[str, Any]) -> Dict[str, Any]:
+    """Gets the performance audits from a url object, or returns the passed audits if already unwrapped"""
     if "audits" in url_obj_or_audits:
         return url_obj_or_audits.get("audits", {}).get("performance_data", {}) or {}
+
     return url_obj_or_audits
 
 
 def _platform_audits(url_obj: Dict[str, Any], platform: str) -> Dict[str, Any]:
+    """Gets the audits for the passed platform: mobile | desktop"""
     platform_obj = url_obj.get(platform, {}) or {}
+
     return platform_obj.get("audits") or platform_obj.get("audit") or {}
 
 
@@ -26,18 +34,19 @@ def reduce_url_performance(
     errors: List[Dict[str, str]],
 ) -> Optional[Dict[str, Any]]:
     """
-    Reduce a single URL's Lighthouse payload into a smaller summary.
-    
-    Args: 
-        url (str, required): the url to be tested
-        url_obj (Dict[str, Any], required): url's lighthouse data obj 
-        logs (List[Dict[str, str]], required): logs List so logging can be continue
-        errors (List[Dict[str, str]], required): error List so errors can be caught
+    Reduces a single URL's performance lighthouse payload into a smaller summary
 
-    Returns: 
-        Dict with all the necessary data formatted for that one url
+    @Args:
+        url (str) -- page url of the audit data
+        url_obj_or_audits (Dict[str, Any]) -- url's lighthouse data object or its audits
+        logs (List[Dict[str, str]]) -- log list to add to
+        errors (List[Dict[str, str]]) -- error list to add to
+
+    @Returns:
+        reduced performance data for the url (Optional[Dict[str, Any]]), None if the url failed or audits are invalid
     """
     status = url_obj_or_audits.get("status")
+
     if status and status != "success":
         add_error(
             errors,
@@ -46,9 +55,11 @@ def reduce_url_performance(
             message=f"URL status is '{status}'. Skipping performance extraction.",
             level="warning",
         )
+
         return None
 
     audits = _get_audits_from_input(url_obj_or_audits)
+
     if not isinstance(audits, dict):
         add_error(errors, url=url, stage="input", message="Missing or invalid audits object.")
         return None
@@ -62,6 +73,7 @@ def reduce_url_performance(
     network_items = safe_get(audits, ["network-requests", "details", "items"], [])
     if network_items is None:
         network_items = []
+
     if not isinstance(network_items, list):
         network_items = []
 
@@ -70,6 +82,7 @@ def reduce_url_performance(
 
     # Main thread breakdown items
     mainthread_items = safe_get(audits, ["mainthread-work-breakdown", "details", "items"], [])
+
     if not isinstance(mainthread_items, list):
         mainthread_items = []
 
@@ -89,6 +102,7 @@ def reduce_url_performance(
             if isinstance(item, dict) and item.get("resourceType") == resource_type:
                 v = item.get("transferSize")
                 return float(v) if isinstance(v, (int, float)) else None
+                
         return None
 
     # Fallback indexes (less stable)
@@ -102,8 +116,10 @@ def reduce_url_performance(
     # Server latency
     server_latency = num("network-server-latency")
     server_latency_items = safe_get(audits, ["network-server-latency", "details", "items"], [])
+
     if not isinstance(server_latency_items, list):
         server_latency_items = []
+
     server_latency_top = server_latency_items[:5]
 
     log(logs, "info", f"Reduced performance data for {url}")
@@ -156,14 +172,14 @@ def aggregate_website_performance(
     logs: List[Dict[str, str]],
 ) -> Dict[str, Any]:
     """
-    Reduce entire website Lighthouse payload into a smaller summary.
+    Aggregates reduced per url performance data into website wide averages
 
-    Args: 
-        per_url (Dict[str, Dict[str, Any], required): the url to be tested
-        logs (List[Dict[str, str]], required): logs List so logging can be continue
+    @Args:
+        per_url (Dict[str, Dict[str, Any]]) -- reduced performance data keyed by url
+        logs (List[Dict[str, str]]) -- log list to add to
 
-    Returns: 
-        Dict with all the necessary data formatted for that the site
+    @Returns:
+        website performance averages (Dict[str, Any])
     """
     
     fcp = safe_average(collect("first_contentful_paint", per_url))
@@ -204,11 +220,14 @@ def aggregate_website_performance(
         top = safe_get(d, ["network_server_latency", "server_latency_types"], [])
         if not isinstance(top, list):
             continue
+
         for item in top:
             if not isinstance(item, dict):
                 continue
+
             origin = item.get("origin")
             srt = item.get("serverResponseTime")
+
             if isinstance(origin, str) and isinstance(srt, (int, float)):
                 origin_times.setdefault(origin, []).append(float(srt))
 
@@ -264,16 +283,14 @@ def aggregate_website_performance(
 
 def format_lighthouse_output(lighthouse_output: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Formats the lighthouse data to reduce uneccessary data and split per url 
+    Formats the lighthouse data to reduce unnecessary data and split per url
     performance data and cross site performance data
 
-    Args: 
-        lighthouse_output (Dict[str, Any], required): lighthouse audit data 
+    @Args:
+        lighthouse_output (Dict[str, Any]) -- full returned lighthouse audit data
 
-    Returns:
-        formatted and reduced lighthouse audit data 
-
-    Since: 01-02-2026
+    @Returns:
+        formatted and reduced performance data with errors and logs (Dict[str, Any])
     """
     logs: List[Dict[str, str]] = []
     errors: List[Dict[str, str]] = []
@@ -310,11 +327,13 @@ def format_lighthouse_output(lighthouse_output: Dict[str, Any]) -> Dict[str, Any
 
         url_entry: Dict[str, Any] = {}
         mobile_reduced = reduce_url_performance(url, mobile_audits, logs=logs, errors=errors)
+
         if mobile_reduced is not None:
             url_entry["mobile"] = mobile_reduced
             per_url_mobile[url] = mobile_reduced
 
         desktop_reduced = reduce_url_performance(url, desktop_audits, logs=logs, errors=errors)
+
         if desktop_reduced is not None:
             url_entry["desktop"] = desktop_reduced
             per_url_desktop[url] = desktop_reduced
@@ -337,7 +356,13 @@ def format_lighthouse_output(lighthouse_output: Dict[str, Any]) -> Dict[str, Any
 
 
 def main(input_file: str, output_file: Optional[str]) -> Dict[str, Any]:
-    data = load_input_file(input_file)
+    """Formats a lighthouse json file and optionally writes the result to disk
+
+    @Args:
+        input_file (str) -- path to the lighthouse json file
+        output_file (Optional[str]) -- output directory for the formatted json
+    """
+    data =load_input_file(input_file)
     formatted = format_lighthouse_output(data)
 
     if output_file:
@@ -352,6 +377,7 @@ if __name__ == "__main__":
         required=True,
         help="Path to FRS-style Lighthouse JSON output file",
     )
+
     parser.add_argument(
         "--output-file",
         required=False,

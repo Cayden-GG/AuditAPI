@@ -1,3 +1,7 @@
+"""
+Key findings section
+Report section for the AI prioritised key findings
+"""
 from typing import Dict
 
 from reportlab.platypus import Paragraph, Spacer, PageBreak
@@ -9,13 +13,13 @@ def key_findings_section(ai: Dict):
     """
     Creates report section displaying the key findings.
 
-    Table form with: issue, priority, impact, effort and short explaination columns.
-   
-    Args: 
-        ai (Dict, required): ai summary data
-    
-    Returns: 
-        List of all the items in the section  
+    Table form with: issue, priority, impact, effort and short explanation columns.
+
+    @Args:
+        ai (Dict) -- ai summary data
+
+    @Returns:
+        list of all the items in the section (List)
     """
     styles = get_styles()
     story = []

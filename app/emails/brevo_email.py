@@ -1,3 +1,7 @@
+"""
+Brevo email
+Sends audit and generic emails through the Brevo API and finds the report files to attach
+"""
 import base64
 import json
 import os
@@ -23,6 +27,7 @@ REPORT_PREFIXES = ("Performance_PDF", "SEO_PDF", "Key_Findings")
 
 
 def _normalize_client_name(client_name: Optional[str]) -> Optional[str]:
+    """Matches the client name to its audit folder naming by replacing spaces with underscores, None if empty"""
     if not client_name:
         return None
     return client_name.strip().replace(" ", "_")
@@ -31,6 +36,17 @@ def _normalize_client_name(client_name: Optional[str]) -> Optional[str]:
 def find_latest_report_dir(
     base_dir: Path, client_name: Optional[str] = None
 ) -> Path:
+    """
+    Finds the most recently modified audit result directory that contains PDF reports.
+    Raises FileNotFoundError if the directory, an audit result or any PDF is missing.
+
+    @Args:
+        base_dir (Path) -- directory holding the audit result directories
+        client_name (Optional[str]) -- only search the audits of this client
+
+    @Returns:
+        latest audit result directory with reports (Path)
+    """
     if not base_dir.exists():
         raise FileNotFoundError(f"Report directory not found: {base_dir}")
 
@@ -53,6 +69,16 @@ def find_latest_report_dir(
 
 
 def collect_report_paths(report_dir: Path) -> List[Path]:
+    """
+    Collects the PDF reports in a directory, ordered performance, SEO, key findings then any others.
+    Raises FileNotFoundError if there are no PDFs.
+
+    @Args:
+        report_dir (Path) -- audit result directory
+
+    @Returns:
+        ordered report paths (List[Path])
+    """
     pdfs = sorted(report_dir.glob("*.pdf"), key=lambda path: path.name)
     if not pdfs:
         raise FileNotFoundError(f"No PDF reports found in {report_dir}")
@@ -73,10 +99,12 @@ def collect_report_paths(report_dir: Path) -> List[Path]:
 
 
 def _build_attachments(paths: Iterable[Path]) -> List[dict]:
+    """Encodes files as base64 Brevo attachment objects with their file name"""
     attachments: List[dict] = []
     for path in paths:
         encoded = base64.b64encode(path.read_bytes()).decode("ascii")
         attachments.append({"content": encoded, "name": path.name})
+
     return attachments
 
 
@@ -89,6 +117,18 @@ def send_audit_email(
     subject: Optional[str] = None,
     html_content: Optional[str] = None,
 ) -> None:
+    """
+    Sends an audit email through Brevo from the BREVO_SENDER_EMAIL address, with the reports attached.
+    Raises ValueError if the Brevo env vars are not set and RuntimeError if Brevo rejects the email.
+
+    @Args:
+        to_email (str) -- recipient email
+        client_name (Optional[str]) -- recipient name, defaults to the email
+        target_url (str) -- audited website url
+        report_paths (Optional[Iterable[Path]]) -- report files to attach
+        subject (Optional[str]) -- email subject, defaults to the audit report subject
+        html_content (Optional[str]) -- email body, defaults to a short audit complete message
+    """
     api_key = os.getenv("BREVO_API_KEY")
     if not api_key:
         raise ValueError("BREVO_API_KEY is not set")
@@ -117,6 +157,7 @@ def send_audit_email(
         "subject": subject,
         "htmlContent": html_content,
     }
+
     if report_paths:
         payload["attachment"] = _build_attachments(report_paths)
 
@@ -133,8 +174,10 @@ def send_audit_email(
                 raise RuntimeError(
                     f"Brevo email failed with status {response.status}"
                 )
+
     except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
+
         raise RuntimeError(f"Brevo email failed: {detail}") from exc
 
 
@@ -147,12 +190,25 @@ def send_generic_email(
     attachments: Optional[Iterable[Path]] = None,
     sender_name: Optional[str] = None,
 ) -> None:
+    """
+    Sends a custom email through Brevo with optional attachments.
+    Raises ValueError if the Brevo env vars are not set and RuntimeError if Brevo rejects the email.
+
+    @Args:
+        to_email (str) -- recipient email
+        sender_email (Optional[str]) -- sender email, defaults to BREVO_SENDER_EMAIL
+        subject (str) -- email subject
+        html_content (str) -- email body
+        attachments (Optional[Iterable[Path]]) -- files to attach
+        sender_name (Optional[str]) -- sender name, defaults to BREVO_SENDER_NAME
+    """
     api_key = os.getenv("BREVO_API_KEY")
     if not api_key:
         raise ValueError("BREVO_API_KEY is not set")
 
     default_sender = os.getenv("BREVO_SENDER_EMAIL")
     resolved_sender = sender_email or default_sender
+
     if not resolved_sender:
         raise ValueError("BREVO_SENDER_EMAIL is not set")
 
@@ -164,6 +220,7 @@ def send_generic_email(
         "subject": subject,
         "htmlContent": html_content,
     }
+
     if attachments:
         payload["attachment"] = _build_attachments(attachments)
 
@@ -180,6 +237,7 @@ def send_generic_email(
                 raise RuntimeError(
                     f"Brevo email failed with status {response.status}"
                 )
+
     except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"Brevo email failed: {detail}") from exc
@@ -188,18 +246,47 @@ def send_generic_email(
 def build_client_confirmation_email(
     client_name: Optional[str], target_url: str
 ) -> Tuple[str, str]:
+    """Builds the client email confirming the audit has started
+
+    @Args:
+        client_name (Optional[str]) -- client name
+        target_url (str) -- audited website url
+
+    @Returns:
+        email subject and html content (Tuple[str, str])
+    """
     return client_confirmation(client_name, target_url)
 
 
 def build_client_audit_results_email(
     client_name: Optional[str], target_url: str, audit_results: Optional[dict]
 ) -> Tuple[str, str]:
+    """Builds the client email delivering the audit results with the top findings
+
+    @Args:
+        client_name (Optional[str]) -- client name
+        target_url (str) -- audited website url
+        audit_results (Optional[dict]) -- AI summary data the top findings are taken from
+
+    @Returns:
+        email subject and html content (Tuple[str, str])
+    """
     return client_audit_results(client_name, target_url, audit_results)
 
 
 def build_client_audit_failed_email(
     client_name: Optional[str], target_url: str, error_message: Optional[str]
 ) -> Tuple[str, str]:
+    """Builds the client email telling them the audit failed
+
+    @Args:
+        client_name (Optional[str]) -- client name
+        target_url (str) -- audited website url
+        error_message (Optional[str]) -- failure reason, sitemap and robots.txt errors ask the client to fix their site
+
+    @Returns:
+        email subject and html content (Tuple[str, str])
+    """
     return client_audit_failed(client_name, target_url, error_message)
 
 
@@ -214,6 +301,21 @@ def build_company_audit_completion_email(
     report_paths: Optional[Iterable[str]] = None,
     social_links: Optional[Iterable[str]] = None,
 ) -> Tuple[str, str]:
+    """Builds the company email notifying that an audit completed, with the uploaded files and social links
+
+    @Args:
+        client_name (Optional[str]) -- client name
+        client_email (Optional[str]) -- client email
+        target_url (Optional[str]) -- audited website url
+        audit_id (Optional[str]) -- audit id
+        gcs_bucket (Optional[str]) -- GCS bucket the reports were uploaded to
+        gcs_objects (Optional[Iterable[str]]) -- uploaded GCS object names
+        report_paths (Optional[Iterable[str]]) -- local report paths
+        social_links (Optional[Iterable[str]]) -- client social links, marks the email as a premium brand audit
+
+    @Returns:
+        email subject and html content (Tuple[str, str])
+    """
     return company_audit_completion(
         client_name=client_name,
         client_email=client_email,
@@ -234,6 +336,18 @@ def build_company_audit_failed_email(
     audit_id: Optional[str] = None,
     error_message: Optional[str] = None,
 ) -> Tuple[str, str]:
+    """Builds the company email notifying that an audit failed
+
+    @Args:
+        client_name (Optional[str]) -- client name
+        client_email (Optional[str]) -- client email
+        target_url (Optional[str]) -- audited website url
+        audit_id (Optional[str]) -- audit id
+        error_message (Optional[str]) -- failure reason
+
+    @Returns:
+        email subject and html content (Tuple[str, str])
+    """
     return company_audit_failed(
         client_name=client_name,
         client_email=client_email,

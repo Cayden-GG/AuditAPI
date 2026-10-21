@@ -1,3 +1,7 @@
+"""
+Audit logging
+Structured json lines logger for an audit run
+"""
 import json
 import traceback
 from dataclasses import dataclass
@@ -16,12 +20,34 @@ class AuditLogEntry:
 
 
 class AuditLogger:
-    def __init__(self, audit_id: Optional[str], log_path: str):
+    """Audit Logger class
+
+    Logger allowing muli-severity logging
+
+    @Args:
+        audit_id (Optional[str]) -- audit id so Logger references the audit its logging
+        log_path (Optional[str]) -- path to the log file, entries are printed to the console if not provided
+
+    """
+    def __init__(self, audit_id: Optional[str], log_path: Optional[str]):
         self.audit_id = audit_id or "unknown"
-        self.log_path = Path(log_path)
-        self.log_path.parent.mkdir(parents=True, exist_ok=True)
+        self.log_path: Optional[Path] = None
+
+        if log_path:
+            self.log_path = Path(log_path)
+            self.log_path.parent.mkdir(parents=True, exist_ok=True)
 
     def _write(self, level: str, message: str, **context: Any) -> AuditLogEntry:
+        """Writes log entry to the log file in the audit dir or prints to console if no log path 
+
+        @Args: 
+            level (str) -- severity level of log entry, info | warning | error | exception
+            message (str) -- log message 
+            context (Any) -- companing log context 
+        
+        @Returns:
+            entry (AuditLogEntry) -- entry object
+        """
         entry = AuditLogEntry(
             ts=datetime.now(timezone.utc).isoformat(),
             level=level,
@@ -29,21 +55,63 @@ class AuditLogger:
             message=message,
             context=context or None,
         )
-        payload = json.dumps(entry.__dict__, ensure_ascii=False, default=str)
-        with self.log_path.open("a", encoding="utf-8") as f:
-            f.write(payload + "\n")
+
+        if self.log_path:
+            payload = json.dumps(entry.__dict__, ensure_ascii=False, default=str)
+            with self.log_path.open("a", encoding="utf-8") as f:
+                f.write(payload + "\n")
+        else: 
+            print(entry)
+        
         return entry
 
     def info(self, message: str, **context: Any) -> AuditLogEntry:
+        """Logs info severity level entry
+
+        @Args: 
+            message (str) -- log message 
+            context (Any) -- companing log context 
+        
+        @Returns:
+            entry (AuditLogEntry) -- entry object
+        """
         return self._write("info", message, **context)
 
     def warning(self, message: str, **context: Any) -> AuditLogEntry:
+        """Logs warning severity level entry
+
+        @Args: 
+            message (str) -- log message 
+            context (Any) -- companing log context 
+        
+        @Returns:
+            entry (AuditLogEntry) -- entry object
+        """
         return self._write("warning", message, **context)
 
     def error(self, message: str, **context: Any) -> AuditLogEntry:
+        """Logs error severity level entry
+
+        @Args: 
+            message (str) -- log message 
+            context (Any) -- companing log context 
+        
+        @Returns:
+            entry (AuditLogEntry) -- entry object
+        """
         return self._write("error", message, **context)
 
     def exception(self, message: str, exc: Exception, **context: Any) -> AuditLogEntry:
+        """Logs exception severity level entry with the exception type, message and traceback
+
+        @Args:
+            message (str) -- log message
+            exc (Exception) -- exception being logged
+            context (Any) -- companing log context
+        
+        @Returns:
+            entry (AuditLogEntry) -- entry object
+        """
         context = {
             **context,
             "exception_type": exc.__class__.__name__,
@@ -53,21 +121,14 @@ class AuditLogger:
         return self._write("error", message, **context)
 
 
-class NullAuditLogger:
-    def info(self, message: str, **context: Any) -> None:
-        return None
+def build_audit_logger(audit_id: Optional[str], log_path: Optional[str]) -> AuditLogger:
+    """Builds the logger for an audit
 
-    def warning(self, message: str, **context: Any) -> None:
-        return None
+    @Args:
+        audit_id (Optional[str]) -- audit id the logger references
+        log_path (Optional[str]) -- path to the log file
 
-    def error(self, message: str, **context: Any) -> None:
-        return None
-
-    def exception(self, message: str, exc: Exception, **context: Any) -> None:
-        return None
-
-
-def build_audit_logger(audit_id: Optional[str], log_path: Optional[str]) -> AuditLogger | NullAuditLogger:
-    if not log_path:
-        return NullAuditLogger()
+    @Returns:
+        audit logger (AuditLogger)
+    """
     return AuditLogger(audit_id, log_path)

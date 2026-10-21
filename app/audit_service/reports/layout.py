@@ -1,3 +1,7 @@
+"""
+Report page layout
+Draws the header and footer bars on the report pages
+"""
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 
@@ -23,6 +27,11 @@ from .styles import (
 def header_footer(canvas, doc, client_domain):
     """
     Creates the header and footer for the report
+
+    @Args:
+        canvas (Canvas) -- reportlab canvas to draw on
+        doc (SimpleDocTemplate) -- document being built, used for the page number
+        client_domain (str) -- client domain shown in the header
     """
     canvas.saveState()
     page_w, page_h = A4

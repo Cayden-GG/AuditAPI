@@ -1,3 +1,7 @@
+"""
+Cover page
+Draws the report cover with the logo, client details and the score cards
+"""
 import datetime
 
 from reportlab.lib import colors
@@ -23,6 +27,7 @@ from ..styles import (
 
 
 def _extract_score(summary: dict, report_type: str, platform: str):
+    """Gets the overall score for a report type and platform from the summary, None if missing"""
     report = summary.get(report_type, {}) or {}
     platform_entry = report.get(platform, {}) or {}
     for key in ("overall_score", "score", "average_score"):
@@ -32,6 +37,7 @@ def _extract_score(summary: dict, report_type: str, platform: str):
 
 
 def _format_score(value):
+    """Formats a 0-1 score as a whole number out of 100, "n/a" if value is not a number"""
     if not isinstance(value, (int, float)):
         return "n/a"
     return f"{value * 100:.0f}"
@@ -51,7 +57,19 @@ def cover_page(
     is_free_audit: bool = False,
 ):
     """
-    Generate the report cover page with branding logo.
+    Generates the report cover page with branding logo.
+
+    @Args:
+        canvas (Canvas) -- reportlab canvas to draw on
+        doc (SimpleDocTemplate) -- document being built
+        sitemap (Dict) -- sitemap discovery section of the audit data
+        lighthouse (Dict) -- lighthouse section of the audit data
+        client_name (str) -- client name
+        client_domain (str) -- client domain shown as the headline
+        logo_path (str) -- path to the logo
+        cover_image_path (str) -- path to the cover image
+        report_title (str | None) -- subtitle under the domain, defaults to the technical & performance title
+        is_free_audit (bool) -- if true locked accessibility cards are labelled as premium
     """
     run_at = lighthouse.get("run_at") or datetime.datetime.now().strftime("%Y-%m-%d")
     summary = lighthouse.get("summary", {}) or {}

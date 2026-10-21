@@ -1,3 +1,7 @@
+"""
+Report styles
+Page setup, fonts, brand palette, shared paragraph styles and the section title flowable
+"""
 import os
 
 from reportlab.lib import colors
@@ -29,9 +33,12 @@ _FONTS_REGISTERED = False
 
 
 def _register_fonts() -> None:
+    """Registers the heading and body TTF fonts with reportlab once, falls back to Helvetica if any are missing"""
     global _FONTS_REGISTERED
+
     if _FONTS_REGISTERED:
         return
+
     try:
         required = {
             FONT_HEADING: os.path.join("Kaisei_Decol", "KaiseiDecol-Regular.ttf"),
@@ -40,13 +47,17 @@ def _register_fonts() -> None:
             FONT_BODY_BOLD: os.path.join("Inter", "static", "Inter_18pt-Bold.ttf"),
         }
         registered = set(pdfmetrics.getRegisteredFontNames())
+
         for name, filename in required.items():
             if name in registered:
                 continue
+
             font_path = os.path.join(FONT_DIR, filename)
             pdfmetrics.registerFont(TTFont(name, font_path))
+
         registered = set(pdfmetrics.getRegisteredFontNames())
         _FONTS_REGISTERED = all(name in registered for name in required)
+
         if _FONTS_REGISTERED:
             try:
                 pdfmetrics.registerFontFamily(
@@ -63,13 +74,16 @@ def _register_fonts() -> None:
                     italic=FONT_HEADING,
                     boldItalic=FONT_HEADING_BOLD,
                 )
+
             except Exception:
                 pass
+
     except Exception:
         _FONTS_REGISTERED = False
 
 
 def fonts_registered() -> bool:
+    """Returns whether the custom fonts were registered successfully"""
     return _FONTS_REGISTERED
 
 # Brand + palette
@@ -103,6 +117,12 @@ MAX_URLS = 100
 
 
 class SectionRule(Flowable):
+    """Section heading flowable: purple rule with a title and optional subtitle underneath
+
+    @Args:
+        title (str) -- section title
+        subtitle (str | None) -- optional line under the title
+    """
     def __init__(self, title: str, subtitle: str | None = None) -> None:
         super().__init__()
         self.title = title
@@ -119,9 +139,12 @@ class SectionRule(Flowable):
         subtitle_h = 8.5
         bottom_pad = 14
         height = top_pad + rule_h + title_gap + title_h + bottom_pad
+
         if self.subtitle:
             height += subtitle_gap + subtitle_h
+
         self.height = height
+
         return self._width, height
 
     def draw(self):
@@ -156,6 +179,12 @@ class SectionRule(Flowable):
 
 
 def get_styles():
+    """
+    Builds the report paragraph styles on top of the reportlab sample stylesheet
+
+    @Returns:
+        stylesheet with the H1, H2, Body, Small, Caption, URLCell, TableURL and SeverityCell styles (StyleSheet1)
+    """
     styles = getSampleStyleSheet()
     _register_fonts()
 

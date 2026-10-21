@@ -1,3 +1,7 @@
+"""
+Brevo routes
+Endpoints to sign contacts up to the Brevo newsletter and audit lists
+"""
 from pathlib import Path
 import os
 import base64
@@ -13,12 +17,23 @@ router = APIRouter()
 BREVO_CONTACTS_URL = "https://api.brevo.com/v3/contacts"
 
 @router.post("/api/signupNewsletter", response_model=BrevoListSignupResponse)
-def signup_newsletter(payload: BrevoListSignupRequest): 
+def signup_newsletter(payload: BrevoListSignupRequest):
+    """
+    Adds a contact to the Brevo newsletter list. Responds 400 for a missing name or email, a duplicate contact
+    or a Brevo error, and 500 if the Brevo keys are not configured.
+
+    @Args:
+        payload (BrevoListSignupRequest) -- contact name and email
+
+    @Returns:
+        signup result (BrevoListSignupResponse)
+    """
     if not payload.name or not payload.email:
         raise HTTPException(status_code=400, detail="Provide email and name.")
     
     BREVO_API_KEY = os.getenv("BREVO_API_KEY")
     BREVO_NEWSLETTER_SIGNUP_LIST_ID = os.getenv("BREVO_NEWSLETTER_SIGNUP_LIST_ID")
+
     if not BREVO_API_KEY or not BREVO_NEWSLETTER_SIGNUP_LIST_ID:
         raise HTTPException(status_code=500, detail="Brevo keys not configured.")
 
@@ -73,11 +88,22 @@ def signup_newsletter(payload: BrevoListSignupRequest):
 
 @router.post("/api/signupAuditList", response_model=BrevoListSignupResponse)
 def audit_signup(payload: BrevoListSignupRequest):
+    """
+    Adds a contact to the Brevo audit list, updating the contact if it already exists. Responds 400 for a missing name
+    or email, a duplicate contact or a Brevo error, and 500 if the Brevo keys are not configured.
+
+    @Args:
+        payload (BrevoListSignupRequest) -- contact name and email
+
+    @Returns:
+        signup result (BrevoListSignupResponse)
+    """
     if not payload.email or not payload.name: 
         raise HTTPException(status_code=400, detail="Provide email and name.")
 
     BREVO_API_KEY = os.getenv("BREVO_API_KEY")
     BREVO_AUDIT_SIGNUP_LIST_ID = os.getenv("BREVO_AUDIT_SIGNUP_LIST_ID")
+
     if not BREVO_API_KEY or not BREVO_AUDIT_SIGNUP_LIST_ID:
         raise HTTPException(status_code=500, detail="Brevo keys not configured.")
     

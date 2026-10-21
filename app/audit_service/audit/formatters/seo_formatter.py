@@ -1,3 +1,7 @@
+"""
+SEO formatter
+Reduces lighthouse SEO audits per url and aggregates them across the website
+"""
 import argparse
 from typing import Any, Dict, List, Optional
 
@@ -7,7 +11,9 @@ from .helpers import add_error, load_input_file, log, safe_average
 
 
 def _audit_status(audit: Dict[str, Any]) -> str:
+    """Maps a lighthouse audit to pass | fail | not_applicable, pass requires a score of 0.9 or above"""
     mode = audit.get("scoreDisplayMode")
+
     if mode in ("notApplicable", "manual", "informative"):
         return "not_applicable"
 
@@ -26,7 +32,16 @@ def reduce_url_seo(
     errors: List[Dict[str, str]],
 ) -> Optional[Dict[str, Any]]:
     """
-    Reduce a single URL's SEO Lighthouse payload into a smaller summary.
+    Reduces a single URL's SEO lighthouse audits into a smaller summary
+
+    @Args:
+        url (str) -- page url of the audit data
+        audits (Dict[str, Any]) -- lighthouse audits object for one platform
+        logs (List[Dict[str, str]]) -- log list to add to
+        errors (List[Dict[str, str]]) -- error list to add to
+
+    @Returns:
+        summary counts and per audit results (Optional[Dict[str, Any]]), None if audits is invalid
     """
     if not isinstance(audits, dict):
         add_error(errors, url=url, stage="input", message="Missing or invalid SEO audits object.")
@@ -40,11 +55,13 @@ def reduce_url_seo(
 
     for audit_id in SEO_AUDIT_IDS:
         audit = audits.get(audit_id, {})
+
         if not isinstance(audit, dict):
             continue
 
         status = _audit_status(audit)
         score = audit.get("score")
+
         if isinstance(score, (int, float)):
             scores.append(float(score))
 
@@ -81,6 +98,16 @@ def aggregate_website_seo(
     *,
     logs: List[Dict[str, str]],
 ) -> Dict[str, Any]:
+    """
+    Aggregates reduced per url SEO data into website wide averages and failure rates
+
+    @Args:
+        per_url (Dict[str, Dict[str, Any]]) -- reduced SEO data keyed by url
+        logs (List[Dict[str, str]]) -- log list to add to
+
+    @Returns:
+        website SEO summary with the top failed audits (Dict[str, Any])
+    """
     scores: List[float] = []
     passed_total = 0
     failed_total = 0
@@ -91,6 +118,7 @@ def aggregate_website_seo(
     for data in per_url.values():
         summary = data.get("summary", {})
         avg_score = summary.get("average_score")
+    
         if isinstance(avg_score, (int, float)):
             scores.append(float(avg_score))
 
@@ -101,8 +129,10 @@ def aggregate_website_seo(
         for audit_id, audit in (data.get("audits", {}) or {}).items():
             if isinstance(audit, dict) and audit.get("status") == "fail":
                 fail_counts[audit_id] = fail_counts.get(audit_id, 0) + 1
+           
             if not isinstance(audit, dict):
                 continue
+          
             stats = audit_stats.setdefault(
                 audit_id,
                 {
@@ -113,17 +143,22 @@ def aggregate_website_seo(
                     "not_applicable_count": 0,
                 },
             )
+          
             status = audit.get("status")
+          
             if status == "pass":
                 stats["pass_count"] += 1
             elif status == "fail":
                 stats["fail_count"] += 1
             else:
                 stats["not_applicable_count"] += 1
+          
             score = audit.get("score")
+          
             if isinstance(score, (int, float)):
                 stats["scores"].append(float(score))
             numeric_value = audit.get("numeric_value")
+          
             if isinstance(numeric_value, (int, float)):
                 stats["numeric_values"].append(float(numeric_value))
 
@@ -164,6 +199,15 @@ def aggregate_website_seo(
 
 
 def format_lighthouse_output(lighthouse_output: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Formats the lighthouse data into per url and website wide SEO data
+
+    @Args:
+        lighthouse_output (Dict[str, Any]) -- full returned lighthouse audit data
+
+    @Returns:
+        formatted and reduced SEO data with errors and logs (Dict[str, Any])
+    """
     logs: List[Dict[str, str]] = []
     errors: List[Dict[str, str]] = []
 
@@ -207,11 +251,13 @@ def format_lighthouse_output(lighthouse_output: Dict[str, Any]) -> Dict[str, Any
 
         url_entry: Dict[str, Any] = {}
         mobile_reduced = reduce_url_seo(url, mobile_audits, logs=logs, errors=errors)
+    
         if mobile_reduced is not None:
             url_entry["mobile"] = mobile_reduced
             per_url_mobile[url] = mobile_reduced
 
         desktop_reduced = reduce_url_seo(url, desktop_audits, logs=logs, errors=errors)
+
         if desktop_reduced is not None:
             url_entry["desktop"] = desktop_reduced
             per_url_desktop[url] = desktop_reduced
@@ -234,7 +280,13 @@ def format_lighthouse_output(lighthouse_output: Dict[str, Any]) -> Dict[str, Any
 
 
 def main(input_file: str, output_file: Optional[str]) -> Dict[str, Any]:
-    data = load_input_file(input_file)
+    """Formats a lighthouse json file and optionally writes the result to disk
+
+    @Args:
+        input_file (str) -- path to the lighthouse json file
+        output_file (Optional[str]) -- output directory for the formatted json
+    """
+    data =load_input_file(input_file)
     formatted = format_lighthouse_output(data)
 
     if output_file:

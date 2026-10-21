@@ -1,3 +1,7 @@
+"""
+Valvanta site audit API
+FastAPI app setup with rate limiting and the background audit task that runs, uploads and emails the audit reports
+"""
 from datetime import datetime
 import json
 import os
@@ -40,8 +44,9 @@ from .routes.audit import router as audit_router
 from .routes.email import router as email_router
 from .routes.brevo import router as brevo_router
 
+
 app = FastAPI(title="Valvanta Site Audit")
-_rate_limit_enabled, _rate_limit_max, _rate_limit_window, _rate_limiter = build_rate_limiter()
+_rate_limit_max, _rate_limit_window, _rate_limiter = build_rate_limiter()
 app.include_router(audit_router)
 app.include_router(email_router)
 app.include_router(brevo_router)
@@ -49,11 +54,22 @@ app.include_router(brevo_router)
 
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
-    if not _rate_limit_enabled:
+    """Rate limits every /api/ request by client ip, responds 429 with a Retry-After header when the limit is exceeded
+
+    @Args:
+        request (Request) -- incoming request
+        call_next (Callable) -- next handler in the middleware chain
+
+    @Returns:
+        response from the endpoint, or the 429 response (Response)
+    """
+    if not _rate_limiter:
         return await call_next(request)
+    
     if request.url.path.startswith("/api/"):
         key = rate_limit_key(request)
         allowed, retry_after = _rate_limiter.allow(key)
+
         if not allowed:
             headers = {"Retry-After": str(retry_after)}
             return JSONResponse(
@@ -65,16 +81,29 @@ async def rate_limit_middleware(request: Request, call_next):
                 },
                 headers=headers,
             )
+        
     return await call_next(request)
+
 
 @app.on_event("startup")
 def startup():
+    """App startup hook, initialises the database and starts the queue worker unless AUDIT_QUEUE_WORKER is not 1"""
     init_db()
-    if os.getenv("AUDIT_QUEUE_WORKER", "1") == "1":
-        # Run queue scheduler/watchdog in-process by default.
-        queue_worker.start()
+
+    # Run queue scheduler/watchdog in-process by default.
+    queue_worker.start()
+
 
 def _safe_update_status(db: Session, audit_id: str, status: AuditStatus, logger, completed_at=None) -> None:
+    """Updates the audit status, logging instead of raising if the update fails
+
+    @Args:
+        db (Session) -- database session
+        audit_id (str) -- audit id
+        status (AuditStatus) -- new status
+        logger (AuditLogger) -- logger for update failures
+        completed_at (Optional[datetime]) -- completion time
+    """
     try:
         update_audit_status(db, audit_id, status, completed_at=completed_at)
     except Exception as exc:
@@ -82,40 +111,76 @@ def _safe_update_status(db: Session, audit_id: str, status: AuditStatus, logger,
 
 
 def _normalize_categories(value: str, *, include_accessibility: bool = False) -> str:
+    """Cleans a comma separated category string into unique lowercase categories, defaults to performance,seo
+
+    @Args:
+        value (str) -- comma separated lighthouse categories
+        include_accessibility (bool) -- if true accessibility is added when missing
+
+    @Returns:
+        comma separated categories in their original order (str)
+    """
     categories = [c.strip().lower() for c in (value or "").split(",") if c.strip()]
     if not categories:
         categories = ["performance", "seo"]
+
     if include_accessibility and "accessibility" not in categories:
         categories.append("accessibility")
+
     seen = set()
     ordered = []
+
     for category in categories:
         if category not in seen:
             seen.add(category)
             ordered.append(category)
+    
     return ",".join(ordered)
 
 
 def _parse_social_links(value) -> list[str]:
+    """Parses the stored social links, a json list string or a list, into a list of strings
+
+    @Args:
+        value (str | list | None) -- stored social links
+
+    @Returns:
+        social links, empty if there are none or the value cannot be parsed (list[str])
+    """
     if not value:
         return []
+
     if isinstance(value, list):
         return [str(item) for item in value if item]
+    
     if isinstance(value, str):
         try:
             parsed = json.loads(value)
         except json.JSONDecodeError:
             return []
+    
         if isinstance(parsed, list):
             return [str(item) for item in parsed if item]
+    
     return []
 
 
 def _send_paid_audit_callback(audit_record: AuditRecord, status: str, logger) -> None:
+    """
+    Notifies the paid order's callback url of the audit status, authorised with VALVANTA_AUDIT_SECRET_KEY.
+    Skips free audits and audits missing callback details, failures are logged not raised.
+
+    @Args:
+        audit_record (AuditRecord) -- audit the callback is for
+        status (str) -- completed | failed | timeout
+        logger (AuditLogger) -- logger for the callback result
+    """
     if not audit_record or getattr(audit_record, "tier", None) != "paid":
         return
+
     callback_url = getattr(audit_record, "callback_url", None)
     order_id = getattr(audit_record, "order_id", None)
+    
     if not callback_url or not order_id:
         logger.info(
             "Paid audit callback skipped; missing callback details.",
@@ -123,9 +188,12 @@ def _send_paid_audit_callback(audit_record: AuditRecord, status: str, logger) ->
             order_id=order_id,
         )
         return
+    
     secret = os.getenv("VALVANTA_AUDIT_SECRET_KEY")
+    
     if not secret:
         logger.warning("VALVANTA_AUDIT_SECRET_KEY is not set; skipping callback.")
+    
         return
     payload = {"orderId": order_id, "status": status}
     req = urlrequest.Request(
@@ -134,10 +202,12 @@ def _send_paid_audit_callback(audit_record: AuditRecord, status: str, logger) ->
         headers={"Content-Type": "application/json", "Authorization": secret},
         method="POST",
     )
+    
     try:
         with urlrequest.urlopen(req, timeout=20) as response:
             if response.status >= 400:
                 logger.error("Paid audit callback failed.", status=response.status)
+    
     except urlerror.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
         logger.exception(
@@ -161,29 +231,39 @@ def run_audit_task(
     """
     Main audit task
 
-    Args: 
-        audit_id (str, required): created audit record id
-        max_urls (int, required): maximum number of URLs to audit
-        only_categories (str, required): Lighthouse categories to include
-    Outputs: 
-        performance and seo audit reports
+    Runs the audit service in a subprocess, uploads the reports to GCS, emails the client and company,
+    cleans up the local files and sends the paid order callback. Failures are logged and emailed, not raised.
+
+    @Args:
+        audit_id (str) -- created audit record id
+        max_urls (int) -- maximum number of URLs to audit
+        only_categories (str) -- Lighthouse categories to include
+        tier (str) -- free | paid, paid audits always include accessibility
+        timeout_s (int | None) -- seconds before the audit subprocess is killed
+
+    @Returns:
+        final status and generated report paths (Dict[str, Any]): completed | failed | timeout
     """
 
     db = SessionLocal()
+
     timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
     log_path = f"logs/audit_{audit_id}_{timestamp}/audit_log.jsonl"
     logger = build_audit_logger(audit_id, log_path)
     failure_notified = False
 
     def _send_failure_emails(audit_record: AuditRecord, error_message: str) -> None:
+        """Emails the client and company that the audit failed, only sends once per audit run"""
         nonlocal failure_notified
         if failure_notified:
             return
+        
         subject, html_content = build_client_audit_failed_email(
             audit_record.client_name,
             audit_record.target_url,
             error_message,
         )
+
         try:
             send_audit_email(
                 to_email=audit_record.client_email,
@@ -206,6 +286,7 @@ def run_audit_task(
                 audit_id=audit_record.id,
                 error_message=error_message,
             )
+
             try:
                 send_audit_email(
                     to_email=company_email,
@@ -218,16 +299,20 @@ def run_audit_task(
                 logger.info("Company failure email sent.", to_email=company_email)
             except Exception as exc:
                 logger.exception("Company failure email failed.", exc, to_email=company_email)
+
         else:
             logger.warning("BREVO_COMPANY_EMAIL is not set; skipping company failure email.")
+
         failure_notified = True
 
     report_paths = []
     _safe_update_status(db, audit_id, AuditStatus.PROCESSING, logger)
+
     try:
         audit = get_audit(db, audit_id)
         if not audit:
             raise ValueError(f"Audit {audit_id} not found")
+        
         social_links = _parse_social_links(getattr(audit, "social_links", None))
         debug_mode = bool(getattr(audit, "debug_mode", False))
 
@@ -235,6 +320,7 @@ def run_audit_task(
             only_categories,
             include_accessibility=(tier == "paid"),
         )
+
         client_name = audit.client_name or "client"
         output_dir = f"audit_results/{client_name}_audit_{timestamp}"
         logger.info("Audit starting", client_name=client_name, target_url=audit.target_url, output_dir=output_dir)
@@ -260,8 +346,10 @@ def run_audit_task(
                 "--only-categories",
                 normalized_categories,
             ]
+
             if debug_mode:
                 cmd.append("--debug-mode")
+
             result = subprocess.run(
                 cmd,
                 check=True,
@@ -269,12 +357,15 @@ def run_audit_task(
                 text=True,
                 timeout=timeout_s,
             )
+
         except subprocess.TimeoutExpired:
             logger.error("Audit timed out.")
             _safe_update_status(db, audit_id, AuditStatus.FAILED, logger)
             _send_failure_emails(audit, "Audit timed out.")
             _send_paid_audit_callback(audit, "timeout", logger)
+
             return {"status": "timeout", "report_paths": []}
+
         except subprocess.CalledProcessError as exc:
             logger.error(
                 "Audit service failed.",
@@ -282,13 +373,16 @@ def run_audit_task(
                 stdout=exc.stdout[-4000:] if exc.stdout else "",
                 stderr=exc.stderr[-4000:] if exc.stderr else "",
             )
+            
             _safe_update_status(db, audit_id, AuditStatus.FAILED, logger)
             _send_failure_emails(audit, exc.stderr or exc.stdout or "Audit subprocess failed.")
             _send_paid_audit_callback(audit, "failed", logger)
+            
             return {"status": "failed", "report_paths": []}
 
         logger.info("Audit complete, starting emails")
         report_paths = _extract_report_paths(result.stdout)
+
         if not report_paths:
             try:
                 report_dir = find_latest_report_dir(
@@ -298,6 +392,7 @@ def run_audit_task(
             except Exception as exc:
                 logger.exception("Failed to resolve report paths.", exc)
                 report_paths = []
+
         if report_paths:
             logger.info("Report paths resolved.", report_paths=[str(path) for path in report_paths])
         else:
@@ -307,6 +402,7 @@ def run_audit_task(
         gcs_bucket = os.getenv("GCS_BUCKET_NAME", "")
         gcs_creds = os.getenv("GCS_SERVICE_ACCOUNT_JSON", "")
         gcs_objects = {}
+
         if debug_mode:
             logger.info("Debug mode enabled; skipping GCS upload.")
         elif gcs_creds:
@@ -314,8 +410,10 @@ def run_audit_task(
                 output_dir_path = Path(output_dir)
                 file_paths = list(output_dir_path.glob("*.pdf")) + list(output_dir_path.glob("*.json"))
                 log_file = Path(log_path)
+
                 if log_file.exists():
                     file_paths.append(log_file)
+
                 gcs_objects = upload_files(
                     file_paths=file_paths,
                     bucket_name=gcs_bucket,
@@ -330,22 +428,31 @@ def run_audit_task(
 
         if gcs_objects:
             db_fields = {}
+
             for local_path, object_name in gcs_objects.items():
                 name = Path(local_path).name
+
                 if name.startswith("Performance_PDF"):
                     db_fields["perf_report_object"] = object_name
+
                 elif name.startswith("SEO_PDF"):
                     db_fields["seo_report_object"] = object_name
+
                 elif name.startswith("Key_Findings"):
                     db_fields["key_findings_object"] = object_name
+
                 elif name.startswith("Accessibility_PDF"):
                     db_fields["accessibility_report_object"] = object_name
+
                 elif name.startswith("ai_audit_summary") and name.endswith(".json"):
                     db_fields["ai_json_object"] = object_name
+
                 elif name.startswith("audit_") and name.endswith(".json"):
                     db_fields["audit_json_object"] = object_name
+
                 elif name == "audit_log.jsonl":
                     db_fields["audit_log_object"] = object_name
+
             if db_fields:
                 try:
                     update_audit_report_objects(db, audit_id, **db_fields)
@@ -361,6 +468,7 @@ def run_audit_task(
                     audit.target_url,
                     None,
                 )
+
                 send_audit_email(
                     to_email=audit.client_email,
                     client_name=audit.client_name,
@@ -370,12 +478,14 @@ def run_audit_task(
                     html_content=html_content,
                 )
                 logger.info("Client email sent.", to_email=audit.client_email)
+
             except Exception as exc:
                 logger.exception("Client email failed.", exc, to_email=audit.client_email)
         else:
             logger.info("Paid audit: skipping client results email.", to_email=audit.client_email)
 
         company_email = os.getenv("BREVO_COMPANY_EMAIL")
+
         if not company_email:
             logger.warning("BREVO_COMPANY_EMAIL is not set; skipping company email.")
         else:
@@ -390,6 +500,7 @@ def run_audit_task(
                     report_paths=[str(path) for path in report_paths] if tier == "paid" else None,
                     social_links=social_links if tier == "paid" else None,
                 )
+
                 send_audit_email(
                     to_email=company_email,
                     client_name="Valvanta Digital",
@@ -398,6 +509,7 @@ def run_audit_task(
                     subject=subject,
                     html_content=html_content,
                 )
+
                 logger.info("Company email sent.", to_email=company_email)
             except Exception as exc:
                 logger.exception("Company email failed.", exc, to_email=company_email)
@@ -406,41 +518,68 @@ def run_audit_task(
         try: 
             run_full_cleanup()
             logger.info("Service files clean up successful.")
-        except Exception:
-            logger.exception("Service files clean up failed.")
+
+        except Exception as exc:
+            logger.exception("Service files clean up failed.", exc)
 
         _safe_update_status(db, audit_id, AuditStatus.COMPLETED, logger, completed_at=datetime.utcnow())
         _send_paid_audit_callback(audit, "completed", logger)
+
         return {"status": "completed", "report_paths": report_paths}
+
     except Exception as e:
         _safe_update_status(db, audit_id, AuditStatus.FAILED, logger)
+
         if "audit" in locals() and audit:
             _send_failure_emails(audit, str(e))
             _send_paid_audit_callback(audit, "failed", logger)
+
         logger.exception("Audit task failed.", e)
+
         return {"status": "failed", "report_paths": report_paths}
+
     finally:
         db.close()
 
-
 def _extract_report_paths(stdout: str):
+    """Reads the REPORT_PATHS line the audit service prints and orders the reports
+
+    @Args:
+        stdout (str) -- stdout of the audit service subprocess
+
+    @Returns:
+        report paths ordered performance, seo, accessibility, key findings (List[Path]), empty if not found
+    """
     prefix = "REPORT_PATHS::"
     for line in stdout.splitlines():
         if line.startswith(prefix):
             payload = line[len(prefix):].strip()
             data = json.loads(payload)
+
             ordered = []
             for key in ("performance", "seo", "accessibility", "key_findings"):
                 if key in data:
                     ordered.append(Path(data[key]))
+
             for path in data.values():
                 if Path(path) not in ordered:
                     ordered.append(Path(path))
+
             return ordered
+
     return []
 
 
 def validateDomain(db, domain):
+    """Checks if a domain already has a completed audit
+
+    @Args:
+        db (Session) -- database session
+        domain (str) -- website url or domain
+
+    @Returns:
+        true if the domain was already audited (bool)
+    """
     from .database import validate_domain_audit
 
     # is audited

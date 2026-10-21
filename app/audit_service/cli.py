@@ -1,4 +1,7 @@
-
+"""
+Audit pipeline entrypoint
+Runs sitemap discovery, lighthouse audits, formatting, AI summaries and report generation
+"""
 
 from __future__ import annotations
 
@@ -20,17 +23,27 @@ REPORT_KEYS = ("performance", "seo", "accessibility", "key_findings")
 
 
 def _normalize_categories(value: str) -> str:
+    """Cleans a comma separated category string, defaults to performance,seo if empty"""
     categories = [c.strip() for c in (value or "").split(",") if c.strip()]
+
     return ",".join(categories) or "performance,seo"
 
 def _should_include_accessibility(only_categories: str) -> bool:
+    """Returns whether accessibility is one of the requested categories"""
     categories = [c.strip().lower() for c in (only_categories or "").split(",") if c.strip()]
+
     return "accessibility" in categories
 
 
 def run_audit(config: AppConfig) -> Dict[str, str]:
     """
-    Execute the audit pipeline and return generated report paths.
+    Executes the audit pipeline and returns the generated report paths
+
+    @Args:
+        config (AppConfig) -- audit run config
+
+    @Returns:
+        report type to report file path (Dict[str, str])
     """
     timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
     folder = f"{config.client_name}_audit_{timestamp}"
@@ -40,6 +53,7 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
 
     logger.info("Audit started", client_name=config.client_name, domain_url=config.domain_url)
     print("Discovering sitemaps/urls.")
+
     try:
         discovery = discover_urls_from_sitemaps(config.domain_url)
     except Exception as exc:
@@ -58,8 +72,10 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
 
     print(f"Errors: {discovery.errors}")
     print(f"Logs: {discovery.logs}")
+
     if discovery.errors:
         logger.warning("Sitemap discovery errors detected", errors=discovery.errors)
+
     if discovery.logs:
         logger.info("Sitemap discovery logs", logs=discovery.logs)
     
@@ -70,6 +86,7 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
     only_categories = _normalize_categories(config.only_categories)
     try:
         lighthouse_data = audit_urls_with_lighthouse(urls_to_test, only_categories=only_categories)
+
     except Exception as exc:
         logger.exception("Lighthouse run failed.", exc)
         lighthouse_data = {
@@ -86,6 +103,7 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
             "lighthouse_data": {},
             "logs": [str(exc)],
         }
+
     if lighthouse_data.get("logs"):
         logger.info("Lighthouse run logs captured.", logs=lighthouse_data.get("logs"))
     
@@ -93,10 +111,13 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
     print("Formatting preformance data.")
     
     formatted_data = format_lighthouse_output(lighthouse_data)
+
     if formatted_data.get("errors"):
         logger.warning("Formatter reported errors.", errors=formatted_data.get("errors"))
+    
     if formatted_data.get("logs"):
         logger.info("Formatter logs captured.", logs=formatted_data.get("logs"))
+    
     normalized = normalize_lighthouse_results(lighthouse_data)
 
     result = {
@@ -124,11 +145,13 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
             "summary": normalized.get("summary"),
         },
     }
+
     print("Performance data formatted.")
     print("Generating AI summaries.")
     
     # Get ai summary 
     ai_result = call_openai(result, logger=logger, debug_mode=config.debug_mode)
+
     if ai_result is None:
         logger.warning("AI summary missing; continuing without AI output.")
         ai_result = {}
@@ -138,6 +161,7 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
     # generate json file 
     ai_save = write_json_to_file(ai_result, output_dir=output_dir, filename=f"ai_audit_summary{timestamp}.json")
     print(f"Saved audit AI data to {ai_save}")
+
     json_save = write_json_to_file(result, output_dir=output_dir)
     print(f"Saved JSON data to {json_save}")
 
@@ -154,18 +178,23 @@ def run_audit(config: AppConfig) -> Dict[str, str]:
             include_accessibility=include_accessibility,
             is_free_audit=not include_accessibility,
         )
+
     except Exception as exc:
         logger.exception("PDF report generation failed.", exc)
+
     for report_type, path in reports.items():
         print(f"Saved {report_type} report to {path}")
+
     logger.info("Audit completed", report_paths=reports)
     print(f"LOG_PATH::{log_path}")
+
     return {key: reports[key] for key in REPORT_KEYS if key in reports}
 
 
 def main():
     """
     Full Website Performance Audit
+    Builds the config from cli arguments, runs the audit and prints the report paths
     """
     config = build_config()
     report_paths = run_audit(config)
