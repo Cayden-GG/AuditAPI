@@ -14,7 +14,7 @@ def test_resend_requires_identifier():
     assert response.status_code == 400
 
 
-def test_resend_email_by_job_id(monkeypatch, tmp_path: Path):
+def test_resend_email_by_job_id(isolated_db, monkeypatch, tmp_path: Path):
     monkeypatch.setenv("GCS_BUCKET_NAME", "test-bucket")
     monkeypatch.setenv("GCS_SERVICE_ACCOUNT_JSON", str(tmp_path / "creds.json"))
     (tmp_path / "creds.json").write_text("{}", encoding="utf-8")
