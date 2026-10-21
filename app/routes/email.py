@@ -30,10 +30,10 @@ def send_website_email(payload: SendEmailRequest):
     attachments = []
     if payload.attachments:
         for raw in payload.attachments.split(","):
-            path = Path(raw.strip())
-
-            if not path:
+            if not raw.strip():
                 continue
+
+            path = Path(raw.strip())
 
             if not path.exists():
                 raise HTTPException(status_code=400, detail=f"Attachment not found: {path}")

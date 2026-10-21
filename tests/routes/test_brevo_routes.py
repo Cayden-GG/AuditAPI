@@ -107,14 +107,10 @@ def test_signup_handles_non_json_brevo_errors(client, fake_brevo, kind):
     assert "502" in response.json()["detail"]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Brevo answers 204 when it updates an existing contact; the route only handles 201 and returns "
-    "nothing, which fails response validation",
-)
 def test_audit_signup_succeeds_when_brevo_updates_an_existing_contact(client, fake_brevo):
     fake_brevo.status = 204
 
     response = signup(client, "audit")
 
     assert response.status_code == 200
+    assert response.json()["message"] == "Successfully updated existing contact"

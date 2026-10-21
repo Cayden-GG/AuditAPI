@@ -131,6 +131,13 @@ def audit_signup(payload: BrevoListSignupRequest):
                     status_code="200",
                     message="Successfully subscribed new contact",
                 )
+
+            # Brevo answers 204 when updateEnabled updated a contact that already existed
+            if response.status == 204:
+                return BrevoListSignupResponse(
+                    status_code="200",
+                    message="Successfully updated existing contact",
+                )
                 
     except error.HTTPError as exc:
         try:

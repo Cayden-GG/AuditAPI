@@ -85,11 +85,6 @@ def test_send_email_reports_missing_brevo_configuration(client, fake_brevo, monk
     assert "BREVO_API_KEY" in response.json()["detail"]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="a trailing comma or blank entry becomes Path('') which exists, so the current directory is "
-    "attached and reading it fails",
-)
 def test_send_email_ignores_blank_attachment_entries(client, fake_brevo, tmp_path):
     report = tmp_path / "a.pdf"
     report.write_bytes(b"one")
