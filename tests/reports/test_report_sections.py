@@ -68,13 +68,8 @@ class TestAiTextHelpers:
     def test_strip_heading_of_a_non_string_is_empty(self, module, value):
         assert module._strip_heading(value, "Key strengths") == ""
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="the pattern is a raw string containing \\\\s, which matches a literal backslash, so a heading wrapped "
-        "in <b> tags is never removed",
-    )
     def test_strip_heading_removes_a_bold_heading(self, module):
-        assert module._strip_heading("<b>Key strengths</b><br/>- fast", "Key strengths") == "<br/>- fast"
+        assert module._strip_heading("<b>Key strengths</b><br/>- fast", "Key strengths") == "- fast"
 
     @pytest.mark.parametrize(
         "ai, expected",
@@ -303,11 +298,6 @@ def test_site_averages_shows_the_metrics_in_tables_and_charts():
     assert sum(1 for i in story if i.__class__.__name__ == "Drawing") == 3  # two bar charts and the pie
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="the intro line says LCP <= 2.5s (the Core Web Vitals threshold the findings use) but the metric "
-    "definitions table in the same section says <= 1.5 s, so the report contradicts itself",
-)
 def test_site_averages_quote_one_lcp_target():
     website, per_url = perf_data()
     story = site_average_section(website, per_url, section_label="Mobile")
@@ -339,7 +329,8 @@ def test_url_block_shows_the_metrics_and_ai_notes():
     assert isinstance(block, KeepTogether)
     text = story_text([block])
     assert URLS[0] in text
-    assert "dswr" in text  # the four AI sections: data, strengths, weaknesses, recommendations
+    for heading in ("What the data shows", "Key strengths", "Primary weaknesses", "Recommendations"):
+        assert text.count(heading) == 1, heading
     assert "0.10 s" in text and "Requests" in text and "Third-party" in text
 
 
@@ -453,7 +444,7 @@ def test_score_per_url_section_lists_passed_failed_and_na_audits():
     assert URLS[0] in text and URLS[1] in text
     assert "robots-txt" in text  # in the failed row
     assert "Average score" in text
-    assert "dswr" in text  # the AI note
+    assert text.count("What the data shows") == 2  # one note per url
 
 
 def test_score_per_url_section_is_limited_and_upsells_free_audits():
@@ -464,3 +455,14 @@ def test_score_per_url_section_is_limited_and_upsells_free_audits():
     assert story_text(story).count("https://example.com/") == 100
     assert isinstance(story[-1], UpsellBackgroundPage)
     assert not any(isinstance(i, UpsellBackgroundPage) for i in audit_score_per_url_section(many, "SEO"))
+
+
+def test_every_report_quotes_the_same_lcp_target():
+    website, per_url = perf_data()
+    texts = [
+        story_text(site_average_section(website, per_url)),
+        story_text(build_per_url_section({}, per_url)),
+    ]
+
+    targets = {m for text in texts for m in re.findall(r"LCP (?:<= |≤ )?\s*([\d.]+) ?s", text)}
+    assert targets == {"2.5"}

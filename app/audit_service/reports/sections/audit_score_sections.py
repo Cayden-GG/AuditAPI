@@ -4,52 +4,13 @@ SEO and accessibility report sections: site wide score overview and per url brea
 """
 from typing import Any, Dict, List
 
-import re
-
 from reportlab.platypus import Paragraph, Spacer, Table, PageBreak, KeepTogether
 
 from ..helpers import bar_chart, fmt_num, style_table
 
 
-def _select_per_url_ai(ai: Dict[str, Any], report_type: str) -> Dict[str, Any]:
-    """Gets the AI per url summaries for a report type, as a dict keyed by url, handles the older list and flat formats"""
-    per_url_ai = (ai or {}).get("per_url_summaries") or {}
-    if isinstance(per_url_ai, dict) and isinstance(per_url_ai.get(report_type), dict):
-        return per_url_ai.get(report_type) or {}
-    if isinstance(per_url_ai, dict) and any(k in per_url_ai for k in ("performance", "seo")):
-        return {}
-    if isinstance(per_url_ai, list):
-        return {item.get("url"): item.get("analysis") for item in per_url_ai if isinstance(item, dict)}
-    if isinstance(per_url_ai, dict):
-        return per_url_ai
-    return {}
-
-
-def _strip_heading(value: str, heading: str) -> str:
-    """Removes the leading heading the AI repeats inside a section's text, returns empty string if value is not a string"""
-    if not isinstance(value, str):
-        return ""
-    lowered = value.strip().lower()
-    heading_l = heading.lower()
-    for prefix in (heading_l, f"- {heading_l}", f"• {heading_l}"):
-        if lowered.startswith(prefix):
-            cleaned = value.strip()[len(prefix):].lstrip(" :\n\r-")
-            return cleaned
-    if "<b>" in lowered:
-        cleaned = re.sub(r"<b>\\s*" + re.escape(heading) + r"\\s*</b>", "", value, flags=re.IGNORECASE)
-        return cleaned.strip()
-    return value
-
-
-def _clean_ai_text(value: str) -> str:
-    """Fixes doubled bullet markers ("- -") in AI text, returns empty string if value is not a string"""
-    if not isinstance(value, str):
-        return ""
-    cleaned = value.replace("<br/>- -", "<br/>- ").replace("<br>- -", "<br/>- ")
-    cleaned = cleaned.replace("\n- -", "\n- ").replace("\r\n- -", "\n- ")
-    cleaned = cleaned.replace("- - ", "- ")
-    return cleaned
 from ..styles import CONTENT_W, MAX_URLS, SectionRule, get_styles
+from .ai_text import ai_note_text, clean_ai_text as _clean_ai_text, select_per_url_ai as _select_per_url_ai, strip_heading as _strip_heading
 from .upsell import UpsellBackgroundPage
 
 
@@ -223,19 +184,9 @@ def audit_score_per_url_section(
             Paragraph(url, styles["H2"]),
         ]
 
-        ai_note = per_url_ai.get(url)
-        if ai_note and isinstance(ai_note, dict):
-            what = _clean_ai_text(_strip_heading(ai_note.get("what_the_data_shows", ""), "What the data shows"))
-            strengths = _clean_ai_text(_strip_heading(ai_note.get("key_strengths", ""), "Key strengths"))
-            weaknesses = _clean_ai_text(_strip_heading(ai_note.get("primary_weaknesses", ""), "Primary weaknesses"))
-            recs = _clean_ai_text(_strip_heading(ai_note.get("recommendations", ""), "Recommendations"))
-            text = (
-                f"{what}<br/><br/>"
-                f"{strengths}<br/><br/>"
-                f"{weaknesses}<br/><br/>"
-                f"{recs}"
-            )
-            blocks.append(Paragraph(text, styles["Body"]))
+        note_text = ai_note_text(per_url_ai.get(url))
+        if note_text:
+            blocks.append(Paragraph(note_text, styles["Body"]))
             blocks.append(Spacer(1, 4))
 
         blocks.append(style_table(Table([

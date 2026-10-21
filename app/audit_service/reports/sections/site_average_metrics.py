@@ -40,7 +40,7 @@ def site_average_section(wp: Dict, per_url: Dict, section_label: str | None = No
     story.append(style_table(Table([
         ["Metric", "Meaning", "Good target"],
         ["FCP", "First time content appears on screen.", "≤ 1.8 s"],
-        ["LCP", "Largest content element render time.", "≤ 1.5 s"],
+        ["LCP", "Largest content element render time.", "≤ 2.5 s"],
         ["Speed Index", "How quickly the page looks complete.", "≤ 3.4 s"],
         ["TBT", "Total main-thread blocking time.", "≤ 200 ms"],
         ["Server latency", "Backend responsiveness during load.", "≤ 200 ms"],
