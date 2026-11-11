@@ -306,3 +306,17 @@ python -m app.emails.send_test_emails --to-email you@example.com
 ## License
 
 Released under the [MIT License](LICENSE).
+
+---
+
+### Report Preview 
+
+<img width="789" height="1116" alt="site audit performance report coverpage" src="https://github.com/user-attachments/assets/79786f7a-9ce5-4c42-a63e-87b6ea59c815" />
+
+<img width="794" height="1121" alt="site audit performance report methodology" src="https://github.com/user-attachments/assets/fb2a50ef-e01e-4b1b-94cd-7ea7cb5b3ae1" />
+
+<img width="793" height="1121" alt="site audit performance report site average breakdown" src="https://github.com/user-attachments/assets/4b0f10a8-03a1-4d77-82ef-5cc174b586cf" />
+
+<img width="790" height="1121" alt="site audit performance full url metrics" src="https://github.com/user-attachments/assets/52111391-9e3b-4965-ac7b-bd2f0fa4db79" />
+
+
